@@ -61,14 +61,9 @@ namespace eosio {
                          symbol_code   sym_code );
 
          [[eosio::action]]
-         void assignaddr( const symbol& symbol,
+         void assignaddr( symbol_code  sym_code,
                           name         to,
                           string       address );
-
-         [[eosio::action]]
-         void hpsimba(  asset   quantity,
-                        name         to,
-                        string       memo );
 
          [[eosio::action]]
          void issue( uint64_t seq_num, name to, asset quantity, string memo );
@@ -90,11 +85,6 @@ namespace eosio {
                         asset   quantity,
                         string  memo );
 
-        [[eosio::action]]
-         void hptransfer( name    from,
-                        name    to,
-                        asset   quantity,
-                        string  memo );
 
 
          [[eosio::action]]
@@ -160,17 +150,6 @@ namespace eosio {
             uint64_t by_state()const { return state; }
          };
 
-         struct [[eosio::table]] minzhi_memo_ts {
-            name           owner;
-            string         memo;
-            time_point_sec assign_time;
-            uint64_t       state;
-
-            uint64_t primary_key()const { return owner.value; }
-            uint64_t by_memo()const { return hash64( memo ); }
-            uint64_t by_state()const { return state; }
-         };
-
          struct [[eosio::table]] issue_ts {
             uint64_t seq_num;
             name     to;
@@ -228,12 +207,6 @@ namespace eosio {
             indexed_by<"address"_n, const_mem_fun<recharge_address_ts, uint64_t, &recharge_address_ts::by_address> >,
             indexed_by<"state"_n, const_mem_fun<recharge_address_ts, uint64_t, &recharge_address_ts::by_state> >
          > addresses;
-
-         typedef eosio::multi_index< "minzhi"_n, minzhi_memo_ts ,
-            indexed_by<"memo"_n, const_mem_fun<minzhi_memo_ts, uint64_t, &minzhi_memo_ts::by_memo> >,
-            indexed_by<"state"_n, const_mem_fun<minzhi_memo_ts, uint64_t, &minzhi_memo_ts::by_state> >
-         > memoes;
-
          typedef eosio::multi_index< "withdraws"_n, withdraw_ts,
                indexed_by<"trxid"_n, const_mem_fun<withdraw_ts, fixed_bytes<32>, &withdraw_ts::by_trxid>  >,
                indexed_by<"state"_n, const_mem_fun<withdraw_ts, uint64_t, &withdraw_ts::by_state>  >
