@@ -10,9 +10,9 @@ namespace eosiosystem {
    const double   continuous_rate       = 0.0198;          // 2% annual rate
    const double   perblock_rate         = 0.0025;           // 0.25%
    const double   standby_rate          = 0.0075;           // 0.75%
-   const uint32_t blocks_per_year       = 52*7*24*2*3600;   // half seconds per year
+   const uint32_t blocks_per_year       = 52*7*24*3600;   // half seconds per year
    const uint32_t seconds_per_year      = 52*7*24*3600;
-   const uint32_t blocks_per_day        = 2 * 24 * 3600;
+   const uint32_t blocks_per_day        = 24 * 3600;
    const uint32_t blocks_per_hour       = 2 * 3600;
 
    const int64_t  useconds_per_day      = 24 * 3600 * int64_t(1000000);
