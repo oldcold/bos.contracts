@@ -59,8 +59,8 @@ string  website        //承兑商官网地址
 
 同时初始化：
 supply：BTC   0.00000000        ETH    0.00000000   USDT    0.00000000
-maximum_limit：BTC   0       ETH    0   USDT    0
-minimum_limit：BTC   0    ETH     0   USDT    0
+max_limit：BTC   0       ETH    0   USDT    0
+min_limit：BTC   0    ETH     0   USDT    0
 total_limit:   BTC  0     ETH   0  USDT    0
 frequency_limit:  0
 interval_limit:  0
@@ -103,15 +103,15 @@ cleos push action usdt.bos update '["USDT","火币矿池", "http://www.huobipool
 权限：承兑商账号, 如boshuobipool
 参数：
 ```
-asset   maximum_limit  //单次最大换币金额。每个账号每次换币金额大于此数, 承兑商不换币。默认值为：BTC 1   ETH 1  USDT 1
-asset   minimum_limit  //单次最小换币金额。每个账号每次换币金额小于此数，承兑商不换币。默认值为：BTC 0.00005  ETH 0.00005 USDT 0.00005
+asset   max_limit  //单次最大换币金额。每个账号每次换币金额大于此数, 承兑商不换币。默认值为：BTC 1   ETH 1  USDT 1
+asset   min_limit  //单次最小换币金额。每个账号每次换币金额小于此数，承兑商不换币。默认值为：BTC 0.00005  ETH 0.00005 USDT 0.00005
 asset   total_limit  //单日累计换币限额。每个账号每日换币总额大于此数，承兑商不换币。默认值为：BTC 10 ETH 10  USDT 10
 uint64_t frequency_limit   //单日累计换币次数。 每个账号每日换币次数大于此数，则承兑商不换币。默认值为：BTC 3 ETH 3  USDT 3
 uint64_t interval_limit //两次换币的间隔秒数。每个账号两次换币间隔秒数小于次数，承兑商不换币。默认值为：300
 ```
 大致流程：
 校验权限。
-根据asset的symbol，修改stats表的maximum_limit、minimum_limit、total_limit、frequency_limit、interval_limit字段
+根据asset的symbol，修改stats表的max_limit、min_limit、total_limit、frequency_limit、interval_limit字段
 需要判断所有的asset是否为同一种币。
 
 ```
@@ -127,15 +127,15 @@ cleos push action usdt.bos setlimit '["1.00000000 USDT","0.00005000 USDT","10.00
 参数：
 ```
 name  vip //VIP用户账号
-asset   maximum_limit  //单次最大换币金额。每个账号每次换币金额大于此数, 承兑商不换币。默认值为：BTC 1   ETH 1  USDT 1
-asset   minimum_limit  //单次最小换币金额。每个账号每次换币金额小于此数，承兑商不换币。默认值为：BTC 0.00005  ETH 0.00005 USDT 0.00005
+asset   max_limit  //单次最大换币金额。每个账号每次换币金额大于此数, 承兑商不换币。默认值为：BTC 1   ETH 1  USDT 1
+asset   min_limit  //单次最小换币金额。每个账号每次换币金额小于此数，承兑商不换币。默认值为：BTC 0.00005  ETH 0.00005 USDT 0.00005
 asset   total_limit  //单日累计换币限额。每个账号每日换币总额大于此数，承兑商不换币。默认值为：BTC 10 ETH 10  USDT 10
 uint64_t frequency_limit   //单日累计换币次数。 每个账号每日换币次数大于此数，则承兑商不换币。默认值为：BTC 3 ETH 3  USDT 3
 uint64_t interval_limit //两次换币的间隔秒数。每个账号两次换币间隔秒数小于次数，承兑商不换币。默认值为：300
 ```
 大致流程：
 校验权限。
-根据asset的symbol和vip的账户名，修改vips表的maximum_limit、minimum_limit、total_limit、frequency_limit、interval_limit字段
+根据asset的symbol和vip的账户名，修改vips表的max_limit、min_limit、total_limit、frequency_limit、interval_limit字段
 需要判断所有的asset是否为同一种币。
 
 ```
@@ -890,8 +890,8 @@ cleos get table eth.bos huobiliqiang accounts
 	字段：
 ```
 	name  owner  //vip用户账号。   主键 
-    asset    maximum_limit //单次最大换币金额
-	asset    minimum_limit //单次最小换币金额
+    asset    max_limit //单次最大换币金额
+	asset    min_limit //单次最小换币金额
     asset    total_limit //单日累计换币总额
     uint64_t frequency_limit   //单日累计换币次数
     uint64_t interval_limit  //两次换币间隔秒数
@@ -911,8 +911,8 @@ cleos get table eth.bos ETH vips
 	字段：
 ```
 	asset    supply //该币种发行量。  币种名为主键。 链上所有账号（含承兑人账号）的余额之和等于发行量。
-	asset    maximum_limit //单次最大换币金额
-	asset    minimum_limit //单次最小换币金额
+	asset    max_limit //单次最大换币金额
+	asset    min_limit //单次最小换币金额
     asset    total_limit //单日累计换币总额
     uint64_t frequency_limit   //单日累计换币次数
     uint64_t interval_limit  //两次换币间隔秒数

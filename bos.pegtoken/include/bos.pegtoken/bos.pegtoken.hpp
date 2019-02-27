@@ -59,49 +59,45 @@ public:
     void setminlimit_v1( asset min_limit );
     void setminlimit_v2( asset min_limit );
 
-    [[eosio::action]] void settotlimit( asset total_limit );
-    void settotlimit_v1( asset total_limit );
-    void settotlimit_v2( asset total_limit );
+    [[eosio::action]] void setotalimit( asset total_limit );
+    void setotalimit_v1( asset total_limit );
+    void setotalimit_v2( asset total_limit );
 
-    [[eosio::action]] void setfrelimit( symbol_code sym_code, uint64_t frequency_limit);
-    void setfrelimit_v1( symbol_code sym_code, uint64_t frequency_limit);
-    void setfrelimit_v2( symbol_code sym_code, uint64_t frequency_limit);
+    [[eosio::action]] void setfrequencylimit( symbol_code sym_code, uint64_t frequency_limit);
+    void setfrequencylimit_v1( symbol_code sym_code, uint64_t frequency_limit);
+    void setfrequencylimit_v2( symbol_code sym_code, uint64_t frequency_limit);
 
-    [[eosio::action]] void setintlimit( symbol_code sym_code, uint64_t interval_limit);
-    void setintlimit_v1( symbol_code sym_code, uint64_t interval_limit);
-    void setintlimit_v2( symbol_code sym_code, uint64_t interval_limit);
-    
-    [[eosio::action]] void setreslimit( symbol_code sym_code, uint64_t reset_limit);
-    void setreslimit_v1( symbol_code sym_code, uint64_t reset_limit);
-    void setreslimit_v2( symbol_code sym_code, uint64_t reset_limit);
+    [[eosio::action]] void setintervallimit( symbol_code sym_code, uint64_t interval_limit);
+    void setintervallimit_v1( symbol_code sym_code, uint64_t interval_limit);
+    void setintervallimit_v2( symbol_code sym_code, uint64_t interval_limit);
 
-    [[eosio::action]] void setviplimit(name vip, asset maximum_limit, asset minimum_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit,uint64_t reset_limit);
-    void setviplimit_v1(name vip, asset maximum_limit, asset minimum_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit,uint64_t reset_limit);
-    void setviplimit_v2(name vip, asset maximum_limit, asset minimum_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit,uint64_t reset_limit);
+    [[eosio::action]] void setviplimit(name vip, asset max_limit, asset min_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit,uint64_t reset_limit);
+    void setviplimit_v1(name vip, asset max_limit, asset min_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit,uint64_t reset_limit);
+    void setviplimit_v2(name vip, asset max_limit, asset min_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit,uint64_t reset_limit);
 
-    [[eosio::action]] void setvipmaxlim(name vip, asset maximum_limit );
-    void setvipmaxlim_v1(name vip, asset maximum_limit );
-    void setvipmaxlim_v2(name vip, asset maximum_limit );
+    [[eosio::action]] void setvipmaxlimit(name vip, asset max_limit );
+    void setvipmaxlimit_v1(name vip, asset max_limit );
+    void setvipmaxlimit_v2(name vip, asset max_limit );
 
-    [[eosio::action]] void setvipminlim(name vip, asset maximum_limit );
-    void setvipminlim_v1(name vip, asset maximum_limit );
-    void setvipminlim_v2(name vip, asset maximum_limit );
+    [[eosio::action]] void setvipminlimit(name vip, asset max_limit );
+    void setvipminlimit_v1(name vip, asset max_limit );
+    void setvipminlimit_v2(name vip, asset max_limit );
 
-    [[eosio::action]] void setviptotlim(name vip, asset maximum_limit );
-    void setviptotlim_v1(name vip, asset maximum_limit );
-    void setviptotlim_v2(name vip, asset maximum_limit );
+    [[eosio::action]] void setviptotallimit(name vip, asset max_limit );
+    void setviptotallimit_v1(name vip, asset max_limit );
+    void setviptotallimit_v2(name vip, asset max_limit );
 
     [[eosio::action]] void setfee( double service_fee_rate, asset min_service_fee, asset miner_fee );
     void setfee_v1( double service_fee_rate, asset min_service_fee, asset miner_fee );
     void setfee_v2( double service_fee_rate, asset min_service_fee, asset miner_fee );
 
-    [[eosio::action]] void setsrvfeerat(symbol_code sym_code, double service_fee_rate);
-    void setsrvfeerat_v1(symbol_code sym_code, double service_fee_rate);
-    void setsrvfeerat_v2(symbol_code sym_code, double service_fee_rate);
+    [[eosio::action]] void setservicefeerate(symbol_code sym_code, double service_fee_rate);
+    void setservicefeerate_v1(symbol_code sym_code, double service_fee_rate);
+    void setservicefeerate_v2(symbol_code sym_code, double service_fee_rate);
 
-    [[eosio::action]] void setminsrvfee(asset min_service_fee);
-    void setminsrvfee_v1(asset min_service_fee);
-    void setminsrvfee_v2(asset min_service_fee);
+    [[eosio::action]] void setminservicefee(asset min_service_fee);
+    void setminservicefee_v1(asset min_service_fee);
+    void setminservicefee_v2(asset min_service_fee);
 
 
     [[eosio::action]] void setminerfee(asset miner_fee);
@@ -112,17 +108,17 @@ public:
     void setvipfee_v1(name vip, double service_fee_rate, asset min_service_fee, asset miner_fee );
     void setvipfee_v2(name vip, double service_fee_rate, asset min_service_fee, asset miner_fee );
 
-    [[eosio::action]] void setvipsrvfr(symbol_code sym_code, name vip,double service_fee_rate);
-    void setvipsrvfr_v1(symbol_code sym_code, name vip,double service_fee_rate);
-    void setvipsrvfr_v2(symbol_code sym_code, name vip,double service_fee_rate);
+    [[eosio::action]] void setvipservicefeerate(symbol_code sym_code, name vip,double service_fee_rate);
+    void setvipservicefeerate_v1(symbol_code sym_code, name vip,double service_fee_rate);
+    void setvipservicefeerate_v2(symbol_code sym_code, name vip,double service_fee_rate);
     
     [[eosio::action]] void setvipminfee(name vip, asset min_service_fee );
     void setvipminfee_v1(name vip, asset min_service_fee );
     void setvipminfee_v2(name vip, asset min_service_fee );
 
-    [[eosio::action]] void setvipminerf(name vip, asset miner_fee );
-    void setvipminerf_v1(name vip, asset miner_fee );
-    void setvipminerf_v2(name vip, asset miner_fee );
+    [[eosio::action]] void setvipminerfee(name vip, asset miner_fee );
+    void setvipminerfee_v1(name vip, asset miner_fee );
+    void setvipminerfee_v2(name vip, asset miner_fee );
 
     [[eosio::action]] void setdelay( symbol_code sym_code, uint64_t delayday );
     void setdelay_v1( symbol_code sym_code, uint64_t delayday );
@@ -158,20 +154,45 @@ public:
     [[eosio::action]] void applyaddr( symbol_code sym_code, name to );
     void applyaddr_v1( symbol_code sym_code, name to );
 
+    // TODO: resetaddress
+    [[eosio::action]] void resetaddress( symbol_code sym_code, name to );
+
     [[eosio::action]] void assignaddr( symbol_code sym_code, name to, string address );
     void assignaddr_v1( symbol_code sym_code, name to, string address );
 
     [[eosio::action]] void withdraw( name from, string to, asset quantity, string memo );
     void withdraw_v1( name from, string to, asset quantity, string memo );
 
+    [[eosio::action]] void prewithdraw( name from, string to, asset quantity, uint64_t index, string memo);
+
+    [[eosio::action]] void agreewithdraw( name from, string to, asset quantity, uint64_t index, string memo);
+
+    [[eosio::action]] void refusewithdraw( name from, string to, asset quantity, uint64_t index, string memo);
+
+    // TODO: notify_plugin
     [[eosio::action]] void deposit( name to, asset quantity, string memo );
     void deposit_v1( name to, asset quantity, string memo );
+
+    [[eosio::action]] void predeposit( string from, name to, asset quantity, string memo );
+
+    [[eosio::action]] void agreedeposit( string from, name to, asset quantity, string remote_trx_id, uint64_t index, string memo );
+
+    [[eosio::action]] void refusedeposit( string from, name to, asset quantity, string remote_trx_id, uint64_t index, string memo );
 
     [[eosio::action]] void transfer( name from, name to, asset quantity, string memo );
     void transfer_v1( name from, name to, asset quantity, string memo );
 
-    [[eosio::action]] void clear( symbol_code sym_code, uint64_t num );
-    void clear_v1( symbol_code sym_code, uint64_t num );
+    // TODO: remit      审核员给收费员转账 【严格锚定制】
+    [[eosio::action]] void remit( name from, asset quantity );
+
+    // TODO: pay        普通用户给收费员转账【严格锚定制】
+    [[eosio::action]] void pay( asset quantity );
+
+    // TODO: ruin        普通用户毁掉代币【严格锚定制】
+    [[eosio::action]] void ruin( asset quantity );
+
+    // TODO: retreat      出纳 退代币【严格锚定制】
+    [[eosio::action]] void retreat(name to, asset quantity );
 
     [[eosio::action]] void feedback( symbol_code sym_code, transaction_id_type trx_id, string remote_trx_id, string memo );
     void feedback_v1( symbol_code sym_code, transaction_id_type trx_id, string remote_trx_id, string memo );
@@ -179,29 +200,67 @@ public:
     [[eosio::action]] void rollback( symbol_code sym_code, transaction_id_type trx_id, string memo );
     void rollback_v1( symbol_code sym_code, transaction_id_type trx_id, string memo );
 
-    [[eosio::action]] void setacceptor( symbol_code sym_code, name acceptor );
-    void setacceptor_v1( symbol_code sym_code, name acceptor );
+    // TODO: confirmback      notify_plugin
+    [[eosio::action]] void confirmback( symbol_code sym_code, transaction_id_type trx_id, string remote_trx_id, uint64_t index, uint64_t remote_index, string memo );
 
+    // TODO: denyback      出纳员想承兑商反馈信息 从BOS链想其他链环比
+    [[eosio::action]] void denyback( symbol_code sym_code, transaction_id_type trx_id, uint64_t index,  string memo );
+
+    // TODO: sendback       提币失败后承兑商退币给普通用户
+    [[eosio::action]] void sendback(transaction_id_type trx_id, name to, asset quantity, string memo);
+    void sendback_v1(/* name auditor,*/ transaction_id_type trx_id, name to, asset quantity, string memo );
+
+//    [[eosio::action]] void setacceptor( symbol_code sym_code, name acceptor );
+   void setacceptor_v1( symbol_code sym_code, name acceptor );
+
+    // TODO: auditor->brakeman
     [[eosio::action]] void lockall( symbol_code sym_code, name auditor );
     void lockall_v1( symbol_code sym_code, name auditor );
 
+    // TODO: auditor->brakeman
     [[eosio::action]] void unlockall( symbol_code sym_code, name auditor );
     void unlockall_v1( symbol_code sym_code, name auditor );
 
-    [[eosio::action]] void approve( symbol_code sym_code, name auditor, transaction_id_type trx_id, string memo );
-    void approve_v1( symbol_code sym_code, name auditor, transaction_id_type trx_id, string memo );
+    [[eosio::action]] void clear( symbol_code sym_code, uint64_t num );
+    void clear_v1( symbol_code sym_code, uint64_t num );
 
-    [[eosio::action]] void unapprove( symbol_code sym_code, name auditor, transaction_id_type trx_id, string memo );
-    void unapprove_v1( symbol_code sym_code, name auditor, transaction_id_type trx_id, string memo );
 
-    [[eosio::action]] void sendback( /*name auditor,*/ transaction_id_type trx_id, name to, asset quantity, string memo );
-    void sendback_v1(/* name auditor,*/ transaction_id_type trx_id, name to, asset quantity, string memo );
+    
+    [[eosio::action]] void rm( symbol_code sym_code, uint64_t id, uint64_t type);
 
-    [[eosio::action]] void rmwithdraw( uint64_t id, symbol_code sym_code );
-    void rmwithdraw_v1( uint64_t id, symbol_code sym_code );
+    
+    [[eosio::action]] void setauditor( symbol_code sym_code, string action, name auditor);
+
+    [[eosio::action]] void setgatherer( symbol_code sym_code,  name gatherer);
+
+    [[eosio::action]] void setteller( symbol_code sym_code,  name teller);
+
+    [[eosio::action]] void setmanager( symbol_code sym_code,  name manager);
+
+    [[eosio::action]] void setbrakeman( symbol_code sym_code,  name brakeman);
+
+    // TODO: 管理员为某个相应的币种的某个用户设置为VIP, action有add或remove
+    [[eosio::action]] void setvip( symbol_code sym_code,  string action, name vip);
+
+    [[eosio::action]] void publishminerfee( asset miner_fee );
+
+    // TODO: 公布官方总账，对于每一个种链的地址总额
+    [[eosio::action]] void publishsum( string address, asset sum );
+
+    //    [[eosio::action]] void approve( symbol_code sym_code, name auditor, transaction_id_type trx_id, string memo );
+//    void approve_v1( symbol_code sym_code, name auditor, transaction_id_type trx_id, string memo );
+//
+//    [[eosio::action]] void unapprove( symbol_code sym_code, name auditor, transaction_id_type trx_id, string memo );
+//    void unapprove_v1( symbol_code sym_code, name auditor, transaction_id_type trx_id, string memo );
+    // TODO: publishminerfee A
+
+//    [[eosio::action]] void rmwithdraw( uint64_t id, symbol_code sym_code );
+//    void rmwithdraw_v1( uint64_t id, symbol_code sym_code );
 
 private:
     void verify_address( name style, string address );
+    void verify_txid( name style, string txid ); //TODO: 地址类型+其他链的交易号
+    void isactive( symbol_code sym_code);
     void add_balance( name owner, asset value, name ram_payer );
     void sub_balance( name owner, asset value );
     asset calculate_service_fee( asset sum, double service_fee_rate, asset min_service_fee );
@@ -214,6 +273,16 @@ private:
 
         uint64_t primary_key() const { return sym.code().raw(); }
     };
+
+    // TODO： 币种审核表
+    struct [[eosio::table]] check_ts {
+        symbol sym;
+        bool in_check;  // 相对于BOS链的资金流入是否需要审核
+        bool out_check; // 资金流出是否需要审核
+
+        uint64_t primary_key() const { return sym.code().raw(); }
+    };
+
 
     struct [[eosio::table]] addr_ts {
         name owner;
@@ -230,11 +299,23 @@ private:
         uint64_t by_state() const { return state; }
     };
 
+    struct [[eosio::table]] record_ts{
+        name owner;
+        string address;
+        time_point_sec reset_time;
+
+        uint64_t primary_key() const { return owner.value; }
+        uint64_t by_addr() const { return hash64(address); }
+    };
+    using records = eosio::multi_index< "records"_n, record_ts,
+            indexed_by< "addr"_n, const_mem_fun< record_ts, uint64_t, &record_ts::by_addr > > >;
+
+    // TODO: 发行或销毁币的记录
     struct [[eosio::table]] operate_ts {
         uint64_t id;
         name to;
         asset quantity;
-        uint64_t type;
+        uint64_t type; // 0销毁，1 发行
         string memo;
         time_point_sec operate_time;
 
@@ -282,6 +363,30 @@ private:
         static fixed_bytes< 32 > trxid( transaction_id_type trx_id ) { return fixed_bytes< 32 >( trx_id.hash ); }
     };
 
+    struct [[eosio::table]] newwithdraw_ts{
+        uint64_t id;
+        transaction_id_type trx_id;
+        name from;
+        string to;
+        // total=amount+fee
+        asset total;
+        asset amount;
+        asset fee;
+
+        uint64_t state;
+        bool enable;
+
+        name auditor;
+        string remote_trx_id;
+
+        string msg;
+        time_point_sec create_time;
+        time_point_sec update_time;
+
+        uint64_t primary_key() const { return id; }
+    };
+    using newwithdraws = eosio::multi_index< "newwithdraws"_n, newwithdraw_ts >;
+       
     struct [[eosio::table]] deposit_ts {
         uint64_t id;
         transaction_id_type trx_id;
@@ -291,6 +396,28 @@ private:
         uint64_t state;
         string remote_trx_id;
         string msg;
+
+        time_point_sec create_time;
+        time_point_sec update_time;
+
+        uint64_t primary_key() const { return id; }
+
+        uint64_t by_delindex() const { return create_time.utc_seconds; }
+    };
+
+    struct [[eosio::table]] newdeposit_ts {
+        uint64_t id;
+        transaction_id_type trx_id;
+        name from;
+        string to;
+        asset quantity;
+        uint64_t state;
+        bool need_check; 
+        bool enable; //是否放行
+        name auditor; //审核员账号
+        string remote_trx_id;
+        string msg;
+        uint64_t index;
 
         time_point_sec create_time;
         time_point_sec update_time;
@@ -316,38 +443,6 @@ private:
         uint64_t primary_key() const { return balance.symbol.code().raw(); }
     };
 
-    // FIXME: no reset_limit
-    struct [[eosio::table]] stat_ts {
-        asset supply;
-        asset max_limit;
-        asset min_limit;
-        asset total_limit;
-        uint64_t frequency_limit;
-        uint64_t interval_limit;
-        uint64_t delayday;
-        name issuer;
-        name acceptor;
-        name address_style;
-        string organization;
-        string website;
-        double service_fee_rate;
-        asset min_service_fee;
-        asset miner_fee;
-        bool active;
-
-        uint64_t primary_key() const { return supply.symbol.code().raw(); }
-
-        uint64_t by_issuer() const { return issuer.value; }
-
-        uint64_t by_acceptor() const { return acceptor.value; }
-    };
-
-    struct [[eosio::table]] auditor_ts {
-        name auditor;
-
-        uint64_t primary_key() const { return auditor.value; }
-    };
-
     using symbols = eosio::multi_index< "symbols"_n, symbol_ts >;
 
     using addrs = eosio::multi_index< "addrs"_n, addr_ts,
@@ -368,11 +463,7 @@ private:
 
     using accounts = eosio::multi_index< "accounts"_n, account_ts >;
 
-    using stats = eosio::multi_index< "stats"_n, stat_ts,
-        indexed_by< "issuer"_n, const_mem_fun< stat_ts, uint64_t, &stat_ts::by_issuer > >,
-        indexed_by< "acceptor"_n, const_mem_fun< stat_ts, uint64_t, &stat_ts::by_acceptor > > >;
 
-    using auditors = eosio::multi_index< "auditors"_n, auditor_ts >;
 
 
     /////////////////////////////////
@@ -394,16 +485,6 @@ private:
     };
     using pegs = eosio::multi_index< "pegs"_n, peg_ts >;
 
-    struct [[eosio::table]] record_ts{
-        name owner;
-        string address;
-        time_point_sec reset_time;
-
-        uint64_t primary_key() const { return owner.value; }
-        uint64_t by_addr() const { return hash64(address); }
-    };
-    using records = eosio::multi_index< "records"_n, record_ts, 
-        indexed_by< "addr"_n, const_mem_fun< record_ts, uint64_t, &record_ts::by_addr > > >;    
 
     struct [[eosio::table]] melt_ts{
         uint64_t id;
@@ -448,29 +529,6 @@ private:
     };
     using casts = eosio::multi_index< "casts"_n, cast_ts >;
 
-    struct [[eosio::table]] newwithdraw_ts{
-        uint64_t id;
-        transaction_id_type trx_id;
-        name from;
-        string to;
-        
-        asset total;
-        asset amount;
-        asset fee;
-
-        uint64_t state;
-        bool enable;
-
-        name auditor;
-        string remote_trx_id;
-
-        string msg;
-        time_point_sec create_time;
-        time_point_sec update_time;
-
-        uint64_t primary_key() const { return id; }
-    };
-    using newwithdraws = eosio::multi_index< "newwithdraws"_n, newwithdraw_ts >;
 
     struct [[eosio::table]] vip_ts{
         name vip;
@@ -482,12 +540,12 @@ private:
 
     struct [[eosio::table]] viplimit_ts {
         name owner;
-        asset maximum_limit;
-        asset minimum_limit;
+        asset max_limit;
+        asset min_limit;
         asset total_limit;
         uint64_t frequency_limit;
-        uint64_t interval_limit;
-        uint64_t reset_limit;
+        uint64_t interval_limit; //两次换币间隔
+        uint64_t reset_limit;   //两次重置绑定地址
     
         uint64_t primary_key() const { return owner.value; }
     };
@@ -502,6 +560,38 @@ private:
         uint64_t primary_key() const { return owner.value; }
     };
     using vipfees = eosio::multi_index< "vipfees"_n, vipfee_ts >;
+
+    // FIXME: no reset_limit
+    struct [[eosio::table]] stat_ts {
+        asset supply;
+        asset max_limit;
+        asset min_limit;
+        asset total_limit;
+        uint64_t frequency_limit;
+        uint64_t interval_limit;
+        uint64_t delayday;
+        name issuer;
+        name acceptor; //TODO: acceptor rm from stat_ts
+        name address_style;
+        string organization;
+        string website;
+        double service_fee_rate;
+        asset min_service_fee;
+        asset miner_fee;
+        bool active;
+
+        uint64_t primary_key() const { return supply.symbol.code().raw(); }
+
+        uint64_t by_issuer() const { return issuer.value; }
+
+        uint64_t by_acceptor() const { return acceptor.value; }
+    };
+
+
+    //TODO: handle acceptor
+    using stats = eosio::multi_index< "stats"_n, stat_ts,
+        indexed_by< "issuer"_n, const_mem_fun< stat_ts, uint64_t, &stat_ts::by_issuer > >,
+        indexed_by< "acceptor"_n, const_mem_fun< stat_ts, uint64_t, &stat_ts::by_acceptor > > >;
 
     struct [[eosio::table]] info_ts {
         asset supply;
@@ -521,14 +611,14 @@ private:
     using delays = eosio::multi_index< "delays"_n, delay_ts >;
 
     struct [[eosio::table]] limit_ts {
-        asset maximum_limit;
-        asset minimum_limit;
+        asset max_limit;
+        asset min_limit;
         asset total_limit;
         uint64_t frequency_limit;
         uint64_t interval_limit;
         uint64_t reset_limit;
 
-        uint64_t primary_key() const { return maximum_limit.symbol.code().raw(); }
+        uint64_t primary_key() const { return max_limit.symbol.code().raw(); }
     };
     using limits = eosio::multi_index< "limits"_n, limit_ts >;
 
@@ -541,6 +631,7 @@ private:
     };
     using fees = eosio::multi_index< "fees"_n, fee_ts >;
 
+    // 承兑商简介
     struct [[eosio::table]] summary_ts {
         string organization;
         string website;
@@ -563,13 +654,41 @@ private:
     };
     using bills = eosio::multi_index< "bills"_n, bill_ts >;
 
-    struct [[eosio::table]] acceptor_ts {
+    // TODO: managers
+    struct [[eosio::table]] manager_ts {
+        name manager;
+
+        uint64_t primary_key() const { return manager.value;}
+    };
+    using managers = eosio::multi_index<"managers"_n, manager_ts>;
+
+    // TODO: tellers
+    struct [[eosio::table]] teller_ts {
+        name teller;
+
+        uint64_t primary_key() const { return teller.value;}
+    };
+    using tellers = eosio::multi_index<"tellers"_n, teller_ts>;
+
+    //TODO: delete acceptor
+     struct [[eosio::table]] acceptor_ts {
         name acceptor;
 
         uint64_t primary_key() const { return acceptor.value; }
     };
     using acceptors = eosio::multi_index< "acceptors"_n, acceptor_ts >;
 
+    // TODO: auditors
+    struct [[eosio::table]] auditor_ts {
+        name auditor;
+
+        uint64_t primary_key() const { return auditor.value;}
+    };
+    using auditors = eosio::multi_index<"auditors"_n, auditor_ts>;
+
+    
+   
+    // TODO: 收费员 gatherers
     struct [[eosio::table]] toller_ts {
         name toller;
 
@@ -577,16 +696,27 @@ private:
     };
     using tollers = eosio::multi_index< "tollers"_n, toller_ts >;
 
-    struct [[eosio::table]] usertoken_ts {
-       uint64_t symbol_code;
-       name issuer; 
-       name acceptor;
-       string address; 
 
-       uint64_t primary_key() const { return symbol_code; }
-       uint64_t by_issuer() const { return issuer.value; }
+   
+    // TODO: 制动员 gatherers
+    struct [[eosio::table]] brakeman_ts {
+        name brakeman;
+
+        uint64_t primary_key() const { return brakeman.value; }
     };
-    using usertokens = eosio::multi_index< "usertokens"_n, usertoken_ts >;
+    using brakemans = eosio::multi_index< "brakemans"_n, brakeman_ts >;
+
+
+    // struct [[eosio::table]] usertoken_ts {
+    //    uint64_t symbol_code;
+    //    name issuer; 
+    //    name acceptor;
+    //    string address; 
+
+    //    uint64_t primary_key() const { return symbol_code; }
+    //    uint64_t by_issuer() const { return issuer.value; }
+    // };
+    // using usertokens = eosio::multi_index< "usertokens"_n, usertoken_ts >;
 };
 
 
