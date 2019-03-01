@@ -1,5 +1,4 @@
 #include <bos.pegtoken/bos.pegtoken.hpp>
-// #include "../include/bos.pegtoken/bos.pegtoken.hpp"
 #include <eosiolib/transaction.hpp>
 #include <eosiolib/action.hpp>
 #include "def.cpp"
@@ -109,26 +108,26 @@ namespace eosio {
         setlimit_v1( val.max_limit,val.min_limit,total_limit,val.frequency_limit,val.interval_limit );
     }
 
-    void pegtoken::setfrequencylimit_v1( symbol_code sym_code, uint64_t frequency_limit){
-        auto sym_raw = sym_code.raw();
-        auto stats_table = stats(get_self(), sym_raw);
-        auto val = stats_table.get(sym_raw,"token not exist");
+    // void pegtoken::setfrelimit_v1( symbol_code sym_code, uint64_t frequency_limit){
+    //     auto sym_raw = sym_code.raw();
+    //     auto stats_table = stats(get_self(), sym_raw);
+    //     auto val = stats_table.get(sym_raw,"token not exist");
         
-        setlimit_v1( val.max_limit,val.min_limit,val.total_limit,frequency_limit,val.interval_limit );
-    }
+    //     setlimit_v1( val.max_limit,val.min_limit,val.total_limit,frequency_limit,val.interval_limit );
+    // }
 
-    void pegtoken::setintervallimit_v1( symbol_code sym_code, uint64_t interval_limit){
-        auto sym_raw = sym_code.raw();
-        auto stats_table = stats(get_self(), sym_raw);
-        auto val = stats_table.get(sym_raw,"token not exist");
+    // void pegtoken::setintlimit_v1( symbol_code sym_code, uint64_t interval_limit){
+    //     auto sym_raw = sym_code.raw();
+    //     auto stats_table = stats(get_self(), sym_raw);
+    //     auto val = stats_table.get(sym_raw,"token not exist");
         
-        setlimit_v1( val.max_limit,val.min_limit,val.total_limit,val.frequency_limit,interval_limit );
-    }
+    //     setlimit_v1( val.max_limit,val.min_limit,val.total_limit,val.frequency_limit,interval_limit );
+    // }
 
-//    // FIXME: no reset_limit in stats table
-//    void pegtoken::setreslimit_v1( symbol_code sym_code, uint64_t reset_limit){
-//        eosio_assert( false, "no reset_limit in stats table" );
-//    }
+    // // FIXME: no reset_limit in stats table
+    // void pegtoken::setreslimit_v1( symbol_code sym_code, uint64_t reset_limit){
+    //     eosio_assert( false, "no reset_limit in stats table" );
+    // }
 
     void pegtoken::setviplimit_v1(name vip, asset max_limit, asset min_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit,uint64_t reset_limit){
         eosio_assert( max_limit >= min_limit && total_limit >= max_limit && min_limit.amount >=0, "mismatch: total >= max >= min >= 0");
@@ -246,14 +245,14 @@ namespace eosio {
         setfee_v1(service_fee_rate, val.min_service_fee,val.miner_fee);
     }
 
-    void pegtoken::setminservicefee_v1(asset min_service_fee){
+    void pegtoken::setminerfee_v1(asset min_service_fee){
         auto sym_raw = min_service_fee.symbol.code().raw();
         auto stats_table = stats(get_self(), sym_raw);
         auto val = stats_table.get(sym_raw,"token not exist");
         setfee_v1(val.service_fee_rate, min_service_fee,val.miner_fee);
     }
     
-    void pegtoken::setminerfee_v1(asset miner_fee){
+    void pegtoken::setminservicefee_v1(asset miner_fee){
         auto sym_raw = miner_fee.symbol.code().raw();
         auto stats_table = stats(get_self(), sym_raw);
         auto val = stats_table.get(sym_raw,"token not exist");
@@ -389,7 +388,7 @@ namespace eosio {
         });
     }
 
-    void pegtoken::retire_v1(asset quantity, string memo) {
+        void pegtoken::retire_v1(asset quantity, string memo) {
         STRING_LEN_CHECK(memo, 256)
 
         eosio_assert(quantity.is_valid() && quantity.amount > 0, "invalid quantity");
@@ -870,62 +869,6 @@ namespace eosio {
         stats_table.modify(iter, same_payer, [&](auto &p) { p.active = true; });
     }
 
-
-    void pegtoken::sendback_v1(/*name auditor,*/ transaction_id_type trx_id, name to, asset quantity, string memo) {
-        {
-            STRING_LEN_CHECK(memo, 256);
-            ACCOUNT_CHECK(to);
-            auto sym_raw = quantity.symbol.code().raw();
-            // require_auth(auditor);
-            auto stats_table = stats(get_self(), sym_raw);
-            auto iter = stats_table.find(sym_raw);
-            eosio_assert(iter != stats_table.end(), "token not exist");
-            require_auth(iter->acceptor);
-            // {
-            //     auto auds = auditors(get_self(), sym_raw);
-            //     eosio_assert(auds.find(auditor.value) != auds.end(), "auditor not exist");
-            // }
-        }
-
-        auto account = to;
-        auto sym_raw = quantity.symbol.code().raw();
-        eosio_assert(account != get_self(), "to can't be contract");
-        auto stats_table = stats(get_self(), sym_raw);
-        auto iter = stats_table.find(sym_raw);
-        eosio_assert(iter != stats_table.end(), "token not exist");
-        {
-            eosio_assert(account != iter->issuer, "to can't be issuer");
-            eosio_assert(account != iter->acceptor, "to can't be acceptor");
-        }
-
-        eosio_assert(iter->active, "underwriter is not active");
-
-        eosio_assert(quantity.amount > 0, "invalid quantity amount");
-
-        auto withd = withdraws(get_self(), quantity.symbol.code().raw());
-        auto trxids = withd.template get_index<"trxid"_n>();
-        auto iter2 = trxids.find(withdraw_ts::trxid(trx_id));
-        eosio_assert(iter2 != trxids.end(), "invalid trx_id");
-        eosio_assert(iter2->state == withdraw_state::ROLL_BACK, "invalid state");
-        eosio_assert(iter2->enable == true, "cannot be processed");
-
-        // defer delete
-        uint128_t sender_id = iter2->id;
-        cancel_deferred(sender_id);
-        transaction tsn;
-        tsn.actions.push_back({{get_self(), "active"_n}, get_self(), "rmwithdraw"_n,
-                               std::make_tuple(iter2->id, iter2->quantity.symbol.code())});
-        tsn.delay_sec = iter->delayday * ONE_DAY;
-        tsn.send(sender_id, get_self(), true);
-
-        trxids.modify(iter2, same_payer, [&](auto &p) {
-            p.state = withdraw_state::SEND_BACK;
-            p.msg = (memo == "" ? p.msg : memo);
-            p.update_time = time_point_sec(now());
-        });
-    }
-
-    /**** V1 Only ****/
     // void pegtoken::approve_v1(symbol_code sym_code, name auditor, transaction_id_type trx_id, string memo) {
     //     STRING_LEN_CHECK(memo, 256)
 
@@ -982,6 +925,60 @@ namespace eosio {
     //         p.msg = (memo == "" ? p.msg : memo);
     //     });
     // }
+
+    void pegtoken::sendback_v1(/*name auditor,*/ transaction_id_type trx_id, name to, asset quantity, string memo) {
+        {
+            STRING_LEN_CHECK(memo, 256);
+            ACCOUNT_CHECK(to);
+            auto sym_raw = quantity.symbol.code().raw();
+            // require_auth(auditor);
+            auto stats_table = stats(get_self(), sym_raw);
+            auto iter = stats_table.find(sym_raw);
+            eosio_assert(iter != stats_table.end(), "token not exist");
+            require_auth(iter->acceptor);
+            // {
+            //     auto auds = auditors(get_self(), sym_raw);
+            //     eosio_assert(auds.find(auditor.value) != auds.end(), "auditor not exist");
+            // }
+        }
+
+        auto account = to;
+        auto sym_raw = quantity.symbol.code().raw();
+        eosio_assert(account != get_self(), "to can't be contract");
+        auto stats_table = stats(get_self(), sym_raw);
+        auto iter = stats_table.find(sym_raw);
+        eosio_assert(iter != stats_table.end(), "token not exist");
+        {
+            eosio_assert(account != iter->issuer, "to can't be issuer");
+            eosio_assert(account != iter->acceptor, "to can't be acceptor");
+        }
+
+        eosio_assert(iter->active, "underwriter is not active");
+
+        eosio_assert(quantity.amount > 0, "invalid quantity amount");
+
+        auto withd = withdraws(get_self(), quantity.symbol.code().raw());
+        auto trxids = withd.template get_index<"trxid"_n>();
+        auto iter2 = trxids.find(withdraw_ts::trxid(trx_id));
+        eosio_assert(iter2 != trxids.end(), "invalid trx_id");
+        eosio_assert(iter2->state == withdraw_state::ROLL_BACK, "invalid state");
+        eosio_assert(iter2->enable == true, "cannot be processed");
+
+        // defer delete
+        uint128_t sender_id = iter2->id;
+        cancel_deferred(sender_id);
+        transaction tsn;
+        tsn.actions.push_back({{get_self(), "active"_n}, get_self(), "rmwithdraw"_n,
+                               std::make_tuple(iter2->id, iter2->quantity.symbol.code())});
+        tsn.delay_sec = iter->delayday * ONE_DAY;
+        tsn.send(sender_id, get_self(), true);
+
+        trxids.modify(iter2, same_payer, [&](auto &p) {
+            p.state = withdraw_state::SEND_BACK;
+            p.msg = (memo == "" ? p.msg : memo);
+            p.update_time = time_point_sec(now());
+        });
+    }
 
     // void pegtoken::rmwithdraw_v1(uint64_t id, symbol_code sym_code) {
     //     require_auth2(get_self().value, ("active"_n).value);

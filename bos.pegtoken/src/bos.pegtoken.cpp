@@ -171,42 +171,56 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setfrequencylimit( symbol_code sym_code, uint64_t frequency_limit) {
-        auto peg_table = pegs(get_self(),sym_code.raw());
-        auto pegval = peg_table.get(sym_code.raw(),"no such peg");
-        switch (pegval.peg)
-        {
-        case 1:
-            setfrequencylimit_v1(sym_code, frequency_limit);
-            break;
-        case 2:
-            setfrequencylimit_v2(sym_code, frequency_limit);
-            break;
-        default:
-            eosio_assert(false, "peg should be 1 or 2");
-            break;
-        }
-    }
+    // void pegtoken::setfrelimit( symbol_code sym_code, uint64_t frequency_limit) {
+    //     auto peg_table = pegs(get_self(),sym_code.raw());
+    //     auto pegval = peg_table.get(sym_code.raw(),"no such peg");
+    //     switch (pegval.peg)
+    //     {
+    //     case 1:
+    //         setfrelimit_v1(sym_code, frequency_limit);
+    //         break;
+    //     case 2:
+    //         setfrelimit_v2(sym_code, frequency_limit);
+    //         break;
+    //     default:
+    //         eosio_assert(false, "peg should be 1 or 2");
+    //         break;
+    //     }
+    // }
 
     void pegtoken::setintervallimit( symbol_code sym_code, uint64_t interval_limit) {
         auto peg_table = pegs(get_self(),sym_code.raw());
         auto pegval = peg_table.get(sym_code.raw(),"no such peg");
         switch (pegval.peg)
         {
-        case 1:
-            setintervallimit_v1(sym_code, interval_limit);
-            break;
-        case 2:
-            setintervallimit_v2(sym_code, interval_limit);
-            break;
+        // case 1:
+        //     setintervallimit_v1(sym_code, interval_limit);
+        //     break;
+        // case 2:
+        //     setintervallimit_v2(sym_code, interval_limit);
+        //     break;
         default:
             eosio_assert(false, "peg should be 1 or 2");
             break;
         }
     }
 
-
-
+    // void pegtoken::setreslimit( symbol_code sym_code, uint64_t reset_limit) {
+    //     auto peg_table = pegs(get_self(),sym_code.raw());
+    //     auto pegval = peg_table.get(sym_code.raw(),"no such peg");
+    //     switch (pegval.peg)
+    //     {
+    //     case 1:
+    //         setreslimit_v1(sym_code, reset_limit);
+    //         break;
+    //     case 2:
+    //         setreslimit_v2(sym_code, reset_limit);
+    //         break;
+    //     default:
+    //         eosio_assert(false, "peg should be 1 or 2");
+    //         break;
+    //     }
+    // }
 
     void pegtoken::setviplimit(name vip, asset max_limit, asset min_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit,uint64_t reset_limit) {
         auto sym_code = max_limit.symbol.code();
@@ -414,7 +428,7 @@ namespace eosio {
             setvipminerfee_v1(vip,miner_fee);
             break;
         case 2:
-            setvipminfee_v2(vip,miner_fee);
+            setvipminerfee(vip,miner_fee);
             break;
         default:
             eosio_assert(false, "peg should be 1 or 2");
@@ -597,22 +611,6 @@ namespace eosio {
         }
     }
 
-    // TODO: prewithdraw
-    void pegtoken::prewithdraw( name from, string to, asset quantity, uint64_t index, string memo){
-
-    }
-
-    // TODO: agreewithdraw
-    void pegtoken::agreewithdraw( name from, string to, asset quantity, uint64_t index, string memo){
-
-    }
-
-    // TODO: refusewithdraw
-    void pegtoken::refusewithdraw( name from, string to, asset quantity, uint64_t index, string memo){
-
-    }
-
-
     void pegtoken::deposit(name to, asset quantity, string memo) {
         auto sym_code = quantity.symbol.code();
         auto peg_table = pegs(get_self(),sym_code.raw());
@@ -627,22 +625,6 @@ namespace eosio {
             break;
         }
     }
-
-    // TODO: predeposit
-    void pegtoken::predeposit( string from, name to, asset quantity, string memo ){
-
-    }
-
-    // TODO: agreedeposit
-    void pegtoken::agreedeposit( string from, name to, asset quantity, string remote_trx_id, uint64_t index, string memo ){
-
-    }
-
-    //TODO: refusedeposit
-    void refusedeposit( string from, name to, asset quantity, string remote_trx_id, uint64_t index, string memo ){
-
-    }
-
 
     void pegtoken::transfer(name from, name to, asset quantity, string memo) {
         auto sym_code = quantity.symbol.code();
@@ -659,7 +641,19 @@ namespace eosio {
         }
     }
 
-
+    void pegtoken::clear(symbol_code sym_code, uint64_t num) {
+        auto peg_table = pegs(get_self(),sym_code.raw());
+        auto pegval = peg_table.get(sym_code.raw(),"no such peg");
+        switch (pegval.peg)
+        {
+        case 1:
+            clear_v1(sym_code,num);
+            break;
+        default:
+            eosio_assert(false, "peg should be 1 or 2");
+            break;
+        }
+    }
 
     void pegtoken::feedback(symbol_code sym_code, transaction_id_type trx_id, string remote_trx_id, string memo) {
         auto peg_table = pegs(get_self(),sym_code.raw());
@@ -673,27 +667,6 @@ namespace eosio {
             eosio_assert(false, "peg should be 1 or 2");
             break;
         }
-    }
-
-
-    // TODO: remit      审核员给收费员转账 【严格锚定制】
-    void pegtoken::remit( name from, asset quantity ){
-
-    }
-
-    // TODO: pay        普通用户给收费员转账【严格锚定制】
-    void pegtoken::pay( asset quantity ){
-
-    }
-
-    // TODO: ruin        普通用户毁掉代币【严格锚定制】
-    void pegtoken::ruin( asset quantity ){
-
-    }
-
-    // TODO: retreat      出纳 退代币【严格锚定制】
-    void pegtoken::retreat(name to, asset quantity ){
-
     }
 
     void pegtoken::rollback(symbol_code sym_code, transaction_id_type trx_id, string memo) {
@@ -753,47 +726,7 @@ namespace eosio {
         }
     }
 
-    void pegtoken::clear(symbol_code sym_code, uint64_t num) {
-        auto peg_table = pegs(get_self(),sym_code.raw());
-        auto pegval = peg_table.get(sym_code.raw(),"no such peg");
-        switch (pegval.peg)
-        {
-        case 1:
-            clear_v1(sym_code,num);
-            break;
-        default:
-            eosio_assert(false, "peg should be 1 or 2");
-            break;
-        }
-    }
 
-    // TODO: 出纳员，清理充币和提币 [2]
-    void pegtoken::rm( symbol_code sym_code, uint64_t id, uint64_t type){
-
-    }
-    // TODO: 承兑商设置审核员 A+B
-    void pegtoken::setauditor(symbol_code sym_code, string action, name auditor){
-
-    }
-     // TODO: 承兑商设置收费员 [2] B
-    void pegtoken::setgatherer(symbol_code sym_code, name gatherer){
-
-    }
-
-    // TODO: 承兑商设置出纳 AB
-    void pegtoken::setteller(symbol_code sym_code, name teller){
-
-    }
-
-    // TODO: 承兑商设置管理员 AB
-    void pegtoken::setmanager(symbol_code sym_code, name teller){
-
-    }
-
-   // TODO: 承兑商设置制动员 AB
-    void pegtoken::setbrakeman(symbol_code sym_code, name brakeman){
-
-    }
 
     void pegtoken::sendback(/*name auditor,*/ transaction_id_type trx_id, name to, asset quantity, string memo) {
         auto sym_code = quantity.symbol.code();
@@ -810,24 +743,6 @@ namespace eosio {
         }
     }
 
-    // void pegtoken::rmwithdraw(uint64_t id, symbol_code sym_code) {
-    //     auto peg_table = pegs(get_self(),sym_code.raw());
-    //     auto pegval = peg_table.get(sym_code.raw(),"no such peg");
-    //     switch (pegval.peg)
-    //     {
-    //     case 1:
-    //         rmwithdraw_v1(id,sym_code);
-    //         break;
-    //     default:
-    //         eosio_assert(false, "peg should be 1 or 2");
-    //         break;
-    //     }
-    // }
-
-  /*****
-  1st version
-****/
-      // TODO: 承兑商设置管理员
     // void pegtoken::approve(symbol_code sym_code, name auditor, transaction_id_type trx_id, string memo) {
     //     auto peg_table = pegs(get_self(),sym_code.raw());
     //     auto pegval = peg_table.get(sym_code.raw(),"no such peg");
@@ -856,34 +771,22 @@ namespace eosio {
     //     }
     // }
 
-    /**** deleted functions ****/
-//     void pegtoken::setreslimit( symbol_code sym_code, uint64_t reset_limit) {
-//        auto peg_table = pegs(get_self(),sym_code.raw());
-//        auto pegval = peg_table.get(sym_code.raw(),"no such peg");
-//        switch (pegval.peg)
-//        {
-//        case 1:
-//            setreslimit_v1(sym_code, reset_limit);
-//            break;
-//        case 2:
-//            setreslimit_v2(sym_code, reset_limit);
-//            break;
-//        default:
-//            eosio_assert(false, "peg should be 1 or 2");
-//            break;
-//        }
-//    }
+    // void pegtoken::rmwithdraw(uint64_t id, symbol_code sym_code) {
+    //     auto peg_table = pegs(get_self(),sym_code.raw());
+    //     auto pegval = peg_table.get(sym_code.raw(),"no such peg");
+    //     switch (pegval.peg)
+    //     {
+    //     case 1:
+    //         rmwithdraw_v1(id,sym_code);
+    //         break;
+    //     default:
+    //         eosio_assert(false, "peg should be 1 or 2");
+    //         break;
+    //     }
+    // }
 
 } // namespace eosio
 
 // FIXME: setauditor is removed
 EOSIO_DISPATCH( eosio::pegtoken, (create)(setissuer)(setedition)(setpeg)(update)
-        (setlimit)(setmaxlimit)(setminlimit)(setotalimit)(setfrequencylimit)(setintervallimit)
-        (setviplimit)(setvipmaxlimit)(setvipminlimit)(setviptotallimit)(setfee)(setservicefeerate)(setminservicefee)(setminerfee)
-        (setvipfee)(setvipservicefeerate)(setvipminfee)(setvipminerfee)
-        (setdelay)
-        (issue)(retire)
-        (precast)(agreecast)(refusecast)(docast)
-        /*///////*//*(setauditor)*/(applyaddr)(assignaddr)(
-        withdraw)(deposit)(transfer)(clear)(feedback)(rollback)(lockall)(unlockall)(sendback)(rmwithdraw));
-// 删掉approve, unapprove, setacceptor
+        (setlimit)(setmaxlimit));

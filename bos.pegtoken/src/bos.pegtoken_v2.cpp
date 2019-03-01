@@ -120,32 +120,32 @@ namespace eosio {
         setlimit_v2( val.max_limit,val.min_limit,total_limit,val.frequency_limit,val.interval_limit );
     }
 
-    void pegtoken::setfrequencylimit_v2( symbol_code sym_code, uint64_t frequency_limit) {
-        auto limit_table = limits(get_self(),sym_code.raw());
-        auto val = limit_table.get(sym_code.raw(),"token with symbol not exists");
+    // void pegtoken::setfrelimit_v2( symbol_code sym_code, uint64_t frequency_limit) {
+    //     auto limit_table = limits(get_self(),sym_code.raw());
+    //     auto val = limit_table.get(sym_code.raw(),"token with symbol not exists");
         
-        setlimit_v2( val.max_limit,val.min_limit,val.total_limit,frequency_limit,val.interval_limit );
-    }
+    //     setlimit_v2( val.max_limit,val.min_limit,val.total_limit,frequency_limit,val.interval_limit );
+    // }
 
-    void pegtoken::setintervallimit_v2( symbol_code sym_code, uint64_t interval_limit) {
-        auto limit_table = limits(get_self(),sym_code.raw());
-        auto val = limit_table.get(sym_code.raw(),"token with symbol not exists");
+    // void pegtoken::setintlimit_v2( symbol_code sym_code, uint64_t interval_limit) {
+    //     auto limit_table = limits(get_self(),sym_code.raw());
+    //     auto val = limit_table.get(sym_code.raw(),"token with symbol not exists");
         
-        setlimit_v2( val.max_limit,val.min_limit,val.total_limit,val.frequency_limit, interval_limit );
-    }
+    //     setlimit_v2( val.max_limit,val.min_limit,val.total_limit,val.frequency_limit, interval_limit );
+    // }
 
-//    void pegtoken::setreslimit_v2( symbol_code sym_code, uint64_t reset_limit) {
-//        auto info_table = infos(get_self(),sym_code.raw());
-//        auto val = info_table.get(sym_code.raw(), "token with symbol not exists(info)");
-//        require_auth(val.issuer);
-//
-//        auto limit_table = limits(get_self(),sym_code.raw());
-//        auto iter = limit_table.find(sym_code.raw());
-//        eosio_assert( iter != limit_table.end(), "token with symbol not exists(limit)");
-//        limit_table.modify(iter,same_payer,[&](auto &p){
-//            p.reset_limit = reset_limit;
-//        });
-//    }
+    // void pegtoken::setreslimit_v2( symbol_code sym_code, uint64_t reset_limit) {
+    //     auto info_table = infos(get_self(),sym_code.raw());
+    //     auto val = info_table.get(sym_code.raw(), "token with symbol not exists(info)");
+    //     require_auth(val.issuer);
+
+    //     auto limit_table = limits(get_self(),sym_code.raw());
+    //     auto iter = limit_table.find(sym_code.raw());
+    //     eosio_assert( iter != limit_table.end(), "token with symbol not exists(limit)");
+    //     limit_table.modify(iter,same_payer,[&](auto &p){
+    //         p.reset_limit = reset_limit;
+    //     });
+    // }
 
     void pegtoken::setviplimit_v2(name vip, asset max_limit, asset min_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit,uint64_t reset_limit){
         eosio_assert( max_limit >= min_limit && total_limit >= max_limit && min_limit.amount >=0, "mismatch: total >= max >= min >= 0");
@@ -395,7 +395,7 @@ namespace eosio {
             });
         }
     }
-    // TODO: issue 去掉acceptors
+
     void pegtoken::issue_v2(asset quantity, string memo) {
         STRING_LEN_CHECK(memo, 256)
 
@@ -443,7 +443,7 @@ namespace eosio {
 
         eosio_assert(iter->active, "token is not active");
         eosio_assert(iter->supply >= quantity, "invalid quantity");
-        //TODO: retire删除acceptors
+
         auto acceptor_table = acceptors(get_self(),sym_raw);
         eosio_assert(acceptor_table.begin() != acceptor_table.end(), "no acceptor set");
         auto acceptor = acceptor_table.begin()->acceptor;
