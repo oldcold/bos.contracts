@@ -193,12 +193,12 @@ namespace eosio {
         auto pegval = peg_table.get(sym_code.raw(),"no such peg");
         switch (pegval.peg)
         {
-        case 1:
-            setintervallimit_v1(sym_code, interval_limit);
-            break;
-        case 2:
-            setintervallimit_v2(sym_code, interval_limit);
-            break;
+        // case 1:
+        //     setintervallimit_v1(sym_code, interval_limit);
+        //     break;
+        // case 2:
+        //     setintervallimit_v2(sym_code, interval_limit);
+        //     break;
         default:
             eosio_assert(false, "peg should be 1 or 2");
             break;

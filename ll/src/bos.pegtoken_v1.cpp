@@ -116,13 +116,13 @@ namespace eosio {
     //     setlimit_v1( val.max_limit,val.min_limit,val.total_limit,frequency_limit,val.interval_limit );
     // }
 
-    void pegtoken::setintervallimit_v1( symbol_code sym_code, uint64_t interval_limit){
-        auto sym_raw = sym_code.raw();
-        auto stats_table = stats(get_self(), sym_raw);
-        auto val = stats_table.get(sym_raw,"token not exist");
+    // void pegtoken::setintlimit_v1( symbol_code sym_code, uint64_t interval_limit){
+    //     auto sym_raw = sym_code.raw();
+    //     auto stats_table = stats(get_self(), sym_raw);
+    //     auto val = stats_table.get(sym_raw,"token not exist");
         
-        setlimit_v1( val.max_limit,val.min_limit,val.total_limit,val.frequency_limit,interval_limit );
-    }
+    //     setlimit_v1( val.max_limit,val.min_limit,val.total_limit,val.frequency_limit,interval_limit );
+    // }
 
     // // FIXME: no reset_limit in stats table
     // void pegtoken::setreslimit_v1( symbol_code sym_code, uint64_t reset_limit){

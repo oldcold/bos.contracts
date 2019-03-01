@@ -127,12 +127,12 @@ namespace eosio {
     //     setlimit_v2( val.max_limit,val.min_limit,val.total_limit,frequency_limit,val.interval_limit );
     // }
 
-    void pegtoken::setintervallimit_v2( symbol_code sym_code, uint64_t interval_limit) {
-        auto limit_table = limits(get_self(),sym_code.raw());
-        auto val = limit_table.get(sym_code.raw(),"token with symbol not exists");
+    // void pegtoken::setintlimit_v2( symbol_code sym_code, uint64_t interval_limit) {
+    //     auto limit_table = limits(get_self(),sym_code.raw());
+    //     auto val = limit_table.get(sym_code.raw(),"token with symbol not exists");
         
-        setlimit_v2( val.max_limit,val.min_limit,val.total_limit,val.frequency_limit, interval_limit );
-    }
+    //     setlimit_v2( val.max_limit,val.min_limit,val.total_limit,val.frequency_limit, interval_limit );
+    // }
 
     // void pegtoken::setreslimit_v2( symbol_code sym_code, uint64_t reset_limit) {
     //     auto info_table = infos(get_self(),sym_code.raw());
