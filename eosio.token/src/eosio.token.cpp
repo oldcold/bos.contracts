@@ -172,10 +172,11 @@ void token::close( name owner, const symbol& symbol )
       require_auth("eosio"_n);
 
       static const std::string msg  = std::string("account does not exist");
-      blacklist blklst( _self, _self );
+      
       for (auto l : list) {
         std::string m =  l.to_string() + msg;
         eosio_assert(is_account(l), m.c_str());
+        blacklist blklst( _self, l.value );
         blklst.emplace(ram_payer, [&](auto &a) {
             a.account = l; 
             });
@@ -185,8 +186,8 @@ void token::close( name owner, const symbol& symbol )
    void rmblacklist(const std::vector<name> &list) {
      require_auth("eosio"_n);
 
-     blacklist blklst(_self, _self);
      for (auto l : list) {
+        blacklist blklst(_self, l.value);
        auto it = blklst.find(l);
        if (it != acnts.end()) {
          blklst.erase(it);
