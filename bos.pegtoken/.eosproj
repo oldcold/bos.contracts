@@ -1,0 +1,15 @@
+{
+  "main": "./src/bos.pegtoken.cpp",
+  "contract": "bos.pegtoken",
+  "include": "",
+  "output": "",
+  "scripts": {
+    "build": ""
+  },
+  "deploy": {
+    "mainnet": "",
+    "kylin": "",
+    "jungle": "",
+    "local": ""
+  }
+}

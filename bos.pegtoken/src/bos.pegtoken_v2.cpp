@@ -74,23 +74,26 @@ namespace eosio {
         });
     }
 
+    void pegtoken::withdraw_v2( name from, string to, asset quantity, uint64_t index, string memo){
+
+    }
+
     void pegtoken::setlimit_v2( asset max_limit, asset min_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit ) {
         eosio_assert(min_limit.amount >= 0 && max_limit >= min_limit && total_limit >= max_limit,
              "constrict mismatch: total_limit >= max_limit >= min_limit >= 0");
 
-        auto sym_code = max_limit.symbol.code();
-        auto info_table = infos(get_self(),sym_code.raw());
-        auto val = info_table.get(sym_code.raw(), "token with symbol not exists(info)");
-        require_auth(val.issuer);
+        auto sym_raw = max_limit.symbol.code().raw();
+        auto manager_table = managers(get_self(), sym_raw);
+        auto val = manager_table.get(sym_raw, "No managers table based on symbol");
+        require_auth(val.manager);
 
-        auto limit_table = limits(get_self(),sym_code.raw());
-        auto iter = limit_table.find(sym_code.raw());
+        auto limit_table = limits(get_self(),sym_raw);
+        auto iter = limit_table.find(sym_raw);
         eosio_assert( iter != limit_table.end(), "token with symbol not exists(limit)");
         limit_table.modify(iter,same_payer,[&](auto &p){
             p.max_limit = max_limit;
             p.min_limit = min_limit;
             p.total_limit = total_limit;
-
             p.frequency_limit = frequency_limit;
             p.interval_limit = interval_limit;
         });
@@ -116,18 +119,18 @@ namespace eosio {
         auto sym_code = total_limit.symbol.code();
         auto limit_table = limits(get_self(),sym_code.raw());
         auto val = limit_table.get(sym_code.raw(),"token with symbol not exists");
-        
-        setlimit_v2( val.max_limit,val.min_limit,total_limit,val.frequency_limit,val.interval_limit );
+
+        setlimit_v2( val.max_limit,val.min_limit,total_limit,val.frequency_limit,val.interval_limit );    
     }
 
-    // void pegtoken::setfrelimit_v2( symbol_code sym_code, uint64_t frequency_limit) {
-    //     auto limit_table = limits(get_self(),sym_code.raw());
-    //     auto val = limit_table.get(sym_code.raw(),"token with symbol not exists");
+    void pegtoken::setfreqlimit_v2( symbol_code sym_code, uint64_t frequency_limit) {
+        auto limit_table = limits(get_self(),sym_code.raw());
+        auto val = limit_table.get(sym_code.raw(),"token with symbol not exists");
         
-    //     setlimit_v2( val.max_limit,val.min_limit,val.total_limit,frequency_limit,val.interval_limit );
-    // }
+        setlimit_v2( val.max_limit,val.min_limit,val.total_limit,frequency_limit,val.interval_limit );
+    }
 
-    void pegtoken::setintervallimit_v2( symbol_code sym_code, uint64_t interval_limit) {
+    void pegtoken::setintvlimit_v2( symbol_code sym_code, uint64_t interval_limit) {
         auto limit_table = limits(get_self(),sym_code.raw());
         auto val = limit_table.get(sym_code.raw(),"token with symbol not exists");
         
@@ -151,10 +154,9 @@ namespace eosio {
         eosio_assert( max_limit >= min_limit && total_limit >= max_limit && min_limit.amount >=0, "mismatch: total >= max >= min >= 0");
 
         auto sym_raw = max_limit.symbol.code().raw();
-        
-        auto info_table = infos(get_self(),sym_raw);
-        auto val = info_table.get(sym_raw, "token with symbol not exists(info)");
-        require_auth(val.issuer);
+        auto manager_table = managers(get_self(), sym_raw);
+        auto val = manager_table.get(sym_raw, "No managers table based on symbol");
+        require_auth(val.manager);
 
         auto vip_table = vips(get_self(),sym_raw);
         auto viplimit_table = viplimits(get_self(),sym_raw);
@@ -235,13 +237,15 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setfee_v2( double service_fee_rate, asset min_service_fee, asset miner_fee ){
+    void pegtoken::setfee_v2(double service_fee_rate, asset min_service_fee, asset miner_fee ){
         eosio_assert(min_service_fee.symbol == miner_fee.symbol, "different symbol");
+       // auto info_table = infos(get_self(),sym_raw);
+        // auto val = info_table.get(sym_raw, "token with symbol not exists(info)");
+        // 直接从位于sym_code scope中的managers中获取
         auto sym_raw = min_service_fee.symbol.code().raw();
-
-        auto info_table = infos(get_self(),sym_raw);
-        auto val = info_table.get(sym_raw, "token with symbol not exists(info)");
-        require_auth(val.issuer);
+        auto manager_table = managers(get_self(), sym_raw);
+        auto val = manager_table.get(sym_raw, "No managers table based on symbol");
+        require_auth(val.manager);
 
         auto fee_table = fees(get_self(),sym_raw);
         if( fee_table.begin() == fee_table.end()) {
@@ -293,7 +297,7 @@ namespace eosio {
     }
     
     void pegtoken::setvipfee_v2(name vip, double service_fee_rate, asset min_service_fee, asset miner_fee ){
-        eosio_assert(min_service_fee.symbol == miner_fee.symbol, "invlaid symbol");
+        eosio_assert(min_service_fee.symbol == miner_fee.symbol, "invalid symbol");
         
         auto sym_raw = min_service_fee.symbol.code().raw();
         
@@ -398,9 +402,7 @@ namespace eosio {
 
     void pegtoken::issue_v2(asset quantity, string memo) {
         STRING_LEN_CHECK(memo, 256)
-
         eosio_assert(quantity.is_valid() && quantity.amount > 0, "invalid quantity");
-
         auto sym_raw = quantity.symbol.code().raw();
         auto info_table = infos(get_self(),sym_raw);
         auto iter = info_table.find(sym_raw);
@@ -603,5 +605,38 @@ namespace eosio {
             p.supply += quantity;
             eosio_assert(p.supply.amount >0, "supply overflow");
         });
+    }
+
+    void pegtoken::melt_v2(name from_account, string to_address, asset quantity, uint64_t index, string memo){
+        ACCOUNT_CHECK(from_account);
+        // verify_address(to_address);
+        is_vip(quantity.symbol.code(), from_account);
+        // limits.find()
+        // compare the quantity with min_limit and max_limit
+
+        // 当前时间，对比上次提币时间需要大于最小间隔数
+        // 距离上个自然日零点到申请提币时，累计金额和次数分别需要小于相关设定：total_limit和frequency_limit
+
+        // 以内联action的方式调用ruin, 减少from_account里面的余额
+        // 减小infos表中supply的值，数值为总额减去费用。
+
+        // 在melts添加一条记录，need_check置为false，enable字段置为false。
+        auto melt_tb = melts(get_self(), quantity.symbol.code().raw());
+        // melts meltss(_self, _self.value); //到底应当事先哪一种呢
+        melt_tb.emplace(same_payer, [&](auto& mt){
+            mt.id = melt_tb.available_primary_key();
+            // mt.trx_id;
+            mt.from = from_account;
+            mt.to = to_address;
+            mt.amount = quantity;
+            // mt.amount = ;
+            // mt.fee = ;
+            // mt.state = 
+
+        });
+
+
+          
+        // need_check
     }
 }
