@@ -23,7 +23,7 @@ namespace eosio {
                 create_v2(sym,issuer,address_style);
                 break;
             default:
-                eosio_assert(false, "peg should be 1 or 2");
+                eosio_assert(false, "edition should be either 1 or 2");
                 break;
         }
 
@@ -43,7 +43,6 @@ namespace eosio {
 
     void pegtoken::setissuer( symbol_code sym_code, name issuer )
     {
-        eosio_assert(false, "peg should be 1 or 2");
         auto editionval = getedition(sym_code);
         switch (editionval)
         {
@@ -54,7 +53,7 @@ namespace eosio {
             setissuer_v2(sym_code,issuer);
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
@@ -92,7 +91,7 @@ namespace eosio {
             update_v2(sym_code,organization,website);
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
@@ -114,7 +113,7 @@ namespace eosio {
             setlimit_v2(max_limit,min_limit,total_limit,frequency_limit,interval_limit);
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
@@ -132,7 +131,7 @@ namespace eosio {
             setmaxlimit_v2(max_limit);
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
@@ -150,12 +149,12 @@ namespace eosio {
             setminlimit_v2(min_limit);
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
 
-    void pegtoken::setotalimit(symbol_code sym_code, asset total_limit )
+    void pegtoken::settotalimit(symbol_code sym_code, asset total_limit )
     {
         eosio_assert(is_sym_equal_asset(sym_code, total_limit), "sym_code is not same as asset symbol_code.");
         eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2,   "Edition should be either 1 or 2");
@@ -163,33 +162,33 @@ namespace eosio {
         switch (editionval)
         {
         case 1:
-            setotalimit_v1(total_limit);
+            settotalimit_v1(total_limit);
             break;
         case 2:
-            setotalimit_v2(total_limit);
+            settotalimit_v2(total_limit);
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
 
-    // void pegtoken::setfrelimit( symbol_code sym_code, uint64_t frequency_limit) {
-    //     auto peg_table = pegs(get_self(),sym_code.raw());
-    //     auto pegval = peg_table.get(sym_code.raw(),"no such peg");
-    //     switch (pegval.peg)
-    //     {
-    //     case 1:
-    //         setfrelimit_v1(sym_code, frequency_limit);
-    //         break;
-    //     case 2:
-    //         setfrelimit_v2(sym_code, frequency_limit);
-    //         break;
-    //     default:
-    //         eosio_assert(false, "peg should be 1 or 2");
-    //         break;
-    //     }
-    // }
+    void pegtoken::setfreqlimit( symbol_code sym_code, uint64_t frequency_limit) {
+        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2,   "Edition should be either 1 or 2");
+        auto editionval = getedition(sym_code);
+        switch (editionval)
+        {
+        case 1:
+            setfreqlimit_v1(sym_code, frequency_limit);
+            break;
+        case 2:
+            setfreqlimit_v2(sym_code, frequency_limit);
+            break;
+        default:
+            eosio_assert(false, "edition should be either 1 or 2");
+            break;
+        }
+    }
 
     void pegtoken::setintvlimit( symbol_code sym_code, uint64_t interval_limit) {
         eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2,   "Edition should be either 1 or 2");
@@ -203,7 +202,7 @@ namespace eosio {
             setintvlimit_v2(sym_code, interval_limit);
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
@@ -220,7 +219,7 @@ namespace eosio {
     //         setreslimit_v2(sym_code, reset_limit);
     //         break;
     //     default:
-    //         eosio_assert(false, "peg should be 1 or 2");
+    //         eosio_assert(false, "edition should be either 1 or 2");
     //         break;
     //     }
     // }
@@ -240,64 +239,74 @@ namespace eosio {
             setviplimit_v2(vip,max_limit,min_limit,total_limit,frequency_limit,interval_limit,reset_limit );
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
 
-    void pegtoken::setvipmaxlimit(name vip, asset max_limit ) {
+    void pegtoken::setvipmaxlim(name vip, asset max_limit ) {
         auto sym_code = max_limit.symbol.code();
         eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2,   "Edition should be either 1 or 2");
         auto editionval = getedition(sym_code);
         switch (editionval)
         {
         case 1:
-            setvipmaxlimit_v1(vip,max_limit );
+            setvipmaxlim_v1(vip,max_limit );
             break;
         case 2:
-            setvipmaxlimit_v2(vip,max_limit );
+            setvipmaxlim_v2(vip,max_limit );
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
 
-        void pegtoken::setvipminlimit(name vip, asset min_limit ) {
+        void pegtoken::setvipminlim(name vip, asset min_limit ) {
         auto sym_code = min_limit.symbol.code();
         eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2,   "Edition should be either 1 or 2");
         auto editionval = getedition(sym_code);
         switch (editionval)
         {
         case 1:
-            setvipminlimit_v1(vip,min_limit );
+            setvipminlim_v1(vip,min_limit );
             break;
         case 2:
-            setvipminlimit_v2(vip,min_limit );
+            setvipminlim_v2(vip,min_limit );
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
 
-    void pegtoken::setviptotallimit(name vip, asset totimum_limit ) {
+    void pegtoken::setviptotlim(name vip, asset totimum_limit ) {
         auto sym_code = totimum_limit.symbol.code();
         eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2,   "Edition should be either 1 or 2");
         auto editionval = getedition(sym_code);
         switch (editionval)
         {
         case 1:
-            setviptotallimit_v1(vip,totimum_limit );
+            setviptotlim_v1(vip,totimum_limit );
             break;
         case 2:
-            setviptotallimit_v2(vip,totimum_limit );
+            setviptotlim_v2(vip,totimum_limit );
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
+
+    void pegtoken::setvipfreqlm(symbol_code sym_code, name vip, uint64_t frequency_limit ) {
+    
+    }
+
+    void pegtoken::setvipintvlm(symbol_code sym_code, name vip, uint64_t interval_limit ) {
+    
+    }
+
+ 
 
     void pegtoken::setfee(symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee) {
         auto editionval = getedition(sym_code);
@@ -310,41 +319,41 @@ namespace eosio {
             setfee_v2(service_fee_rate,min_service_fee,miner_fee);
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
 
-    void pegtoken::setservicefeerate(symbol_code sym_code, double service_fee_rate) {
+    void pegtoken::setservfeert(symbol_code sym_code, double service_fee_rate) {
         eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2,   "Edition should be either 1 or 2");
         auto editionval = getedition(sym_code);
         switch (editionval)
         {
         case 1:
-            setservicefeerate_v1(sym_code,service_fee_rate);
+            setservfeert_v1(sym_code,service_fee_rate);
             break;
         case 2:
-            setservicefeerate_v2(sym_code,service_fee_rate);
+            setservfeert_v2(sym_code,service_fee_rate);
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
 
-    void pegtoken::setminservicefee(asset min_service_fee) {
+    void pegtoken::setminserfee(asset min_service_fee) {
         auto sym_code = min_service_fee.symbol.code();
         auto editionval = getedition(sym_code);
         switch (editionval)
         {
         case 1:
-            setminservicefee_v1(min_service_fee);
+            setminserfee_v1(min_service_fee);
             break;
         case 2:
-            setminservicefee_v2(min_service_fee);
+            setminserfee_v2(min_service_fee);
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
@@ -360,7 +369,7 @@ namespace eosio {
                 setminerfee_v2(miner_fee);
                 break;
             default:
-                eosio_assert(false, "peg should be 1 or 2");
+                eosio_assert(false, "edition should be either 1 or 2");
                 break;
         }
     }
@@ -378,23 +387,23 @@ namespace eosio {
             setvipfee_v2(vip,service_fee_rate, min_service_fee, miner_fee);
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
 
-    void pegtoken::setvipservicefeerate(symbol_code sym_code, name vip,double service_fee_rate){
+    void pegtoken::setvipserfrt(symbol_code sym_code, name vip,double service_fee_rate){
         auto editionval = getedition(sym_code);
         switch (editionval)
         {
         case 1:
-            setvipservicefeerate_v1(sym_code,vip,service_fee_rate);
+            setvipserfrt_v1(sym_code,vip,service_fee_rate);
             break;
         case 2:
-            setvipservicefeerate_v2(sym_code,vip,service_fee_rate);
+            setvipserfrt_v2(sym_code,vip,service_fee_rate);
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
@@ -411,24 +420,24 @@ namespace eosio {
             setvipminfee_v2(vip,min_service_fee);
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
 
-    void pegtoken::setvipminerfee(name vip, asset miner_fee ) {
+    void pegtoken::setvipminerf(name vip, asset miner_fee ) {
         auto sym_code = miner_fee.symbol.code();
         auto editionval = getedition(sym_code);
         switch (editionval)
         {
         case 1:
-            setvipminerfee_v1(vip,miner_fee);
+            setvipminerf_v1(vip,miner_fee);
             break;
         case 2:
-            setvipminerfee(vip,miner_fee);
+            setvipminerf(vip,miner_fee);
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
@@ -445,16 +454,36 @@ namespace eosio {
             setdelay_v2(sym_code,delayday);
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
+
+    void pegtoken::setcheck( symbol_code sym_code, bool in_check, bool out_check ){
+
+    }
+
+
+    void pegtoken::setincheck( symbol_code sym_code, bool in_check){
+            // setincheck_v1( sym_code, in_check);
+            // setincheck_v2( symbol_code sym_code, in_check);
+    }
+
+
+    void pegtoken::setoutcheck( symbol_code sym_code, bool out_check){
+    //     setoutcheck_v1(  sym_code,  out_check);
+    //     setoutcheck_v2(  sym_code,  out_check);
+
+    }
+
+
 
 
     void pegtoken::issue(asset quantity, string memo) {
         STRING_LEN_CHECK(memo, 256)
         eosio_assert(quantity.is_valid() && quantity.amount > 0, "invalid quantity");
         auto sym_code = quantity.symbol.code();
+        is_auth_issuer(sym_code);
         eosio_assert(getpeg(sym_code) == 1, "This action require peg version to be 1.");
         auto editionval = getedition(sym_code);
         switch (editionval)
@@ -466,7 +495,7 @@ namespace eosio {
             issue_v2(quantity,memo);
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
@@ -486,7 +515,7 @@ namespace eosio {
             retire_v2(quantity,memo);
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
@@ -591,6 +620,9 @@ namespace eosio {
 
     }
 
+    void pegtoken::setvip(symbol_code sym_code, string action, name vip){
+
+    }
 
 
     void pegtoken::applyaddr(symbol_code sym_code, name to) {
@@ -600,8 +632,26 @@ namespace eosio {
                 applyaddr_v1(sym_code,to);
                 break;
             default:
-                eosio_assert(false, "peg should be 1 or 2");
+                eosio_assert(false, "edition should be either 1 or 2");
                 break;
+        }
+    }
+    
+
+    void pegtoken::resetaddress( symbol_code sym_code, name to ){
+        eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
+        auto editionval = getedition(sym_code);
+        switch (editionval)
+        {
+        case 1:
+            resetaddress_v1(sym_code,to);
+            break;
+        case 2: 
+            resetaddress_v2(sym_code,to);
+            break;
+        default:
+            eosio_assert(false, "edition should be either 1 or 2");
+            break;
         }
     }
 
@@ -613,7 +663,7 @@ namespace eosio {
             assignaddr_v1(sym_code,to,address);
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
@@ -631,7 +681,7 @@ namespace eosio {
         case 2:
             withdraw_v2(from,to,quantity, index, memo);
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
@@ -644,21 +694,20 @@ namespace eosio {
         eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
     }
 
-    void pegtoken::agreewithdraw( name from, string to, asset quantity, uint64_t index, string memo){
+    void pegtoken::agrewithdraw( name from, string to, asset quantity, uint64_t index, string memo){
         auto sym_code = quantity.symbol.code();
         eosio_assert(getpeg(sym_code) == 1, "This action require peg version to be 1.");
         eosio_assert(!getoutcheck(sym_code), "out_check is true for this symbol");
     }
 
-    void pegtoken::refusewithdraw( name from, string to, asset quantity, uint64_t index, string memo){
+    void pegtoken::refuwithdraw( name from, string to, asset quantity, uint64_t index, string memo){
         auto sym_code = quantity.symbol.code();
         eosio_assert(getpeg(sym_code) == 1, "This action require peg version to be 1.");
         eosio_assert(!getoutcheck(sym_code), "out_check is true for this symbol");
     }
 
-   
 
-    void pegtoken::deposit(name to, asset quantity, string memo) {
+    void pegtoken::deposit(string from, name to, asset quantity, string remote_trx_id, uint64_t index, string memo) {
         auto sym_code = quantity.symbol.code();
         eosio_assert(!getincheck(sym_code), "This action require in_check to be false");
         eosio_assert(getpeg(sym_code) == 1, "This action require peg version to be 1.");
@@ -666,7 +715,7 @@ namespace eosio {
     }
 
 
-    void pegtoken::predeposit( string from, name to, asset quantity, string memo ){
+    void pegtoken::predeposit( string from, name to, asset quantity, string remote_trx_id, uint64_t index, string memo ){
         auto sym_code = quantity.symbol.code();
         eosio_assert(getincheck(sym_code), "This action require in_check to be true");
         eosio_assert(getpeg(sym_code) == 1, "This action require peg version to be 1.");
@@ -681,7 +730,7 @@ namespace eosio {
         eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
     }
 
-    void pegtoken::refusedeposit( string from, name to, asset quantity, string remote_trx_id, uint64_t index, string memo ){
+    void pegtoken::refusdeposit( string from, name to, asset quantity, string remote_trx_id, uint64_t index, string memo ){
         auto sym_code = quantity.symbol.code();
         eosio_assert(getincheck(sym_code), "This action require in_check to be true");
         eosio_assert(getpeg(sym_code) == 1, "This action require peg version to be 1.");
@@ -690,15 +739,14 @@ namespace eosio {
 
     void pegtoken::transfer(name from, name to, asset quantity, string memo) {
         auto sym_code = quantity.symbol.code();
-        auto peg_table = pegs(get_self(),sym_code.raw());
-        auto pegval = peg_table.get(sym_code.raw(),"no such peg");
-        switch (pegval.peg)
+        auto editionval = getedition(sym_code);
+        switch (editionval)
         {
         case 1:
             transfer_v1(from,to,quantity,memo);
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
@@ -738,7 +786,7 @@ namespace eosio {
         clear_v1(sym_code,num);
     }
 
-    void pegtoken::publishminerfee( asset miner_fee ){
+    void pegtoken::pubminerfee( asset miner_fee ){
         auto sym_code = miner_fee.symbol.code();
         eosio_assert(getpeg(sym_code) == 1, "This action require peg version to be 1.");
     }
@@ -786,7 +834,7 @@ namespace eosio {
     //         setacceptor_v1(sym_code,acceptor);
     //         break;
     //     default:
-    //         eosio_assert(false, "peg should be 1 or 2");
+    //         eosio_assert(false, "edition should be either 1 or 2");
     //         break;
     //     }
     // }
@@ -798,15 +846,15 @@ namespace eosio {
     }
 
     void pegtoken::unlockall(symbol_code sym_code, name auditor) {
-        auto peg_table = pegs(get_self(),sym_code.raw());
-        auto pegval = peg_table.get(sym_code.raw(),"no such peg");
-        switch (pegval.peg)
+
+        auto editionval = getedition(sym_code);
+        switch (editionval)
         {
         case 1:
             unlockall_v1(sym_code,auditor);
             break;
         default:
-            eosio_assert(false, "peg should be 1 or 2");
+            eosio_assert(false, "edition should be either 1 or 2");
             break;
         }
     }
@@ -829,7 +877,7 @@ namespace eosio {
     //         approve_v1(sym_code,auditor,trx_id,memo);
     //         break;
     //     default:
-    //         eosio_assert(false, "peg should be 1 or 2");
+    //         eosio_assert(false, "edition should be either 1 or 2");
     //         break;
     //     }
     // }
@@ -843,7 +891,7 @@ namespace eosio {
     //         unapprove_v1(sym_code,auditor,trx_id,memo);
     //         break;
     //     default:
-    //         eosio_assert(false, "peg should be 1 or 2");
+    //         eosio_assert(false, "edition should be either 1 or 2");
     //         break;
     //     }
     // }
@@ -857,7 +905,7 @@ namespace eosio {
     //         rmwithdraw_v1(id,sym_code);
     //         break;
     //     default:
-    //         eosio_assert(false, "peg should be 1 or 2");
+    //         eosio_assert(false, "edition should be either 1 or 2");
     //         break;
     //     }
     // }
@@ -867,4 +915,20 @@ namespace eosio {
 
 // FIXME: setauditor is removed
 EOSIO_DISPATCH( eosio::pegtoken, (create)(setissuer)(setedition)(setpeg)(update)
-        (setlimit)(setmaxlimit)(setminlimit));
+        (setlimit)(setmaxlimit)(setminlimit)(settotalimit)(setfreqlimit)(setintvlimit)
+        (setviplimit)(setvipmaxlim)(setvipminlim)(setviptotlim)(setvipfreqlm)(setvipintvlm)
+        (setfee)(setservfeert)(setminserfee)(setminerfee)
+        (setvipfee)(setvipserfrt)(setvipminfee)(setvipminerf)
+        (setdelay)(setcheck)(setoutcheck)(setincheck)
+        (issue)(retire)
+        (cast)(precast)(agreecast)(refusecast)
+        (melt)(premelt)(agreemelt)(refusemelt)
+        (applyaddr)(resetaddress)(assignaddr)
+        (withdraw)(prewithdraw)(agrewithdraw)(refuwithdraw)
+        (deposit)(predeposit)(agreedeposit)(refusdeposit)
+        (transfer)(remit)(pay)(ruin)(burn)(retreat)
+        (feedback)(rollback)(confirmback)(denyback)(sendback)
+        (lockall)(unlockall)(clear)(rm)
+        (setauditor)(setgatherer)(setteller)(setmanager)(setbrakeman)(setvip)
+        (pubminerfee)(publishsum)
+        );

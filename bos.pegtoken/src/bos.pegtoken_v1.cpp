@@ -96,7 +96,7 @@ namespace eosio {
         setlimit_v1( val.max_limit,min_limit,val.total_limit,val.frequency_limit,val.interval_limit );
     }
 
-    void pegtoken::setotalimit_v1( asset total_limit ){
+    void pegtoken::settotalimit_v1( asset total_limit ){
         auto sym_raw = total_limit.symbol.code().raw();
         auto stats_table = stats(get_self(), sym_raw);
         auto val = stats_table.get(sym_raw,"token not exist");
@@ -175,7 +175,7 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setvipmaxlimit_v1(name vip, asset max_limit ) {
+    void pegtoken::setvipmaxlim_v1(name vip, asset max_limit ) {
         auto sym_raw = max_limit.symbol.code().raw();
         auto viplimit_table = viplimits(get_self(),sym_raw);
         auto iter = viplimit_table.find(vip.value);
@@ -188,7 +188,7 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setvipminlimit_v1(name vip, asset min_limit ) {
+    void pegtoken::setvipminlim_v1(name vip, asset min_limit ) {
         auto sym_raw = min_limit.symbol.code().raw();
         auto viplimit_table = viplimits(get_self(),sym_raw);
         auto iter = viplimit_table.find(vip.value);
@@ -201,7 +201,7 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setviptotallimit_v1(name vip, asset total_limit ) {
+    void pegtoken::setviptotlim_v1(name vip, asset total_limit ) {
         auto sym_raw = total_limit.symbol.code().raw();
         auto viplimit_table = viplimits(get_self(),sym_raw);
         auto iter = viplimit_table.find(vip.value);
@@ -234,7 +234,7 @@ namespace eosio {
         });
     }
 
-    void pegtoken::setservicefeerate_v1(symbol_code sym_code, double service_fee_rate){
+    void pegtoken::setservfeert_v1(symbol_code sym_code, double service_fee_rate){
         auto sym_raw = sym_code.raw();
         auto stats_table = stats(get_self(), sym_raw);
         auto val = stats_table.get(sym_raw,"token not exist");
@@ -248,7 +248,7 @@ namespace eosio {
         setfee_v1(val.service_fee_rate, min_service_fee,val.miner_fee);
     }
     
-    void pegtoken::setminservicefee_v1(asset miner_fee){
+    void pegtoken::setminserfee_v1(asset miner_fee){
         auto sym_raw = miner_fee.symbol.code().raw();
         auto stats_table = stats(get_self(), sym_raw);
         auto val = stats_table.get(sym_raw,"token not exist");
@@ -301,7 +301,7 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setvipservicefeerate_v1(symbol_code sym_code, name vip,double service_fee_rate) {
+    void pegtoken::setvipserfrt_v1(symbol_code sym_code, name vip,double service_fee_rate) {
         auto sym_raw = sym_code.raw();
 
         auto vipfee_table = vipfees(get_self(), sym_raw);
@@ -327,7 +327,7 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setvipminerfee_v1(name vip, asset miner_fee ){
+    void pegtoken::setvipminerf_v1(name vip, asset miner_fee ){
         auto sym_raw = miner_fee.symbol.code().raw();
 
         auto vipfee_table = vipfees(get_self(), sym_raw);
@@ -485,6 +485,10 @@ namespace eosio {
             p.assign_time = time_point_sec(now());
         });
     }
+
+    void  pegtoken::resetaddress_v1(symbol_code sym_code, name to){
+
+    } 
 
     void pegtoken::assignaddr_v1(symbol_code sym_code, name to, string address) {
         ACCOUNT_CHECK(to)

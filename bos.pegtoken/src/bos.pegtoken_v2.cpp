@@ -74,9 +74,6 @@ namespace eosio {
         });
     }
 
-    void pegtoken::withdraw_v2( name from, string to, asset quantity, uint64_t index, string memo){
-
-    }
 
     void pegtoken::setlimit_v2( asset max_limit, asset min_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit ) {
         eosio_assert(min_limit.amount >= 0 && max_limit >= min_limit && total_limit >= max_limit,
@@ -115,7 +112,7 @@ namespace eosio {
         setlimit_v2( val.max_limit,min_limit,val.total_limit,val.frequency_limit,val.interval_limit );
     }
 
-    void pegtoken::setotalimit_v2( asset total_limit ){
+    void pegtoken::settotalimit_v2( asset total_limit ){
         auto sym_code = total_limit.symbol.code();
         auto limit_table = limits(get_self(),sym_code.raw());
         auto val = limit_table.get(sym_code.raw(),"token with symbol not exists");
@@ -198,7 +195,7 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setvipmaxlimit_v2(name vip, asset max_limit ) {
+    void pegtoken::setvipmaxlim_v2(name vip, asset max_limit ) {
         auto sym_raw = max_limit.symbol.code().raw();
         auto viplimit_table = viplimits(get_self(),sym_raw);
         auto iter = viplimit_table.find(vip.value);
@@ -211,7 +208,7 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setvipminlimit_v2(name vip, asset min_limit ) {
+    void pegtoken::setvipminlim_v2(name vip, asset min_limit ) {
         auto sym_raw = min_limit.symbol.code().raw();
         auto viplimit_table = viplimits(get_self(),sym_raw);
         auto iter = viplimit_table.find(vip.value);
@@ -224,7 +221,7 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setviptotallimit_v2(name vip, asset total_limit ) {
+    void pegtoken::setviptotlim_v2(name vip, asset total_limit ) {
         auto sym_raw = total_limit.symbol.code().raw();
         auto viplimit_table = viplimits(get_self(),sym_raw);
         auto iter = viplimit_table.find(vip.value);
@@ -263,7 +260,7 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setservicefeerate_v2(symbol_code sym_code, double service_fee_rate){
+    void pegtoken::setservfeert_v2(symbol_code sym_code, double service_fee_rate){
         auto fee_table = fees(get_self(),sym_code.raw());
         auto iter = fee_table.begin();
         if( iter == fee_table.end()) {
@@ -274,7 +271,7 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setminservicefee_v2(asset min_service_fee){
+    void pegtoken::setminserfee_v2(asset min_service_fee){
         auto fee_table = fees(get_self(),min_service_fee.symbol.code().raw());
         auto iter = fee_table.begin();
         if( iter == fee_table.end()) {
@@ -342,7 +339,7 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setvipservicefeerate_v2(symbol_code sym_code, name vip,double service_fee_rate) {
+    void pegtoken::setvipserfrt_v2(symbol_code sym_code, name vip,double service_fee_rate) {
         auto sym_raw = sym_code.raw();
 
         auto vipfee_table = vipfees(get_self(), sym_raw);
@@ -368,7 +365,7 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setvipminerfee_v2(name vip, asset miner_fee ){
+    void pegtoken::setvipminerf_v2(name vip, asset miner_fee ){
         auto sym_raw = miner_fee.symbol.code().raw();
 
         auto vipfee_table = vipfees(get_self(), sym_raw);
@@ -383,7 +380,6 @@ namespace eosio {
 
     void pegtoken::setdelay_v2(symbol_code sym_code, uint64_t delayday) {
         auto sym_raw = sym_code.raw();
-        
         auto info_table = infos(get_self(),sym_raw);
         auto val = info_table.get(sym_raw, "token with symbol not exists(info)");
         require_auth(val.issuer);
@@ -634,9 +630,60 @@ namespace eosio {
             // mt.state = 
 
         });
-
-
-          
         // need_check
     }
+    void pegtoken::premelt_v2(name from_account, string to_address, asset quantity, uint64_t index, string memo){
+
+    }
+
+    void pegtoken::agreemelt_v2(name from_account, string to_address, asset quantity, uint64_t index, string memo){
+    
+    }
+
+    void pegtoken::refusemelt_v2(name from_account, string to_address, asset quantity, uint64_t index, string memo){
+
+    }
+
+    void pegtoken::resetaddress_v2(symbol_code sym_code, name to ){
+        
+    }
+    
+    void pegtoken::withdraw_v2( name from, string to, asset quantity, uint64_t index, string memo){
+
+    }
+
+    void pegtoken::prewithdraw_v2(name from, string to, asset quantity, uint64_t index, string memo){
+
+    }
+
+    void pegtoken::agrewithdraw_v2( name from, string to, asset quantity, uint64_t index, string memo){
+
+    }
+
+    void pegtoken::refuwithdraw_v2( name from, string to, asset quantity, uint64_t index, string memo){
+    
+    }
+
+    void pegtoken::remit_v2( name from, asset quantity ){
+    
+    }
+
+    void pegtoken::pay_v2( asset quantity ){
+    
+    }
+
+    void pegtoken::ruin_v2( asset quantity ){
+    
+    }
+    
+
+    void pegtoken::burn_v2( name from, asset quantity){
+
+    }
+
+    void pegtoken::retreat_v2(name to, asset quantity ){
+         
+    }
+
+    // void pegtoken::feedback_v2
 }
