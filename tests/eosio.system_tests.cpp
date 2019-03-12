@@ -19,7 +19,7 @@
  #include <algorithm> //std::sort
 
 
- 
+
 struct _abi_hash {
    name owner;
    fc::sha256 hash;
@@ -3060,7 +3060,6 @@ BOOST_FIXTURE_TEST_CASE( namebid_pending_winner, eosio_system_tester ) try {
    //despite "perfa" account hasn't been created, we should be able to create "perfb" account
    create_account_with_resources( N(prefb), N(bob111111111) );
 } FC_LOG_AND_RETHROW()
-
 ///bos begin=====================================
 /// bos namelist
 BOOST_FIXTURE_TEST_CASE( namelist, eosio_system_tester ) try {
@@ -3174,18 +3173,16 @@ BOOST_FIXTURE_TEST_CASE( namelist, eosio_system_tester ) try {
      std::sort(blacklisted.begin(), blacklisted.end());
      vector<account_name> excluded;
      excluded.reserve(actors.size());
-     set_symeetric_difference(actors.begin(), actors.end(), blacklisted.begin(),
+     std::set_symmetric_difference(actors.begin(), actors.end(), blacklisted.begin(),
                               blacklisted.end(), std::back_inserter(excluded));
 
      return excluded.empty();
    };
 
-       // make sure that changed parameters were applied
-   const auto& active_cfg2 = control->get_global_properties().cfg;
-   bool actor =
-       contains_blacklist(active_cfg2.actor_blacklist, actor_blacklist);
-   bool contract =
-       contains_blacklist(active_cfg2.contract_blacklist, contract_blacklist);
+   // make sure that changed parameters were applied
+   const auto& active_cfg2 = control->get_global_properties2().cfg;
+   bool actor = contains_blacklist(active_cfg2.actor_blacklist, actor_blacklist);
+   bool contract = contains_blacklist(active_cfg2.contract_blacklist, contract_blacklist);
    bool grey = contains_blacklist(active_cfg2.resource_greylist, greylist);
 
    BOOST_REQUIRE_EQUAL(actor, true);

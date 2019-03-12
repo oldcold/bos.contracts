@@ -89,7 +89,7 @@ void token::transfer( name    from,
                       asset   quantity,
                       string  memo )
 {
-    eosio_assert( check_blacklist(from), "account is on the blacklist" );///bos 
+    eosio_assert( check_blacklist(_self,from), "account is on the blacklist" );///bos 
     eosio_assert( from != to, "cannot transfer to self" );
     require_auth( from );
     eosio_assert( is_account( to ), "to account does not exist");
@@ -165,8 +165,9 @@ void token::close( name owner, const symbol& symbol )
    eosio_assert( it->balance.amount == 0, "Cannot close because the balance is not zero." );
    acnts.erase( it );
 }
-///bos begin
-   void addblacklist(const std::vector<name>& list )
+
+   ///bos begin
+   void token::addblacklist(const std::vector<name>& list )
    {
       name ram_payer = "eosio"_n;
       require_auth("eosio"_n);
@@ -183,13 +184,13 @@ void token::close( name owner, const symbol& symbol )
       }
    }
 
-   void rmblacklist(const std::vector<name> &list) {
+   void token::rmblacklist(const std::vector<name> &list) {
      require_auth("eosio"_n);
 
      for (auto l : list) {
         blacklist blklst(_self, l.value);
-       auto it = blklst.find(l);
-       if (it != acnts.end()) {
+       auto it = blklst.find(l.value);
+       if (it != blklst.end()) {
          blklst.erase(it);
        }
      }

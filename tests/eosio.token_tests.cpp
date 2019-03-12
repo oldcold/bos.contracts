@@ -125,13 +125,13 @@ public:
    }
 
    action_result addblacklist(const vector<name>& list) {
-      return push_action( owner, N(addblacklist), mvo()
+      return push_action( N(eosio), N(addblacklist), mvo()
            ( "list", list )
       );
    }
 
    action_result rmblacklist(const vector<name>& list) {
-      return push_action( owner, N(rmblacklist), mvo()
+      return push_action(  N(eosio), N(rmblacklist), mvo()
            ( "list", list )
       );
    }
@@ -408,10 +408,10 @@ BOOST_FIXTURE_TEST_CASE( transfer_blacklist_tests, eosio_token_tester ) try {
 
    rmblacklist(list);
 
- transfer( N(boblacklist), N(bob), asset::from_string("100 CERO"), "hola" )
+   transfer( N(boblacklist), N(bob), asset::from_string("100 CERO"), "hola" );
 
 
-   boblklst_balance = get_account(N(boblacklist), "0,CERO");
+   auto boblklst_balance = get_account(N(boblacklist), "0,CERO");
    REQUIRE_MATCHING_OBJECT( boblklst_balance, mvo()
       ("balance", "200 CERO")
       ("frozen", 0)
