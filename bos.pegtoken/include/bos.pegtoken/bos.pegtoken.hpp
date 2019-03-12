@@ -303,6 +303,7 @@ public:
 
     // TODO: 管理员为某个相应的币种的某个用户设置为VIP, action有add或remove
     [[eosio::action]] void setvip( symbol_code sym_code,  string action, name vip);
+    void setvip_v2(symbol_code sym_code, string action, name vip);
 
     [[eosio::action]] void pubminerfee( asset miner_fee );
 
@@ -341,7 +342,7 @@ private:
 
     void is_auth_role(symbol_code sym_code, name to_account);
 
-    void withdraw_check(symbol_code sym_code, asset quantity);
+    void withdraw_check(symbol_code sym_code, asset quantity, name to_account);
     bool balance_check( symbol_code sym_code, name user );
     bool addr_check( symbol_code sym_code, name user );
 
@@ -770,12 +771,12 @@ private:
     
    
     // TODO: 收费员 gatherers
-    struct [[eosio::table]] toller_ts {
-        name toller;
+    struct [[eosio::table]] gatherer_ts {
+        name gatherer;
 
-        uint64_t primary_key() const { return toller.value; }
+        uint64_t primary_key() const { return gatherer.value; }
     };
-    using tollers = eosio::multi_index< "tollers"_n, toller_ts >;
+    using gatherers = eosio::multi_index< "gathers"_n, gatherer_ts >;
 
 
    
@@ -998,31 +999,31 @@ private:
         }
     }
 
-    void pegtoken::withdraw_check(symbol_code sym_code, asset quantity){
+    void pegtoken::withdraw_check(symbol_code sym_code, asset quantity, name ){
         auto editionval = getedition(sym_code);
-        asset maxlimit, minlimit, totalimit;
-        uint64_t frequencylimit, intervalimit;
+        //TODO: checking limit
+        // total_limit, frequency_limit, interval_limit
+        //  time_point_sec(now())
         switch (editionval){
             case 1: {
                 auto stats_tb = stats(get_self(),sym_code.raw());
                 auto stat_val = stats_tb.get(sym_code.raw(), "This type of assets not exists in stats table");   
-                maxlimit = stat_val.max_limit;
-                minlimit = stat_val.min_limit; 
+                eosio_assert(quantity <= stat_val.max_limit, "withdraw amount is more than the max_limit");
+                eosio_assert(quantity >= stat_val.min_limit, "withdraw amount is less than the min_limit");
                 break;
             }
             case 2:{
                 auto limits_tb = limits(get_self(),sym_code.raw());
                 auto lim_val = limits_tb.get(sym_code.raw(), "This type of assets not exists in limits table");
-                maxlimit = lim_val.max_limit;
-                minlimit = lim_val.min_limit; 
+                eosio_assert(quantity <= lim_val.max_limit, "withdraw amount is more than the max_limit");
+                eosio_assert(quantity >= lim_val.min_limit, "withdraw amount is less than the min_limit");
                 break;
             }
             default:{
                 eosio_assert(false, "edition should be 1 or 2");
                 break;
             }
-           eosio_assert(quantity <= maxlimit, "withdraw amount is more than the max_limit");
-           eosio_assert(quantity >= minlimit, "withdraw amount is less than the min_limit");
+  
         }   
     }
 } // namespace eosio

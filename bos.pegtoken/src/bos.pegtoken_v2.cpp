@@ -1,4 +1,6 @@
 #include <bos.pegtoken/bos.pegtoken.hpp>
+// 用于五个set部分的余额检查
+#include <eosio.token/eosio.token.hpp>
 #include <eosiolib/transaction.hpp>
 #include <eosiolib/action.hpp>
 #include "def.cpp"
@@ -473,6 +475,9 @@ namespace eosio {
         eosio_assert(to_account != val.issuer && to_account != get_self(), "invalid to_account");
         require_auth(val.issuer);
         
+        // TODO: checks        
+        // = checks.find(to_account.value);
+
         auto addr_table = addrs(get_self(), sym_raw);
         auto iter_addr = addr_table.find(to_account.value);
         eosio_assert(iter_addr != addr_table.end() && iter_addr->address == to_address, "invalid to_address");
@@ -607,7 +612,6 @@ namespace eosio {
             // mt.amount = ;
             // mt.fee = ;
             // mt.state = 
-
         });
         // need_check
     }
@@ -621,6 +625,78 @@ namespace eosio {
 
     void pegtoken::refusemelt_v2(name from_account, string to_address, asset quantity, uint64_t index, string memo){
 
+    }
+
+    void pegtoken::setauditor_v2(symbol_code sym_code, string action, name auditor){
+        auto auditor_tb = auditors(get_self(), sym_code.raw());
+        auto aud_iter = auditor_tb.find(sym_code.raw());
+        if(action.compare("add")){
+            auditor_tb.emplace(get_self(), [&](auto& aud){
+                aud.auditor = auditor;
+            });
+        } else if(action == "remove"){
+            auditor_tb.erase(aud_iter);
+        }
+    }
+
+    void pegtoken::setmanager_v2(symbol_code sym_code, name manager){
+        auto manager_tb = managers(get_self(), sym_code.raw());
+        auto mgr_iter = manager_tb.find(sym_code.raw());
+        if(action == "add"_n){
+            eosio_assert(mgr_iter != manager_tb.end(), "vip has been assigned based on sym_code");
+            manager_tb.emplace(get_self(), [&](auto& mgr){
+                mgr.manager = manager;
+            });
+        } else if(action == "remove"_n){
+            manager_tb.erase(mgr_iter);
+        }
+    }
+
+    void pegtoken::setgatherer_v2(symbol_code sym_code, name gatherer){
+        auto gather_tb = gatherers(get_self(), sym_code.raw());
+        auto gather_iter = gather_tb.find(sym_code.raw());
+        if(action == "add"_n){
+            // 检查是否已经绑定地址
+            eosio_assert(gather_iter != gather_tb.end(), "This account has been assigned as gatherer based on sym_code");
+            gather_tb.emplace(get_self(), [&](auto& gather){
+                gather.gatherer = gatherer;
+            });
+        } else if(action == "remove"_n){
+            eosio_assert(gather_iter != gather_tb.end(), "No gatherer can be removed based on sym_code");
+            gather_tb.erase(gather_iter);
+        }
+    }
+
+    void pegtoken::setteller_v2(symbol_code sym_code, name teller){
+        //TODO: 检查sym_code的余额，需要使用eosio.token合约
+        auto teller_tb = tellers(get_self(), sym_code.raw());
+        auto teller_iter = teller_tb.find(sym_code.raw());
+        if(action == "add"_n){
+            // 检查是否已经绑定地址
+            eosio_assert(teller_iter != teller_tb.end(), "This account has been assigned as teller based on sym_code");
+            teller_tb.emplace(get_self(), [&](auto& tell){
+                tell.teller = teller;
+            });
+        } else if(action == "remove"_n){
+            eosio_assert(teller_iter != teller_tb.end(), "No teller can be removed  based on sym_code");
+            teller_tb.erase(teller_iter);
+        }
+    }
+
+    void pegtoken::setvip_v2(symbol_code sym_code, string action, name vip){
+        //TODO: 检查sym_code的余额，需要使用eosio.token合约
+        auto vip_tb = vips(get_self(), sym_code.raw());
+        auto vip_iter = vip_tb.find(sym_code.raw());
+        if(action == "add"_n){
+            // 检查是否已经绑定地址
+            eosio_assert(vip_iter != vip_tb.end(), "This account has been assigned as vip based on sym_code");
+            vip_tb.emplace(get_self(), [&](auto& vp){
+                vp.vip = vip;
+            });
+        } else if(action == "remove"_n){
+            eosio_assert(vip_iter != vip_tb.end(), "No vip can be removed based on sym_code");
+            vip_tb.erase(vip_iter);
+        }
     }
 
     void pegtoken::resetaddress_v2(symbol_code sym_code, name to ){

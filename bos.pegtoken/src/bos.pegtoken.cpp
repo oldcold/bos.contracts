@@ -567,7 +567,7 @@ namespace eosio {
         eosio_assert(!getincheck(sym_code), "This action require in_check to be false");
         eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
         eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
-                ACCOUNT_CHECK(to_account)
+        ACCOUNT_CHECK(to_account)
         STRING_LEN_CHECK(memo,256)
         eosio_assert(quantity.amount > 0, "non-positive quantity");
         docast_v2(to_address,to_account,remote_trx_id,index,quantity,memo);
@@ -575,6 +575,7 @@ namespace eosio {
     // 用户转给出纳员
     void pegtoken::melt(name from_account, string to_address, asset quantity, uint64_t index, string memo){
         symbol_code sym_code = quantity.symbol.code();
+        withdraw_check(sym_code, quantity, from_account);
         eosio_assert(!getoutcheck(sym_code), "This action require out_check to be false");
         eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
         eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
@@ -583,11 +584,11 @@ namespace eosio {
 
     void pegtoken::premelt(name from_account, string to_address, asset quantity, uint64_t index, string memo){
         symbol_code sym_code = quantity.symbol.code();
+        withdraw_check(sym_code, quantity, from_account);
         // eosio_assert(getoutcheck(sym_code), "This action require out_check to be true");
         eosio_assert(!getoutcheck(sym_code), "This action require out_check to be false");
         eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
         eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
-
     }
 
     void pegtoken::agreemelt(name from_account, string to_address, asset quantity, uint64_t index, string memo){
@@ -634,7 +635,7 @@ namespace eosio {
         auto bkman_iter = brakeman_tb.find(auditor.value);
         eosio_assert(bkman_iter == brakeman_tb.end(), "The account has been set to brakeman");
 
-
+        setauditor_v2(sym_code, action, auditor);
         // issuer check in different version
         // auto issuer_tb = (get_self(), sym_code.raw());
         // auto iss_iter = issuer_tb.find(auditor.value);
@@ -663,7 +664,7 @@ namespace eosio {
     }
 
     void pegtoken::setbrakeman( symbol_code sym_code,  name brakeman){
-            is_auth_issuer(sym_code);
+        is_auth_issuer(sym_code);
     }
 
     void pegtoken::setvip(symbol_code sym_code, string action, name vip){
