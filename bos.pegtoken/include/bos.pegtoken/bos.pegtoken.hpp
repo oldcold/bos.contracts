@@ -47,8 +47,8 @@ public:
     void update_v2( symbol_code sym_code, string organization, string website );
 
     [[eosio::action]] void setlimit(symbol_code sym_code, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
-    void setlimit_v1( asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
-    void setlimit_v2( asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
+    void setlimit_v1(symbol_code sym_code, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
+    void setlimit_v2(symbol_code sym_code, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
 
     [[eosio::action]] void setmaxlimit(symbol_code sym_code, asset maximum_limit );
     void setmaxlimit_v1( asset maximum_limit );
@@ -95,8 +95,8 @@ public:
     void setvipintvlm_v2(symbol_code sym_code, name vip, uint64_t interval_limit );
 
     [[eosio::action]] void setfee(symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee );
-    void setfee_v1( double service_fee_rate, asset min_service_fee, asset miner_fee );
-    void setfee_v2(double service_fee_rate, asset min_service_fee, asset miner_fee );
+    void setfee_v1(symbol_code sym_code,  double service_fee_rate, asset min_service_fee, asset miner_fee );
+    void setfee_v2(symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee );
 
     [[eosio::action]] void setservfeert(symbol_code sym_code, double service_fee_rate);
     void setservfeert_v1(symbol_code sym_code, double service_fee_rate);
@@ -303,6 +303,7 @@ public:
 
     // TODO: 管理员为某个相应的币种的某个用户设置为VIP, action有add或remove
     [[eosio::action]] void setvip( symbol_code sym_code,  string action, name vip);
+    void setvip_v1(symbol_code sym_code, string action, name vip);
     void setvip_v2(symbol_code sym_code, string action, name vip);
 
     [[eosio::action]] void pubminerfee( asset miner_fee );

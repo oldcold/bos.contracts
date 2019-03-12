@@ -56,7 +56,6 @@ namespace eosio {
         auto stats_table = stats(get_self(), sym_raw);
         auto iter = stats_table.find(sym_raw);
         eosio_assert(iter != stats_table.end(), "token not exist");
-        require_auth(iter->issuer);
 
         stats_table.modify(iter, same_payer, [&](auto &p) {
             p.organization = organization;
@@ -64,12 +63,11 @@ namespace eosio {
         });
     }
 
-    void pegtoken::setlimit_v1(asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit,
+    void pegtoken::setlimit_v1(symbol_code sym_code, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit,
                             uint64_t interval_limit) {
-        auto sym_raw = maximum_limit.symbol.code().raw();
+        auto sym_raw = sym_code.raw();
         auto stats_table = stats(get_self(), sym_raw);
         auto iter = stats_table.find(sym_raw);
-        require_auth(iter->issuer);
         eosio_assert(iter != stats_table.end(), "token not exist");
         stats_table.modify(iter, same_payer, [&](auto &p) {
             p.maximum_limit = maximum_limit;
@@ -85,7 +83,7 @@ namespace eosio {
         auto stats_table = stats(get_self(), sym_raw);
         auto val = stats_table.get(sym_raw,"token not exist");
         
-        setlimit_v1( maximum_limit,val.minimum_limit,val.total_limit,val.frequency_limit,val.interval_limit );
+        setlimit_v1(maximum_limit.symbol.code(), maximum_limit,val.minimum_limit,val.total_limit,val.frequency_limit,val.interval_limit );
     }
     
     void pegtoken::setminlimit_v1( asset minimum_limit ){
@@ -93,7 +91,7 @@ namespace eosio {
         auto stats_table = stats(get_self(), sym_raw);
         auto val = stats_table.get(sym_raw,"token not exist");
         
-        setlimit_v1( val.maximum_limit,minimum_limit,val.total_limit,val.frequency_limit,val.interval_limit );
+        setlimit_v1(minimum_limit.symbol.code(), val.maximum_limit,minimum_limit,val.total_limit,val.frequency_limit,val.interval_limit );
     }
 
     void pegtoken::settotalimit_v1( asset total_limit ){
@@ -101,7 +99,7 @@ namespace eosio {
         auto stats_table = stats(get_self(), sym_raw);
         auto val = stats_table.get(sym_raw,"token not exist");
         
-        setlimit_v1( val.maximum_limit,val.minimum_limit,total_limit,val.frequency_limit,val.interval_limit );
+        setlimit_v1(total_limit.symbol.code(), val.maximum_limit,val.minimum_limit,total_limit,val.frequency_limit,val.interval_limit );
     }
 
     void pegtoken::setfreqlimit_v1( symbol_code sym_code, uint64_t frequency_limit){
@@ -109,7 +107,7 @@ namespace eosio {
         auto stats_table = stats(get_self(), sym_raw);
         auto val = stats_table.get(sym_raw,"token not exist");
         
-        setlimit_v1( val.maximum_limit,val.minimum_limit,val.total_limit,frequency_limit,val.interval_limit );
+        setlimit_v1(sym_code, val.maximum_limit,val.minimum_limit,val.total_limit,frequency_limit,val.interval_limit );
     }
 
     void pegtoken::setintvlimit_v1( symbol_code sym_code, uint64_t interval_limit){
@@ -117,7 +115,7 @@ namespace eosio {
         auto stats_table = stats(get_self(), sym_raw);
         auto val = stats_table.get(sym_raw,"token not exist");
         
-        setlimit_v1( val.maximum_limit,val.minimum_limit,val.total_limit,val.frequency_limit,interval_limit );
+        setlimit_v1(sym_code, val.maximum_limit,val.minimum_limit,val.total_limit,val.frequency_limit,interval_limit );
     }
 
     // // FIXME: no reset_limit in stats table
@@ -133,7 +131,6 @@ namespace eosio {
         auto stats_table = stats(get_self(), sym_raw);
         auto iter = stats_table.find(sym_raw);
         eosio_assert(iter != stats_table.end(), "token not exist");
-        require_auth(iter->issuer);
 
         auto vip_table = vips(get_self(),sym_raw);
         auto viplimit_table = viplimits(get_self(),sym_raw);
@@ -212,18 +209,17 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setfee_v1(double service_fee_rate, asset min_service_fee, asset miner_fee) {
+    void pegtoken::setfee_v1(symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee) {
         eosio_assert(
                 service_fee_rate >= 0 && service_fee_rate < 1 && min_service_fee.amount >= 0 && miner_fee.amount >= 0,
                 "invalid service_fee_rate or min_service_fee or miner_fee");
         eosio_assert(min_service_fee.symbol == miner_fee.symbol,
                      "min_service_fee and miner_fee are not the same symbol");
 
-        auto sym_raw = min_service_fee.symbol.code().raw();
+        auto sym_raw = sym_code.raw();
         auto stats_table = stats(get_self(), sym_raw);
         auto iter = stats_table.find(sym_raw);
         eosio_assert(iter != stats_table.end(), "token not exist");
-        require_auth(iter->issuer);
 
         stats_table.modify(iter, same_payer, [&](auto &p) {
             p.service_fee_rate = service_fee_rate;
@@ -236,21 +232,21 @@ namespace eosio {
         auto sym_raw = sym_code.raw();
         auto stats_table = stats(get_self(), sym_raw);
         auto val = stats_table.get(sym_raw,"token not exist");
-        setfee_v1(service_fee_rate, val.min_service_fee,val.miner_fee);
+        setfee_v1(sym_code,service_fee_rate, val.min_service_fee,val.miner_fee);
     }
 
     void pegtoken::setminerfee_v1(asset min_service_fee){
         auto sym_raw = min_service_fee.symbol.code().raw();
         auto stats_table = stats(get_self(), sym_raw);
         auto val = stats_table.get(sym_raw,"token not exist");
-        setfee_v1(val.service_fee_rate, min_service_fee,val.miner_fee);
+        setfee_v1(min_service_fee.symbol.code(),val.service_fee_rate, min_service_fee,val.miner_fee);
     }
     
     void pegtoken::setminserfee_v1(asset miner_fee){
         auto sym_raw = miner_fee.symbol.code().raw();
         auto stats_table = stats(get_self(), sym_raw);
         auto val = stats_table.get(sym_raw,"token not exist");
-        setfee_v1(val.service_fee_rate, val.min_service_fee,miner_fee);
+        setfee_v1(miner_fee.symbol.code(),val.service_fee_rate, val.min_service_fee,miner_fee);
     }
 
     void pegtoken::setvipfee_v1(name vip, double service_fee_rate, asset min_service_fee, asset miner_fee ){
@@ -260,34 +256,15 @@ namespace eosio {
         auto stats_table = stats(get_self(), sym_raw);
         auto iter = stats_table.find(sym_raw);
         eosio_assert(iter != stats_table.end(), "token not exist");
-        require_auth(iter->issuer);
 
         auto vip_table = vips(get_self(),sym_raw);
         auto viplimit_table = viplimits(get_self(),sym_raw);
         auto vipfee_table = vipfees(get_self(),sym_raw);
         
         auto iter_vip = vip_table.find(vip.value);
-        if(iter_vip == vip_table.end()){
-            auto zero_asset = eosio::asset(0,min_service_fee.symbol);
-            vip_table.emplace(get_self(),[&](auto &p){
-                p.vip = vip;
-                p.create_time = time_point_sec(now());
-            });
-            viplimit_table.emplace(get_self(),[&](auto &p){
-                p.owner = vip;
-                p.maximum_limit = zero_asset;
-                p.minimum_limit = zero_asset;
-                p.total_limit = zero_asset;
-                p.frequency_limit = 0;
-                p.interval_limit = 0;
-            });
-            vipfee_table.emplace(get_self(),[&](auto &p){
-                p.owner = vip;
-                p.service_fee_rate = service_fee_rate;
-                p.min_service_fee = min_service_fee;
-                p.miner_fee = miner_fee;
-            });
-        } else {
+//        当发现vip表不存在的时候，应该报错，而不是初始化vip表
+        eosio_assert(iter_vip != vip_table.end(), "VIP table NOT found");
+        if(iter_vip != vip_table.end()) {
             vipfee_table.modify(
                 vipfee_table.find(vip.value),same_payer,
                 [&](auto &p){
@@ -343,11 +320,26 @@ namespace eosio {
         auto stats_table = stats(get_self(), sym_raw);
         auto iter = stats_table.find(sym_raw);
         eosio_assert(iter != stats_table.end(), "token not exist");
-        require_auth(iter->issuer);
 
         stats_table.modify(iter, same_payer, [&](auto &p) {
             p.delayday = delayday;
         });
+    }
+
+
+    void pegtoken::setcheck_v1( symbol_code sym_code, bool in_check, bool out_check ){
+        auto check_tb = checks(get_self(),sym_code.raw());
+        if(check_tb.begin()==check_tb.end()){
+            check_tb.emplace(get_self(),[&](auto &p){
+                p.in_check = in_check;
+                p.out_check = out_check;
+            });
+        } else {
+            check_tb.modify(check_tb.begin(),same_payer,[&](auto &p){
+                p.in_check = in_check;
+                p.out_check = out_check;
+            });
+        }
     }
 
     void pegtoken::issue_v1(asset quantity, string memo) {
@@ -355,7 +347,6 @@ namespace eosio {
         auto stats_table = stats(get_self(), sym_raw);
         auto iter = stats_table.find(sym_raw);
         eosio_assert(iter != stats_table.end(), "token not exist");
-        require_auth(iter->issuer);
 
         ACCOUNT_CHECK(iter->acceptor)
         eosio_assert(iter->active, "token is not active");
@@ -382,7 +373,6 @@ namespace eosio {
         auto stats_table = stats(get_self(), sym_raw);
         auto iter = stats_table.find(sym_raw);
         eosio_assert(iter != stats_table.end(), "token not exist");
-        require_auth(iter->issuer);
 
         ACCOUNT_CHECK(iter->acceptor)
         eosio_assert(iter->active, "token is not active");
@@ -484,7 +474,7 @@ namespace eosio {
     }
 
     void  pegtoken::resetaddress_v1(symbol_code sym_code, name to){
-
+        
     } 
 
     void pegtoken::assignaddr_v1(symbol_code sym_code, name to, string address) {
@@ -503,7 +493,7 @@ namespace eosio {
             eosio_assert(account != iter->acceptor, "to can't be acceptor");
         }
         require_auth(iter->acceptor);
-
+        
         verify_address(iter->address_style, address);
 
         auto addresses = addrs(get_self(), sym_code.raw());
@@ -731,6 +721,31 @@ namespace eosio {
             }
         }
     }
+
+     //能够设置单个
+    void pegtoken::setmanager_v1(symbol_code sym_code, name manager){
+        //检查该账户该币种余额
+        eosio_assert(balance_check(sym_code, manager), "manager`s balance should be 0");
+        auto manager_tb = managers(get_self(), sym_code.raw());
+        auto mgr_iter = manager_tb.find(sym_code.raw());
+        if(mgr_iter == manager_tb.end()){
+            manager_tb.emplace(get_self(), [&](auto& mgr){
+                mgr.manager = manager;
+            });
+        } else{
+            manager_tb.modify(mgr_iter,same_payer,[&](auto &mgr){
+                mgr.manager = manager;
+            });
+        }
+    }
+    void pegtoken::setteller_v1(symbol_code sym_code, name teller){
+        auto stats_table = stats(get_self(), sym_code.raw());
+        auto iter = stats_table.find(sym_code.raw());
+        eosio_assert(iter != stats_table.end(), "token not exist");
+        require_auth(iter->acceptor);
+        eosio_assert(iter->active, "underwriter is not active");
+    }
+
 
     void pegtoken::feedback_v1(symbol_code sym_code, transaction_id_type trx_id, string remote_trx_id, string memo) {
 

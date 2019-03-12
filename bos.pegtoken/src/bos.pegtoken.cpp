@@ -103,16 +103,20 @@ namespace eosio {
         eosio_assert(is_sym_equal_asset(sym_code, maximum_limit), "sym_code is not same as maximum_limit symbol_code.");
         eosio_assert(is_sym_equal_asset(sym_code, minimum_limit), "sym_code is not same as minimum_limit symbol_code.");
         eosio_assert(is_sym_equal_asset(sym_code, total_limit), "sym_code is not same as total_limit symbol_code.");
-        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2,   "Edition should be either 1 or 2");
+        // 根据sym_code，查询editions表，校验币的版本，版本不对则报错。
+        // 根据sym_code，查询pegs表，校验币的机制，机制不对则报错。
+        eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
+        eosio_assert(getpeg(sym_code) == 1 || getpeg(sym_code) == 2, "The action require peg to be 1 or 2");
+        //自然数检查
         eosio_assert(minimum_limit.amount >= 0 && maximum_limit >= minimum_limit && total_limit >= maximum_limit,  "constrict mismatch: total_limit >= maximum_limit >= minimum_limit >= 0");
         auto editionval = getedition(sym_code);
         switch (editionval)
         {
         case 1:
-            setlimit_v1(maximum_limit,minimum_limit,total_limit,frequency_limit,interval_limit);
+            setlimit_v1(sym_code,maximum_limit,minimum_limit,total_limit,frequency_limit,interval_limit);
             break;
         case 2:
-            setlimit_v2(maximum_limit,minimum_limit,total_limit,frequency_limit,interval_limit);
+            setlimit_v2(sym_code,maximum_limit,minimum_limit,total_limit,frequency_limit,interval_limit);
             break;
         default:
             eosio_assert(false, "edition should be either 1 or 2");
@@ -324,10 +328,10 @@ namespace eosio {
         switch (editionval)
         {
         case 1:
-            setfee_v1(service_fee_rate,min_service_fee,miner_fee);
+            setfee_v1(sym_code,service_fee_rate,min_service_fee,miner_fee);
             break;
         case 2:
-            setfee_v2(service_fee_rate,min_service_fee,miner_fee);
+            setfee_v2(sym_code,service_fee_rate,min_service_fee,miner_fee);
             break;
         default:
             eosio_assert(false, "edition should be either 1 or 2");
@@ -390,6 +394,10 @@ namespace eosio {
            //  判断所有的asset 是否与sym_code为同一种币，若不是，则报错
         eosio_assert(is_sym_equal_asset(sym_code, min_service_fee), "sym_code is not same as min_service_fee symbol_code.");
         eosio_assert(is_sym_equal_asset(sym_code, miner_fee), "sym_code is not same as miner_fee symbol_code.");
+        // 根据sym_code，查询editions表，校验币的版本，版本不对则报错。
+        // 根据sym_code，查询pegs表，校验币的机制，机制不对则报错。
+        eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
+        eosio_assert(getpeg(sym_code) == 1 || getpeg(sym_code) == 2, "The action require peg to be 1 or 2");
         auto editionval = getedition(sym_code);
         switch (editionval)
         {
@@ -456,7 +464,10 @@ namespace eosio {
     }
 
     void pegtoken::setdelay(symbol_code sym_code, uint64_t delayday) {
-        eosio_assert(getpeg(sym_code) == 1, "This action require peg version to be 1.");
+        // 根据sym_code，查询editions表，校验币的版本，版本不对则报错。
+        // 根据sym_code，查询pegs表，校验币的机制，机制不对则报错。
+        eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
+        eosio_assert(getpeg(sym_code) == 1 || getpeg(sym_code) == 2, "The action require peg to be 1 or 2");
         auto editionval = getedition(sym_code);
         switch (editionval)
         {
@@ -474,6 +485,11 @@ namespace eosio {
 
     void pegtoken::setcheck( symbol_code sym_code, bool in_check, bool out_check ){
         is_auth_manager(sym_code);
+        // 根据sym_code，查询editions表，校验币的版本，版本不对则报错。
+        // 根据sym_code，查询pegs表，校验币的机制，机制不对则报错。
+        eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
+        eosio_assert(getpeg(sym_code) == 1 || getpeg(sym_code) == 2, "The action require peg to be 1 or 2");
+        setcheck_v2(sym_code, in_check, out_check);
     }
 
 
@@ -538,11 +554,12 @@ namespace eosio {
         is_auth_role(sym_code,to_account);
            //  判断所有的asset 是否与sym_code为同一种币，若不是，则报错
         eosio_assert(is_sym_equal_asset(sym_code, quantity), "sym_code is not same as quantity's symbol_code.");
-             // 判断是否已经锁定
+             // 判断检查是否已经锁定
         eosio_assert(is_locked(sym_code),"The token has been locked");
-//        没有查checks表，判断资金流入是否需要审核
+        // 没有查checks表，判断资金流入是否需要审核
         eosio_assert(getincheck(sym_code), "This action require in_check to be true");
         eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
+        // 没有查pegs表，币种只能为严格锚定模式才能调用
         eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
         ACCOUNT_CHECK(to_account)
         STRING_LEN_CHECK(memo,256)
@@ -551,6 +568,7 @@ namespace eosio {
     }
 
     void pegtoken::agreecast(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo){
+        // 判断to_account不能是issuer、auditor等角色账户
         is_auth_auditor(sym_code);
         is_auth_role(sym_code,to_account);
            //  判断所有的asset 是否与sym_code为同一种币，若不是，则报错
@@ -560,6 +578,7 @@ namespace eosio {
         //        没有查checks表，判断资金流入是否需要审核
         eosio_assert(getincheck(sym_code), "This action require in_check to be true");
         eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
+        // 币种只能为严格锚定模式才能调用
         eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
         ACCOUNT_CHECK(to_account)
         STRING_LEN_CHECK(memo,256)
@@ -577,6 +596,7 @@ namespace eosio {
                 // 判断资金流入是否需要审核
         eosio_assert(getincheck(sym_code), "This action require in_check to be true");
         eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
+            // 币种只能为严格锚定模式才能调用
         eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
         ACCOUNT_CHECK(to_account)
         STRING_LEN_CHECK(memo,256)
@@ -655,22 +675,55 @@ namespace eosio {
         // eosio_assert(iss_iter == issuer_tb.end(), "The account has been set to issuer");
     }
 
-    void pegtoken::setteller( symbol_code sym_code,  name teller){
-        eosio_assert(getedition(sym_code) == 2,  "Edition should be 2");
-        ACCOUNT_CHECK(teller);
+    void pegtoken::setgatherer( symbol_code sym_code,  name gatherer){
         is_auth_issuer(sym_code);
-        setteller_v2(sym_code, teller);
+        ACCOUNT_CHECK(gatherer);
+        //收费员仅针对严格锚钉制和版本2
+        eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
+        eosio_assert(getpeg(sym_code) == 2, "The action require peg to be 2");
+        setgatherer_v2(sym_code, gatherer);
+    }
+
+
+    void pegtoken::setteller( symbol_code sym_code,  name teller){
+        is_auth_issuer(sym_code);
+        // 根据sym_code，查询editions表，校验币的版本，版本不对则报错。
+        // 根据sym_code，查询pegs表，校验币的机制，机制不对则报错。
+        eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
+        eosio_assert(getpeg(sym_code) == 1 || getpeg(sym_code) == 2, "The action require peg to be 1 or 2");
+        ACCOUNT_CHECK(teller);
+        eosio_assert(balance_check(sym_code, teller), "teller`s balance should be 0");
+        auto editionval = getedition(sym_code);
+        switch (editionval)
+        {
+        case 1:
+            setteller_v1(sym_code, teller);
+            break;
+        case 2: 
+            setteller_v2(sym_code, teller);
+            break;
+        default:
+            eosio_assert(false, "edition should be either 1 or 2");
+            break;
+        }
+        
     }
 
     void pegtoken::setmanager(symbol_code sym_code,  name manager){
-        eosio_assert(getedition(sym_code) == 2,  "Edition should be 2");
+        // 根据sym_code，查询editions表，校验币的版本，版本不对则报错。
+        // 根据sym_code，查询pegs表，校验币的机制，机制不对则报错。
+        eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
+        eosio_assert(getpeg(sym_code) == 1 || getpeg(sym_code) == 2, "The action require peg to be 1 or 2");
         ACCOUNT_CHECK(manager);
         is_auth_issuer(sym_code);
         setmanager_v2(sym_code, manager);
     }
 
     void pegtoken::setbrakeman( symbol_code sym_code,  name brakeman){
-        eosio_assert(getedition(sym_code) == 2,  "Edition should be 2");
+        // 根据sym_code，查询editions表，校验币的版本，版本不对则报错。
+        // 根据sym_code，查询pegs表，校验币的机制，机制不对则报错。
+        eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
+        eosio_assert(getpeg(sym_code) == 1 || getpeg(sym_code) == 2, "The action require peg to be 1 or 2");
         ACCOUNT_CHECK(brakeman);
         is_auth_issuer(sym_code);
         setbrakeman_v2(sym_code, brakeman);
@@ -678,6 +731,10 @@ namespace eosio {
     }
 
     void pegtoken::setvip(symbol_code sym_code, string actn, name vip){
+        // 根据sym_code，查询editions表，校验币的版本，版本不对则报错。
+        // 根据sym_code，查询pegs表，校验币的机制，机制不对则报错。
+        eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
+        eosio_assert(getpeg(sym_code) == 1 || getpeg(sym_code) == 2, "The action require peg to be 1 or 2");
         is_auth_manager(sym_code);
         setvip_v2(sym_code,actn,vip);
     }
@@ -699,6 +756,8 @@ namespace eosio {
     void pegtoken::resetaddress( symbol_code sym_code, name to ){
         is_auth_manager(sym_code);
         eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
+        eosio_assert(getpeg(sym_code) == 1 || getpeg(sym_code) == 2, "The action require peg to be 1 or 2");
+        ACCOUNT_CHECK(to);
         auto editionval = getedition(sym_code);
         switch (editionval)
         {
@@ -716,11 +775,18 @@ namespace eosio {
 
     void pegtoken::assignaddr(symbol_code sym_code, name to, string address) {
         is_auth_teller(sym_code);
+        is_auth_role(sym_code, to);
+        eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
+        eosio_assert(getpeg(sym_code) == 1 || getpeg(sym_code) == 2, "The action require peg to be 1 or 2");
+        ACCOUNT_CHECK(to);
         auto editionval = getedition(sym_code);
         switch (editionval)
         {
         case 1:
             assignaddr_v1(sym_code,to,address);
+            break;
+        case 2:
+            assignaddr_v2(sym_code,to,address);
             break;
         default:
             eosio_assert(false, "edition should be either 1 or 2");
@@ -870,12 +936,6 @@ namespace eosio {
         eosio_assert(getpeg(sym_code) == 1, "This action require peg version to be 1.");
     }
 
-
-    void pegtoken::setgatherer( symbol_code sym_code,  name gatherer){
-        is_auth_issuer(sym_code);
-        eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
-        eosio_assert(getpeg(sym_code) == 2, "The action require peg to be 2");
-    }
 
     void pegtoken::feedback(symbol_code sym_code, transaction_id_type trx_id, string remote_trx_id, string memo) {
         eosio_assert(is_locked(sym_code),"The token has been locked");
