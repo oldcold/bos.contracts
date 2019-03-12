@@ -462,7 +462,7 @@ namespace eosio {
         });
     }
 
-    void pegtoken::precast_v2(string to_address, name to_account, string remote_trx_id, uint64_t index, asset quantity, string memo) {
+    void pegtoken::precast_v2(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo) {
         ACCOUNT_CHECK(to_account)
         STRING_LEN_CHECK(memo,256)
         eosio_assert(quantity.amount > 0, "non-positive quantity");
@@ -498,15 +498,8 @@ namespace eosio {
         });
     }
 
-    void pegtoken::agreecast_v2(name auditor, string to_address, name to_account, string remote_trx_id, uint64_t index, asset quantity, string memo) {
-        ACCOUNT_CHECK(to_account)
-        STRING_LEN_CHECK(memo,256)
-        eosio_assert(quantity.amount > 0, "non-positive quantity");
-
+    void pegtoken::agreecast_v2(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo){
         auto sym_raw = quantity.symbol.code().raw();
-        auto auditor_table = auditors(get_self(),sym_raw);
-        eosio_assert(auditor_table.find(auditor.value) != auditor_table.end(), "invalid auditor");
-        require_auth(auditor);
 
         auto addr_table = addrs(get_self(), sym_raw);
         auto iter_addr = addr_table.find(to_account.value);
@@ -526,24 +519,15 @@ namespace eosio {
         cast_table.modify(iter_cast,same_payer,[&](auto &p){
             p.enable = 1;
             p.msg = memo;
-            p.auditor = auditor;
             p.update_time = time_point_sec(now());
         });
     }
 
-    void pegtoken::refusecast_v2(name auditor, string to_address, name to_account, string remote_trx_id, uint64_t index, asset quantity, string memo) {
-        ACCOUNT_CHECK(to_account)
-        STRING_LEN_CHECK(memo,256)
-        eosio_assert(quantity.amount > 0, "non-positive quantity");
-
+    void pegtoken::refusecast_v2(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo){
         auto sym_raw = quantity.symbol.code().raw();
-        auto auditor_table = auditors(get_self(),sym_raw);
-        eosio_assert(auditor_table.find(auditor.value) != auditor_table.end(), "invalid auditor");
-        require_auth(auditor);
-
-        auto addr_table = addrs(get_self(), sym_raw);
-        auto iter_addr = addr_table.find(to_account.value);
-        eosio_assert(iter_addr != addr_table.end() && iter_addr->address == to_address, "invalid to_address");
+        auto infos_tb = infos(get_self(), sym_raw);
+        auto iter_info = infos_tb.find(sym_raw);
+        // eosio_assert(iter_info != addr_table.end() && iter_info->address == to_address, "invalid to_address");
 
         auto cast_table = casts(get_self(), sym_raw);
         auto index_str = to_address + to_account.to_string() + remote_trx_id + std::to_string(index) + quantity.to_string();
@@ -559,16 +543,11 @@ namespace eosio {
         cast_table.modify(iter_cast,same_payer,[&](auto &p){
             p.enable = 0;
             p.msg = memo;
-            p.auditor = auditor;
             p.update_time = time_point_sec(now());
         });
     }
 
     void pegtoken::docast_v2(string to_address, name to_account, string remote_trx_id, uint64_t index, asset quantity, string memo) {
-        ACCOUNT_CHECK(to_account)
-        STRING_LEN_CHECK(memo,256)
-        eosio_assert(quantity.amount > 0, "non-positive quantity");
-
         auto sym_raw = quantity.symbol.code().raw();
         auto info_table = infos(get_self(),sym_raw);
         auto iter_info = info_table.find(sym_raw);
@@ -645,7 +624,7 @@ namespace eosio {
     }
 
     void pegtoken::resetaddress_v2(symbol_code sym_code, name to ){
-        
+
     }
     
     void pegtoken::withdraw_v2( name from, string to, asset quantity, uint64_t index, string memo){
@@ -685,5 +664,44 @@ namespace eosio {
          
     }
 
+    void pegtoken::denyback_v2( symbol_code sym_code, transaction_id_type trx_id, uint64_t index,  string memo ){
+
+    }
+
+    void pegtoken::sendback_v2(transaction_id_type trx_id, name to, asset quantity, string memo ){
+
+    }
+
+    void pegtoken::lockall_v2( symbol_code sym_code, name brakeman ){
+        require_auth(brakeman);
+        auto sym_raw = sym_code.raw();
+        auto infos_tb = infos(get_self(), sym_raw);
+        auto iter = infos_tb.find(sym_raw);
+        eosio_assert(iter != infos_tb.end(), "token not exist");
+        {
+            auto braks = brakemans(get_self(), sym_raw);
+            eosio_assert(braks.find(brakeman.value) != braks.end(), "brakeman not exist");
+        }
+
+        eosio_assert(iter->active == false, "this token is not being locked");
+        infos_tb.modify(iter, same_payer, [&](auto &p) { p.active = false; });
+    }
+
+    void pegtoken::unlockall_v2(symbol_code sym_code, name brakeman ){
+        require_auth(brakeman);
+        auto sym_raw = sym_code.raw();
+        auto infos_tb = infos(get_self(), sym_raw);
+        auto iter = infos_tb.find(sym_raw);
+        eosio_assert(iter != infos_tb.end(), "token not exist");
+        {
+            auto braks = brakemans(get_self(), sym_raw);
+            eosio_assert(braks.find(brakeman.value) != braks.end(), "brakeman not exist");
+        }
+
+        eosio_assert(iter->active == false, "this token is not being locked");
+        infos_tb.modify(iter, same_payer, [&](auto &p) { p.active = true; });
+    }
+
+ 
     // void pegtoken::feedback_v2
 }

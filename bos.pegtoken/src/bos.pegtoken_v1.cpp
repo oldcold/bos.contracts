@@ -829,32 +829,32 @@ namespace eosio {
         });
     }
 
-    void pegtoken::lockall_v1(symbol_code sym_code, name auditor) {
+    void pegtoken::lockall_v1(symbol_code sym_code, name brakeman) {
         // FIXME: auth check
         auto sym_raw = sym_code.raw();
-        require_auth(auditor);
+        require_auth(brakeman);
         auto stats_table = stats(get_self(), sym_raw);
         auto iter = stats_table.find(sym_raw);
         eosio_assert(iter != stats_table.end(), "token not exist");
         {
-            auto auds = auditors(get_self(), sym_raw);
-            eosio_assert(auds.find(auditor.value) != auds.end(), "auditor not exist");
+            auto braks = brakemans(get_self(), sym_raw);
+            eosio_assert(braks.find(brakeman.value) != braks.end(), "brakeman not exist");
         }
 
         eosio_assert(iter->active == true, "this token has been locked already");
         stats_table.modify(iter, same_payer, [&](auto &p) { p.active = false; });
     }
 
-    void pegtoken::unlockall_v1(symbol_code sym_code, name auditor) {
+    void pegtoken::unlockall_v1(symbol_code sym_code, name brakeman) {
         // FIXME: auth check
         auto sym_raw = sym_code.raw();
-        require_auth(auditor);
+        require_auth(brakeman);
         auto stats_table = stats(get_self(), sym_raw);
         auto iter = stats_table.find(sym_raw);
         eosio_assert(iter != stats_table.end(), "token not exist");
         {
-            auto auds = auditors(get_self(), sym_raw);
-            eosio_assert(auds.find(auditor.value) != auds.end(), "auditor not exist");
+            auto braks = brakemans(get_self(), sym_raw);
+            eosio_assert(braks.find(brakeman.value) != braks.end(), "brakeman not exist");
         }
 
         eosio_assert(iter->active == false, "this token is not being locked");
@@ -872,7 +872,7 @@ namespace eosio {
     //         eosio_assert(iter != stats_table.end(), "token not exist");
     //         {
     //             auto auds = auditors(get_self(), sym_raw);
-    //             eosio_assert(auds.find(auditor.value) != auds.end(), "auditor not exist");
+    //             eosio_assert(auds.find(auditor.value) != braks.end(), "auditor not exist");
     //         }
     //         eosio_assert(iter->active, "underwriter is not active");
     //     }
@@ -900,7 +900,7 @@ namespace eosio {
     //         eosio_assert(iter != stats_table.end(), "token not exist");
     //         {
     //             auto auds = auditors(get_self(), sym_raw);
-    //             eosio_assert(auds.find(auditor.value) != auds.end(), "auditor not exist");
+    //             eosio_assert(auds.find(auditor.value) != braks.end(), "auditor not exist");
     //         }
 
     //         eosio_assert(iter->active, "underwriter is not active");
@@ -930,7 +930,7 @@ namespace eosio {
             require_auth(iter->acceptor);
             // {
             //     auto auds = auditors(get_self(), sym_raw);
-            //     eosio_assert(auds.find(auditor.value) != auds.end(), "auditor not exist");
+            //     eosio_assert(auds.find(auditor.value) != braks.end(), "auditor not exist");
             // }
         }
 

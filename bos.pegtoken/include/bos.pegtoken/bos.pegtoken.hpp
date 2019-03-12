@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-
 namespace eosio {
 
 using std::string;
@@ -155,14 +154,14 @@ public:
 
     [[eosio::action]] void cast(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo);
 
-    [[eosio::action]] void precast(string to_address, name to_account, string remote_trx_id, uint64_t index, asset quantity, string memo);
-    void precast_v2(string to_address, name to_account, string remote_trx_id, uint64_t index, asset quantity, string memo);
+    [[eosio::action]] void precast(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo);
+    void precast_v2(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo);
 
-    [[eosio::action]] void agreecast(name auditor, string to_address, name to_account, string remote_trx_id, uint64_t index, asset quantity, string memo);
-    void agreecast_v2(name auditor, string to_address, name to_account, string remote_trx_id, uint64_t index, asset quantity, string memo);
-
-    [[eosio::action]] void refusecast(name auditor, string to_address, name to_account, string remote_trx_id, uint64_t index, asset quantity, string memo);
-    void refusecast_v2(name auditor, string to_address, name to_account, string remote_trx_id, uint64_t index, asset quantity, string memo);
+    [[eosio::action]] void agreecast(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo);
+    void agreecast_v2(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo);
+    
+    [[eosio::action]] void refusecast(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo);
+    void refusecast_v2(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo);
     
     [[eosio::action]] void melt(name from_account, string to_address, asset quantity, uint64_t index, string memo);
     void melt_v2(name from_account, string to_address, asset quantity, uint64_t index, string memo);
@@ -260,17 +259,20 @@ public:
     // TODO: sendback       提币失败后承兑商退币给普通用户
     [[eosio::action]] void sendback(transaction_id_type trx_id, name to, asset quantity, string memo);
     void sendback_v1(/* name auditor,*/ transaction_id_type trx_id, name to, asset quantity, string memo );
+    void sendback_v2(transaction_id_type trx_id, name to, asset quantity, string memo );
 
 //    [[eosio::action]] void setacceptor( symbol_code sym_code, name acceptor );
    void setacceptor_v1( symbol_code sym_code, name acceptor );
 
     // TODO: auditor->brakeman
-    [[eosio::action]] void lockall( symbol_code sym_code, name auditor );
-    void lockall_v1( symbol_code sym_code, name auditor );
+    [[eosio::action]] void lockall( symbol_code sym_code, name brakeman );
+    void lockall_v1( symbol_code sym_code, name brakeman );
+    void lockall_v2( symbol_code sym_code, name brakeman );
 
     // TODO: auditor->brakeman
-    [[eosio::action]] void unlockall( symbol_code sym_code, name auditor );
-    void unlockall_v1( symbol_code sym_code, name auditor );
+    [[eosio::action]] void unlockall( symbol_code sym_code, name brakeman );
+    void unlockall_v1( symbol_code sym_code, name brakeman );
+    void unlockall_v2( symbol_code sym_code, name brakeman );
 
     [[eosio::action]] void clear( symbol_code sym_code, uint64_t num );
     void clear_v1( symbol_code sym_code, uint64_t num );
@@ -332,9 +334,20 @@ private:
     bool is_sym_equal_asset(symbol_code sym_code, asset quantity);
     bool is_vip(symbol_code sym_code, name name);
     void is_auth_issuer(symbol_code sym_code);
+    void is_auth_manager(symbol_code sym_code);
+    void is_auth_teller(symbol_code sym_code);
+    void is_auth_auditor(symbol_code sym_code);
+    void is_auth_brakeman(symbol_code sym_code);
 
+    void is_auth_role(symbol_code sym_code, name to_account);
+
+    void withdraw_check(symbol_code sym_code, asset quantity);
     bool balance_check( symbol_code sym_code, name user );
     bool addr_check( symbol_code sym_code, name user );
+
+// roles:
+// deployer【usdt.bos, btc.bos】, issuer
+// teller, auditor, gatherer, brakeman,
 
     struct [[eosio::table]] symbol_ts {
         symbol sym;
@@ -916,5 +929,100 @@ private:
                 break;
             }
         }
+    }
+
+    void pegtoken::is_auth_manager(symbol_code sym_code){
+        auto manager_tb = managers(get_self(),sym_code.raw());
+        auto mgr_val = manager_tb.get(sym_code.raw(), "the v2 token NOT in managers table");
+        require_auth(mgr_val.manager);
+    }
+
+    void pegtoken::is_auth_teller(symbol_code sym_code){
+        auto teller_tb = tellers(get_self(),sym_code.raw());
+        auto teller_val = teller_tb.get(sym_code.raw(), "the v2 token NOT in tellers table");
+        require_auth(teller_val.teller);
+    }
+
+    void pegtoken::is_auth_auditor(symbol_code sym_code){
+        auto auditor_tb = auditors(get_self(),sym_code.raw());
+        auto auditor_val = auditor_tb.get(sym_code.raw(), "the v2 token NOT in auditors table");
+        require_auth(auditor_val.auditor);
+    }
+
+    void pegtoken::is_auth_brakeman(symbol_code sym_code){
+        auto brakeman_tb = brakemans(get_self(),sym_code.raw());
+        auto brakeman_val = brakeman_tb.get(sym_code.raw(), "the v2 token NOT in brakemans table");
+        require_auth(brakeman_val.brakeman);
+    }
+
+    void pegtoken::is_auth_role(symbol_code sym_code, name to_account){
+        auto brakeman_tb = brakemans(get_self(), sym_code.raw());
+        auto braks = brakeman_tb.find(to_account.value);
+        eosio_assert(braks == brakeman_tb.end(), "to_account has been assigned to role: brakeman");
+
+
+        auto auditor_tb = auditors(get_self(),sym_code.raw());
+        auto auds = auditor_tb.find(to_account.value);
+        eosio_assert(auds == auditor_tb.end(), "to_account has been assigned to role: auditor");
+
+
+        auto manager_tb = managers(get_self(), sym_code.raw());
+        auto mgr = manager_tb.find(to_account.value);
+        eosio_assert(mgr == manager_tb.end(), "to_account has been assigned to role: manager");
+
+
+        auto teller_tb = tellers(get_self(), sym_code.raw());
+        auto tellers = teller_tb.find(to_account.value);
+        eosio_assert(tellers == teller_tb.end(), "to_account has been assigned to role: teller");
+
+
+        auto editionval = getedition(sym_code);
+        switch (editionval)
+        {
+            case 1: {
+                auto stats_table = stats(get_self(),sym_code.raw());
+                auto stat_iter = stats_table.find(sym_code.raw());
+                eosio_assert(stat_iter == stats_table.end(), "to_account has been assigned to role: teller");
+                break;
+            }
+            case 2:{
+                auto info_table = infos(get_self(),sym_code.raw());
+                auto info_iter = info_table.find(sym_code.raw());
+                eosio_assert(info_iter == info_table.end(), "to_account has been assigned to role: teller");
+                break;
+            }
+            default:{
+                eosio_assert(false, "edition should be 1 or 2");
+                break;
+            }
+        }
+    }
+
+    void pegtoken::withdraw_check(symbol_code sym_code, asset quantity){
+        auto editionval = getedition(sym_code);
+        asset maxlimit, minlimit, totalimit;
+        uint64_t frequencylimit, intervalimit;
+        switch (editionval){
+            case 1: {
+                auto stats_tb = stats(get_self(),sym_code.raw());
+                auto stat_val = stats_tb.get(sym_code.raw(), "This type of assets not exists in stats table");   
+                maxlimit = stat_val.max_limit;
+                minlimit = stat_val.min_limit; 
+                break;
+            }
+            case 2:{
+                auto limits_tb = limits(get_self(),sym_code.raw());
+                auto lim_val = limits_tb.get(sym_code.raw(), "This type of assets not exists in limits table");
+                maxlimit = lim_val.max_limit;
+                minlimit = lim_val.min_limit; 
+                break;
+            }
+            default:{
+                eosio_assert(false, "edition should be 1 or 2");
+                break;
+            }
+           eosio_assert(quantity <= maxlimit, "withdraw amount is more than the max_limit");
+           eosio_assert(quantity >= minlimit, "withdraw amount is less than the min_limit");
+        }   
     }
 } // namespace eosio
