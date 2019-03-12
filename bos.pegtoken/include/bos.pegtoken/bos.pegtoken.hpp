@@ -46,17 +46,17 @@ public:
     void update_v1( symbol_code sym_code, string organization, string website );
     void update_v2( symbol_code sym_code, string organization, string website );
 
-    [[eosio::action]] void setlimit(symbol_code sym_code, asset max_limit, asset min_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
-    void setlimit_v1( asset max_limit, asset min_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
-    void setlimit_v2( asset max_limit, asset min_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
+    [[eosio::action]] void setlimit(symbol_code sym_code, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
+    void setlimit_v1( asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
+    void setlimit_v2( asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
 
-    [[eosio::action]] void setmaxlimit(symbol_code sym_code, asset max_limit );
-    void setmaxlimit_v1( asset max_limit );
-    void setmaxlimit_v2( asset max_limit );
+    [[eosio::action]] void setmaxlimit(symbol_code sym_code, asset maximum_limit );
+    void setmaxlimit_v1( asset maximum_limit );
+    void setmaxlimit_v2( asset maximum_limit );
 
-    [[eosio::action]] void setminlimit(symbol_code sym_code,  asset min_limit );
-    void setminlimit_v1( asset min_limit );
-    void setminlimit_v2( asset min_limit );
+    [[eosio::action]] void setminlimit(symbol_code sym_code,  asset minimum_limit );
+    void setminlimit_v1( asset minimum_limit );
+    void setminlimit_v2( asset minimum_limit );
 
     [[eosio::action]] void settotalimit(symbol_code sym_code,  asset total_limit );
     void settotalimit_v1( asset total_limit );
@@ -70,21 +70,21 @@ public:
     void setintvlimit_v1( symbol_code sym_code, uint64_t interval_limit);
     void setintvlimit_v2( symbol_code sym_code, uint64_t interval_limit);
 
-    [[eosio::action]] void setviplimit(symbol_code sym_code, name vip, asset max_limit, asset min_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit,uint64_t reset_limit);
-    void setviplimit_v1(name vip, asset max_limit, asset min_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit,uint64_t reset_limit);
-    void setviplimit_v2(name vip, asset max_limit, asset min_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit,uint64_t reset_limit);
+    [[eosio::action]] void setviplimit(symbol_code sym_code, name vip, asset maximum_limit, asset minimum_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit);
+    void setviplimit_v1(name vip, asset maximum_limit, asset minimum_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit);
+    void setviplimit_v2(name vip, asset maximum_limit, asset minimum_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit);
 
-    [[eosio::action]] void setvipmaxlim(name vip, asset max_limit );
-    void setvipmaxlim_v1(name vip, asset max_limit );
-    void setvipmaxlim_v2(name vip, asset max_limit );
+    [[eosio::action]] void setvipmaxlim(name vip, asset maximum_limit );
+    void setvipmaxlim_v1(name vip, asset maximum_limit );
+    void setvipmaxlim_v2(name vip, asset maximum_limit );
 
-    [[eosio::action]] void setvipminlim(name vip, asset max_limit );
-    void setvipminlim_v1(name vip, asset max_limit );
-    void setvipminlim_v2(name vip, asset max_limit );
+    [[eosio::action]] void setvipminlim(name vip, asset maximum_limit );
+    void setvipminlim_v1(name vip, asset maximum_limit );
+    void setvipminlim_v2(name vip, asset maximum_limit );
 
-    [[eosio::action]] void setviptotlim(name vip, asset max_limit );
-    void setviptotlim_v1(name vip, asset max_limit );
-    void setviptotlim_v2(name vip, asset max_limit );
+    [[eosio::action]] void setviptotlim(name vip, asset maximum_limit );
+    void setviptotlim_v1(name vip, asset maximum_limit );
+    void setviptotlim_v2(name vip, asset maximum_limit );
 
     [[eosio::action]] void setvipfreqlm(symbol_code sym_code, name vip, uint64_t frequency_limit );
     void setvipfreqlm_v1(symbol_code sym_code, name vip, uint64_t frequency_limit );
@@ -281,9 +281,9 @@ public:
     [[eosio::action]] void rm( symbol_code sym_code, uint64_t id, uint64_t type);
     void rm_v2( symbol_code sym_code, uint64_t id, uint64_t type);
     
-    [[eosio::action]] void setauditor( symbol_code sym_code, string action, name auditor);
+    [[eosio::action]] void setauditor( symbol_code sym_code, string actn, name auditor);
     void setauditor_v1( symbol_code sym_code, string action, name auditor);
-    void setauditor_v2( symbol_code sym_code, string action, name auditor);
+    void setauditor_v2( symbol_code sym_code, string actn, name auditor);
 
     [[eosio::action]] void setgatherer( symbol_code sym_code,  name gatherer);
     void setgatherer_v1( symbol_code sym_code,  name gatherer);
@@ -340,9 +340,11 @@ private:
     void is_auth_auditor(symbol_code sym_code);
     void is_auth_brakeman(symbol_code sym_code);
 
-    void is_auth_role(symbol_code sym_code, name to_account);
+    void is_auth_role(symbol_code sym_code, name account);
+    // 检查是否被锁住,stats和infos的active字段
+    bool is_locked(symbol_code sym_code);
 
-    void withdraw_check(symbol_code sym_code, asset quantity, name to_account);
+    void withdraw_check(symbol_code sym_code, asset quantity, name account);
     bool balance_check( symbol_code sym_code, name user );
     bool addr_check( symbol_code sym_code, name user );
 
@@ -623,8 +625,8 @@ private:
 
     struct [[eosio::table]] viplimit_ts {
         name owner;
-        asset max_limit;
-        asset min_limit;
+        asset maximum_limit;
+        asset minimum_limit;
         asset total_limit;
         uint64_t frequency_limit;
         uint64_t interval_limit; //两次换币间隔
@@ -647,8 +649,8 @@ private:
     // FIXME: no reset_limit
     struct [[eosio::table]] stat_ts {
         asset supply;
-        asset max_limit;
-        asset min_limit;
+        asset maximum_limit;
+        asset minimum_limit;
         asset total_limit;
         uint64_t frequency_limit;
         uint64_t interval_limit;
@@ -693,14 +695,14 @@ private:
 
     //TODO: change it to singleton
     struct [[eosio::table]] limit_ts {
-        asset max_limit;
-        asset min_limit;
+        asset maximum_limit;
+        asset minimum_limit;
         asset total_limit;
         uint64_t frequency_limit;
         uint64_t interval_limit;
         uint64_t reset_limit;
 
-        uint64_t primary_key() const { return max_limit.symbol.code().raw(); }
+        uint64_t primary_key() const { return maximum_limit.symbol.code().raw(); }
     };
     using limits = eosio::multi_index< "limits"_n, limit_ts >;
 
@@ -897,7 +899,7 @@ private:
         bool outcheck = check_table.get(sym_code.raw(),"no such out_check").out_check;
         return outcheck;
     }
-
+       //  判断所有的asset 是否与sym_code为同一种币，若不是，则报错
     bool pegtoken::is_sym_equal_asset(symbol_code sym_code, asset quantity){
         symbol_code asset_symcode = quantity.symbol.code();
         return asset_symcode == sym_code;
@@ -956,40 +958,39 @@ private:
         require_auth(brakeman_val.brakeman);
     }
 
-    void pegtoken::is_auth_role(symbol_code sym_code, name to_account){
+    void pegtoken::is_auth_role(symbol_code sym_code, name account){
         auto brakeman_tb = brakemans(get_self(), sym_code.raw());
-        auto braks = brakeman_tb.find(to_account.value);
-        eosio_assert(braks == brakeman_tb.end(), "to_account has been assigned to role: brakeman");
-
+        auto braks = brakeman_tb.find(account.value);
+        eosio_assert(braks == brakeman_tb.end(), "account has been assigned to role: brakeman");
 
         auto auditor_tb = auditors(get_self(),sym_code.raw());
-        auto auds = auditor_tb.find(to_account.value);
-        eosio_assert(auds == auditor_tb.end(), "to_account has been assigned to role: auditor");
-
+        auto auds = auditor_tb.find(account.value);
+        eosio_assert(auds == auditor_tb.end(), "account has been assigned to role: auditor");
 
         auto manager_tb = managers(get_self(), sym_code.raw());
-        auto mgr = manager_tb.find(to_account.value);
-        eosio_assert(mgr == manager_tb.end(), "to_account has been assigned to role: manager");
-
+        auto mgr = manager_tb.find(account.value);
+        eosio_assert(mgr == manager_tb.end(), "account has been assigned to role: manager");
 
         auto teller_tb = tellers(get_self(), sym_code.raw());
-        auto tellers = teller_tb.find(to_account.value);
-        eosio_assert(tellers == teller_tb.end(), "to_account has been assigned to role: teller");
+        auto tellers = teller_tb.find(account.value);
+        eosio_assert(tellers == teller_tb.end(), "account has been assigned to role: teller");        
 
-
+        //不为issuer
         auto editionval = getedition(sym_code);
         switch (editionval)
         {
             case 1: {
                 auto stats_table = stats(get_self(),sym_code.raw());
                 auto stat_iter = stats_table.find(sym_code.raw());
-                eosio_assert(stat_iter == stats_table.end(), "to_account has been assigned to role: teller");
+                eosio_assert(stat_iter == stats_table.end(), "No such symbol");
+                eosio_assert(account == stat_iter->issuer , "The account has been assigned to issuer");
                 break;
             }
             case 2:{
                 auto info_table = infos(get_self(),sym_code.raw());
                 auto info_iter = info_table.find(sym_code.raw());
-                eosio_assert(info_iter == info_table.end(), "to_account has been assigned to role: teller");
+                eosio_assert(info_iter == info_table.end(), "No such symbol");
+                eosio_assert(account == info_iter->issuer, "The account has been assigned to issuer");
                 break;
             }
             default:{
@@ -999,6 +1000,30 @@ private:
         }
     }
 
+    bool pegtoken::is_locked(symbol_code sym_code){
+        auto editionval = getedition(sym_code);
+        // 检查两个不同表中的active字段
+        switch (editionval)
+        {
+            case 1: {
+                auto stats_table = stats(get_self(),sym_code.raw());
+                auto stat_val = stats_table.get(sym_code.raw(), "No such symbol in stats table");
+                return stat_val.active;
+                break;
+            }
+            case 2:{
+                auto info_table = infos(get_self(),sym_code.raw());
+                auto info_val = info_table.get(sym_code.raw(), "No such symbol in infos table");
+                return info_val.active;
+                break;
+            }
+            default:{
+                eosio_assert(false, "edition should be 1 or 2");
+                break;
+            }
+        }
+    }
+    // 提币时的检查条件
     void pegtoken::withdraw_check(symbol_code sym_code, asset quantity, name ){
         auto editionval = getedition(sym_code);
         //TODO: checking limit
@@ -1008,15 +1033,15 @@ private:
             case 1: {
                 auto stats_tb = stats(get_self(),sym_code.raw());
                 auto stat_val = stats_tb.get(sym_code.raw(), "This type of assets not exists in stats table");   
-                eosio_assert(quantity <= stat_val.max_limit, "withdraw amount is more than the max_limit");
-                eosio_assert(quantity >= stat_val.min_limit, "withdraw amount is less than the min_limit");
+                eosio_assert(quantity <= stat_val.maximum_limit, "withdraw amount is more than the maximum_limit");
+                eosio_assert(quantity >= stat_val.minimum_limit, "withdraw amount is less than the minimum_limit");
                 break;
             }
             case 2:{
                 auto limits_tb = limits(get_self(),sym_code.raw());
                 auto lim_val = limits_tb.get(sym_code.raw(), "This type of assets not exists in limits table");
-                eosio_assert(quantity <= lim_val.max_limit, "withdraw amount is more than the max_limit");
-                eosio_assert(quantity >= lim_val.min_limit, "withdraw amount is less than the min_limit");
+                eosio_assert(quantity <= lim_val.maximum_limit, "withdraw amount is more than the maximum_limit");
+                eosio_assert(quantity >= lim_val.minimum_limit, "withdraw amount is less than the minimum_limit");
                 break;
             }
             default:{

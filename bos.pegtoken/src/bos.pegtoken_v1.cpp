@@ -27,8 +27,8 @@ namespace eosio {
 
         stats_table.emplace(get_self(), [&](auto &p) {
             p.supply = asset(0, sym);
-            p.max_limit = p.supply;
-            p.min_limit = p.supply;
+            p.maximum_limit = p.supply;
+            p.minimum_limit = p.supply;
             p.min_service_fee = p.supply;
             p.miner_fee = p.supply;
             p.total_limit = p.supply;
@@ -64,36 +64,36 @@ namespace eosio {
         });
     }
 
-    void pegtoken::setlimit_v1(asset max_limit, asset min_limit, asset total_limit, uint64_t frequency_limit,
+    void pegtoken::setlimit_v1(asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit,
                             uint64_t interval_limit) {
-        auto sym_raw = max_limit.symbol.code().raw();
+        auto sym_raw = maximum_limit.symbol.code().raw();
         auto stats_table = stats(get_self(), sym_raw);
         auto iter = stats_table.find(sym_raw);
         require_auth(iter->issuer);
         eosio_assert(iter != stats_table.end(), "token not exist");
         stats_table.modify(iter, same_payer, [&](auto &p) {
-            p.max_limit = max_limit;
-            p.min_limit = min_limit;
+            p.maximum_limit = maximum_limit;
+            p.minimum_limit = minimum_limit;
             p.total_limit = total_limit;
             p.frequency_limit = frequency_limit;
             p.interval_limit = interval_limit;
         });
     }
 
-    void pegtoken::setmaxlimit_v1( asset max_limit ){
-        auto sym_raw = max_limit.symbol.code().raw();
+    void pegtoken::setmaxlimit_v1( asset maximum_limit ){
+        auto sym_raw = maximum_limit.symbol.code().raw();
         auto stats_table = stats(get_self(), sym_raw);
         auto val = stats_table.get(sym_raw,"token not exist");
         
-        setlimit_v1( max_limit,val.min_limit,val.total_limit,val.frequency_limit,val.interval_limit );
+        setlimit_v1( maximum_limit,val.minimum_limit,val.total_limit,val.frequency_limit,val.interval_limit );
     }
     
-    void pegtoken::setminlimit_v1( asset min_limit ){
-        auto sym_raw = min_limit.symbol.code().raw();
+    void pegtoken::setminlimit_v1( asset minimum_limit ){
+        auto sym_raw = minimum_limit.symbol.code().raw();
         auto stats_table = stats(get_self(), sym_raw);
         auto val = stats_table.get(sym_raw,"token not exist");
         
-        setlimit_v1( val.max_limit,min_limit,val.total_limit,val.frequency_limit,val.interval_limit );
+        setlimit_v1( val.maximum_limit,minimum_limit,val.total_limit,val.frequency_limit,val.interval_limit );
     }
 
     void pegtoken::settotalimit_v1( asset total_limit ){
@@ -101,7 +101,7 @@ namespace eosio {
         auto stats_table = stats(get_self(), sym_raw);
         auto val = stats_table.get(sym_raw,"token not exist");
         
-        setlimit_v1( val.max_limit,val.min_limit,total_limit,val.frequency_limit,val.interval_limit );
+        setlimit_v1( val.maximum_limit,val.minimum_limit,total_limit,val.frequency_limit,val.interval_limit );
     }
 
     void pegtoken::setfreqlimit_v1( symbol_code sym_code, uint64_t frequency_limit){
@@ -109,7 +109,7 @@ namespace eosio {
         auto stats_table = stats(get_self(), sym_raw);
         auto val = stats_table.get(sym_raw,"token not exist");
         
-        setlimit_v1( val.max_limit,val.min_limit,val.total_limit,frequency_limit,val.interval_limit );
+        setlimit_v1( val.maximum_limit,val.minimum_limit,val.total_limit,frequency_limit,val.interval_limit );
     }
 
     void pegtoken::setintvlimit_v1( symbol_code sym_code, uint64_t interval_limit){
@@ -117,7 +117,7 @@ namespace eosio {
         auto stats_table = stats(get_self(), sym_raw);
         auto val = stats_table.get(sym_raw,"token not exist");
         
-        setlimit_v1( val.max_limit,val.min_limit,val.total_limit,val.frequency_limit,interval_limit );
+        setlimit_v1( val.maximum_limit,val.minimum_limit,val.total_limit,val.frequency_limit,interval_limit );
     }
 
     // // FIXME: no reset_limit in stats table
@@ -125,10 +125,10 @@ namespace eosio {
     //     eosio_assert( false, "no reset_limit in stats table" );
     // }
 
-    void pegtoken::setviplimit_v1(name vip, asset max_limit, asset min_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit,uint64_t reset_limit){
-        eosio_assert( max_limit >= min_limit && total_limit >= max_limit && min_limit.amount >=0, "mismatch: total >= max >= min >= 0");
+    void pegtoken::setviplimit_v1(name vip, asset maximum_limit, asset minimum_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit){
+        eosio_assert( maximum_limit >= minimum_limit && total_limit >= maximum_limit && minimum_limit.amount >=0, "mismatch: total >= max >= min >= 0");
 
-        auto sym_raw = max_limit.symbol.code().raw();
+        auto sym_raw = maximum_limit.symbol.code().raw();
         
         auto stats_table = stats(get_self(), sym_raw);
         auto iter = stats_table.find(sym_raw);
@@ -147,57 +147,55 @@ namespace eosio {
             });
             viplimit_table.emplace(get_self(),[&](auto &p){
                 p.owner = vip;
-                p.max_limit = max_limit;
-                p.min_limit = min_limit;
+                p.maximum_limit = maximum_limit;
+                p.minimum_limit = minimum_limit;
                 p.total_limit = total_limit;
                 p.frequency_limit = frequency_limit;
                 p.interval_limit = interval_limit;
-                p.reset_limit = reset_limit;
             });
             vipfee_table.emplace(get_self(),[&](auto &p){
                 p.owner = vip;
                 p.service_fee_rate = 0;
-                p.min_service_fee = eosio::asset(0,max_limit.symbol);
-                p.miner_fee = eosio::asset(0,max_limit.symbol);
+                p.min_service_fee = eosio::asset(0,maximum_limit.symbol);
+                p.miner_fee = eosio::asset(0,maximum_limit.symbol);
             });
         } else {
             viplimit_table.modify(
                 viplimit_table.find(vip.value),
                     same_payer,[&](auto &p){
                 p.owner = vip;
-                p.max_limit = max_limit;
-                p.min_limit = min_limit;
+                p.maximum_limit = maximum_limit;
+                p.minimum_limit = minimum_limit;
                 p.total_limit = total_limit;
                 p.frequency_limit = frequency_limit;
                 p.interval_limit = interval_limit;
-                p.reset_limit = reset_limit;
             });
         }
     }
 
-    void pegtoken::setvipmaxlim_v1(name vip, asset max_limit ) {
-        auto sym_raw = max_limit.symbol.code().raw();
+    void pegtoken::setvipmaxlim_v1(name vip, asset maximum_limit ) {
+        auto sym_raw = maximum_limit.symbol.code().raw();
         auto viplimit_table = viplimits(get_self(),sym_raw);
         auto iter = viplimit_table.find(vip.value);
         if (iter == viplimit_table.end() ){
-            auto zero_asset = eosio::asset(0,max_limit.symbol);
-            setviplimit_v1(vip,max_limit,zero_asset,zero_asset,0,0,0);
+            auto zero_asset = eosio::asset(0,maximum_limit.symbol);
+            setviplimit_v1(vip,maximum_limit,zero_asset,zero_asset,0,0);
         } else {
-            setviplimit_v1(vip,max_limit,iter->min_limit,iter->total_limit,
-            iter->frequency_limit,iter->interval_limit,iter->reset_limit);
+            setviplimit_v1(vip,maximum_limit,iter->minimum_limit,iter->total_limit,
+            iter->frequency_limit,iter->interval_limit);
         }
     }
 
-    void pegtoken::setvipminlim_v1(name vip, asset min_limit ) {
-        auto sym_raw = min_limit.symbol.code().raw();
+    void pegtoken::setvipminlim_v1(name vip, asset minimum_limit ) {
+        auto sym_raw = minimum_limit.symbol.code().raw();
         auto viplimit_table = viplimits(get_self(),sym_raw);
         auto iter = viplimit_table.find(vip.value);
         if (iter == viplimit_table.end() ){
-            auto zero_asset = eosio::asset(0,min_limit.symbol);
-            setviplimit_v1(vip,zero_asset,min_limit,zero_asset,0,0,0);
+            auto zero_asset = eosio::asset(0,minimum_limit.symbol);
+            setviplimit_v1(vip,zero_asset,minimum_limit,zero_asset,0,0);
         } else {
-            setviplimit_v1(vip,iter->max_limit,min_limit,iter->total_limit,
-            iter->frequency_limit,iter->interval_limit,iter->reset_limit);
+            setviplimit_v1(vip,iter->maximum_limit,minimum_limit,iter->total_limit,
+            iter->frequency_limit,iter->interval_limit);
         }
     }
 
@@ -207,10 +205,10 @@ namespace eosio {
         auto iter = viplimit_table.find(vip.value);
         if (iter == viplimit_table.end() ){
             auto zero_asset = eosio::asset(0,total_limit.symbol);
-            setviplimit_v1(vip,zero_asset,zero_asset,total_limit,0,0,0);
+            setviplimit_v1(vip,zero_asset,zero_asset,total_limit,0,0);
         } else {
-            setviplimit_v1(vip,iter->max_limit,iter->min_limit,total_limit,
-            iter->frequency_limit,iter->interval_limit,iter->reset_limit);
+            setviplimit_v1(vip,iter->maximum_limit,iter->minimum_limit,total_limit,
+            iter->frequency_limit,iter->interval_limit);
         }
     }
 
@@ -277,12 +275,11 @@ namespace eosio {
             });
             viplimit_table.emplace(get_self(),[&](auto &p){
                 p.owner = vip;
-                p.max_limit = zero_asset;
-                p.min_limit = zero_asset;
+                p.maximum_limit = zero_asset;
+                p.minimum_limit = zero_asset;
                 p.total_limit = zero_asset;
                 p.frequency_limit = 0;
                 p.interval_limit = 0;
-                p.reset_limit = 0;
             });
             vipfee_table.emplace(get_self(),[&](auto &p){
                 p.owner = vip;
@@ -564,10 +561,10 @@ namespace eosio {
         eosio_assert(residue.amount > 0,
                      ("quantity\t" + quantity.to_string() + "\tnot greater than the sum of miner_fee\t" +
                       (iter->miner_fee).to_string() + "\tand service_fee\t" + service_fee.to_string()).c_str());
-        eosio_assert(residue >= iter->min_limit, ("residue\t" + residue.to_string() + "\tless than min_limit\t" +
-                                                  (iter->min_limit).to_string()).c_str());
-        eosio_assert(residue <= iter->max_limit, ("residue\t " + residue.to_string() + "\tgreater than max_limit\t" +
-                                                  (iter->max_limit).to_string()).c_str());
+        eosio_assert(residue >= iter->minimum_limit, ("residue\t" + residue.to_string() + "\tless than minimum_limit\t" +
+                                                  (iter->minimum_limit).to_string()).c_str());
+        eosio_assert(residue <= iter->maximum_limit, ("residue\t " + residue.to_string() + "\tgreater than maximum_limit\t" +
+                                                  (iter->maximum_limit).to_string()).c_str());
 
         STRING_LEN_CHECK(memo, 256)
         STRING_LEN_CHECK(to, 64)
@@ -727,7 +724,7 @@ namespace eosio {
                 if (to_del == delindex.end()
                     || to_del->create_time.utc_seconds + iter->delayday * ONE_DAY > now()
                     || (to_del->state != 2 && to_del->state != 3)
-                    || to_del->quantity >= iter->min_limit) {
+                    || to_del->quantity >= iter->minimum_limit) {
                     break;
                 }
                 delindex.erase(to_del);
