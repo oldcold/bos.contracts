@@ -89,7 +89,7 @@ void token::transfer( name    from,
                       asset   quantity,
                       string  memo )
 {
-    eosio_assert( check_blacklist(_self,from), "account is on the blacklist" );///bos 
+    eosio_assert( vcheck_blacklist(_self,from), "account is on the blacklist" );///bos 
     eosio_assert( from != to, "cannot transfer to self" );
     require_auth( from );
     eosio_assert( is_account( to ), "to account does not exist");
@@ -167,9 +167,25 @@ void token::close( name owner, const symbol& symbol )
 }
 
    ///bos begin
+   bool token::vcheck_blacklist(name token_contract_account, name account)
+         {
+             require_auth( account );
+            tokenblacklist blklst(token_contract_account, account.value);
+            auto ac = blklst.find(account.value);
+            if(ac != blklst.end())
+            {
+                print("===========11111111================checkblacklist");
+                print("===========11111111================checkblacklist");
+                print("===========11111111================checkblacklist");
+                print("===========11111111================checkblacklist");
+                print("===========11111111================checkblacklist");
+                print("===========11111111================checkblacklist");
+            }
+            print("===========================checkblacklist");
+            return ac == blklst.end();
+         }
    void token::addblacklist(const std::vector<name>& list )
    {
-      name ram_payer = "eosio"_n;
       require_auth("eosio"_n);
 
       static const std::string msg  = std::string("account does not exist");
@@ -177,8 +193,14 @@ void token::close( name owner, const symbol& symbol )
       for (auto l : list) {
         std::string m =  l.to_string() + msg;
         eosio_assert(is_account(l), m.c_str());
-        blacklist blklst( _self, l.value );
-        blklst.emplace(ram_payer, [&](auto &a) {
+        tokenblacklist blklst( _self, l.value );
+        blklst.emplace(_self, [&](auto &a) {
+            print("===========================emplace");
+            print("===========================emplace");
+            print("===========================emplace");
+            print("===========================emplace");
+            print("===========================emplace");
+            print("===========================emplace");
             a.account = l; 
             });
       }
@@ -188,9 +210,16 @@ void token::close( name owner, const symbol& symbol )
      require_auth("eosio"_n);
 
      for (auto l : list) {
-        blacklist blklst(_self, l.value);
+        tokenblacklist blklst(_self, l.value);
        auto it = blklst.find(l.value);
        if (it != blklst.end()) {
+           print("===========================erase");
+            print("===========================erase");
+             print("===========================erase");
+              print("===========================erase");
+               print("===========================erase");
+                print("===========================erase");
+                 print("===========================erase");
          blklst.erase(it);
        }
      }

@@ -66,7 +66,7 @@ namespace eosio {
          ///bos begin
          static bool check_blacklist(name token_contract_account, name account)
          {
-            blacklist blklst(token_contract_account, account.value);
+            tokenblacklist blklst(token_contract_account, account.value);
             auto ac = blklst.find(account.value);
             return ac == blklst.end();
          }
@@ -86,18 +86,21 @@ namespace eosio {
             uint64_t primary_key()const { return supply.symbol.code().raw(); }
          };
          ///bos begin
-        struct [[eosio::table]] tokenblacklist {
+        struct [[eosio::table]] blacklist {
             name     account;
             uint64_t primary_key()const { return account.value; }
          };
 
-         typedef eosio::multi_index< "blacklist"_n, tokenblacklist > blacklist;
+         typedef eosio::multi_index< "blacklist"_n, blacklist > tokenblacklist;
          ///bos end
          typedef eosio::multi_index< "accounts"_n, account > accounts;
          typedef eosio::multi_index< "stat"_n, currency_stats > stats;
 
          void sub_balance( name owner, asset value );
          void add_balance( name owner, asset value, name ram_payer );
+
+         bool vcheck_blacklist(name token_contract_account, name account);
+        
    };
 
 } /// namespace eosio
