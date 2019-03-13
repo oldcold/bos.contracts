@@ -458,7 +458,8 @@ namespace eosio {
         });
     }
 
-    void pegtoken::precast_v2(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo) {
+    void pegtoken::precast_v2(symbol_code sym_code, string to_address, name to_account, 
+        string remote_trx_id, asset quantity, uint64_t index, string memo) {
         auto sym_raw = quantity.symbol.code().raw();
         auto addr_table = addrs(get_self(), sym_raw);
         auto iter_addr = addr_table.find(to_account.value);
@@ -466,21 +467,23 @@ namespace eosio {
 
         auto cast_table = casts(get_self(), sym_raw); 
         auto index_str = to_address + to_account.to_string() + remote_trx_id + std::to_string(index) + quantity.to_string();
-        cast_table.emplace(get_self(),[&](auto &p){
-            p.id = hash64(index_str);
+        auto id = hash64(index_str);
+        eosio_assert(cast_table.find(id) == cast_table.end(), "Already have the same precast hash.");
+
+        cast_table.emplace(get_self(), [&] (auto &p) {
+            p.id = id;
             p.to_account = to_account;
             p.to_address = to_address;
             p.quantity = quantity;
             p.state = 0;
+            p.need_check = true;
+            p.enable = false;
+            p.auditor = NIL_ACCOUNT;
             p.remote_trx_id = remote_trx_id;
-            p.index = index;
-            p.enable = 0;
+            p.remote_index = index;
             p.msg = memo;
-
             p.create_time = time_point_sec(now());
             p.update_time = time_point_sec(now());
-
-            p.auditor = NIL_ACCOUNT;
         });
     }
 
