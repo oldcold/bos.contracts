@@ -487,7 +487,8 @@ namespace eosio {
         });
     }
 
-    void pegtoken::agreecast_v2(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo){
+    void pegtoken::agreecast_v2(symbol_code sym_code, string to_address, name to_account,
+        string remote_trx_id, asset quantity, uint64_t index, string memo) {
         auto sym_raw = quantity.symbol.code().raw();
 
         auto addr_table = addrs(get_self(), sym_raw);
@@ -498,17 +499,35 @@ namespace eosio {
         auto index_str = to_address + to_account.to_string() + remote_trx_id + std::to_string(index) + quantity.to_string();
         auto iter_cast = cast_table.find(hash64(index_str));
         eosio_assert(iter_cast != cast_table.end()
-        && iter_cast -> to_account == to_account
-        && iter_cast -> to_address == to_address
-        && iter_cast -> remote_trx_id == remote_trx_id
-        && iter_cast -> index == index
-        && iter_cast -> quantity == quantity
-         , "invalid cast");
+            && iter_cast -> to_account == to_account
+            && iter_cast -> to_address == to_address
+            && iter_cast -> remote_trx_id == remote_trx_id
+            && iter_cast -> index == index
+            && iter_cast -> quantity == quantity
+            , "invalid cast");
 
-        cast_table.modify(iter_cast,same_payer,[&](auto &p){
-            p.enable = 1;
+        auto info_table = infos(get_self(), sym_raw);
+        auto iter_info = info_table.find(sym_raw);
+        eosio_assert(iter_info != info_table.end(), "token not exist");
+
+        // Add balance of to_account
+        add_balance(to_account, quantity, iter_info->issuer);
+        // Add supply of infos
+        info_table.modify(iter_info, same_payer, [&] (auto &p) {
+            p.supply += quantity;
+        });
+
+        auto auditor_tb = auditors(get_self(), sym_code.raw());
+        auto auditor_val = auditor_tb.get(sym_code.raw(), "the v2 token NOT in auditors table");
+        cast_table.modify(iter_cast, same_payer, [&] (auto &p) {
+            if (p.need_check && !p.enable) {
+                p.enable = true;
+            }
+            p.trx_id = get_trx_id();
+            p.index = 0;
             p.msg = memo;
             p.update_time = time_point_sec(now());
+            p.auditor = auditor_val.auditor;
         });
     }
 
