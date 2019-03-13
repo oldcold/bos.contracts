@@ -607,6 +607,19 @@ namespace eosio {
     void pegtoken::refusemelt_v2(name from_account, string to_address, asset quantity, uint64_t index, string memo){
 
     }
+
+    void pegtoken::applyaddr_v2( symbol_code sym_code, name to ){
+        // 根据sym_code，在addrs表中增加一条记录。
+        // 此时owner字段置为to，address字段为空， state字段为owner.value
+        // create_time为当前时间，assign_time为空
+        auto addresses = addrs(get_self(), sym_code.raw());
+        eosio_assert(addresses.find(to.value) == addresses.end(), "to account has applied for address already");
+        addresses.emplace(get_self(), [&](auto &p) {
+            p.owner = to;
+            p.state = to.value;
+            p.create_time = time_point_sec(now());  
+        });
+    }
     // 能设置多个
     void pegtoken::setauditor_v2(symbol_code sym_code, string actn, name auditor){
         //检查该账户该币种余额

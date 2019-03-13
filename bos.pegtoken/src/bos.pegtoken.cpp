@@ -741,11 +741,18 @@ namespace eosio {
 
 
     void pegtoken::applyaddr(symbol_code sym_code, name to) {
+        // 根据sym_code，查询editions表，校验币的版本，版本不对则报错。
+        // 根据sym_code，查询pegs表，校验币的机制，机制不对则报错。
+        eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
+        eosio_assert(getpeg(sym_code) == 1 || getpeg(sym_code) == 2, "The action require peg to be 1 or 2");
+        ACCOUNT_CHECK(to);
         auto editionval = getedition(sym_code);
         switch (editionval){
             case 1:
                 applyaddr_v1(sym_code,to);
                 break;
+            case 2:
+                applyaddr_v2(sym_code,to);
             default:
                 eosio_assert(false, "edition should be either 1 or 2");
                 break;

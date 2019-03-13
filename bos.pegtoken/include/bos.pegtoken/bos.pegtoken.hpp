@@ -180,6 +180,7 @@ public:
     
     [[eosio::action]] void applyaddr( symbol_code sym_code, name to );
     void applyaddr_v1( symbol_code sym_code, name to );
+    void applyaddr_v2( symbol_code sym_code, name to );
 
     // TODO: resetaddress
     [[eosio::action]] void resetaddress( symbol_code sym_code, name to );
@@ -1025,17 +1026,26 @@ private:
         }
     }
     // 提币时的检查条件
-    void pegtoken::withdraw_check(symbol_code sym_code, asset quantity, name ){
+    void pegtoken::withdraw_check(symbol_code sym_code, asset quantity, name account){
         auto editionval = getedition(sym_code);
         //TODO: checking limit
         // total_limit, frequency_limit, interval_limit
         //  time_point_sec(now())
+        //获取上一次的提币时间
+        auto statistics_tb = statistics(get_self(), sym_code.raw());
+        auto statistic_val = statistics_tb.get(account.value, "No such account in statistics table");
+        time_point_sec lasttime = statistic_val.last_time;
+        uint64_t freq = statistic_val.frequency;
+        asset total = statistic_val.total;
         switch (editionval){
             case 1: {
                 auto stats_tb = stats(get_self(),sym_code.raw());
                 auto stat_val = stats_tb.get(sym_code.raw(), "This type of assets not exists in stats table");   
                 eosio_assert(quantity <= stat_val.maximum_limit, "withdraw amount is more than the maximum_limit");
                 eosio_assert(quantity >= stat_val.minimum_limit, "withdraw amount is less than the minimum_limit");
+                eosio_assert(total+quantity<=stat_val.total_limit, "More than daily totals amount");
+                eosio_assert(time_point_sec(now())-lasttime>=microseconds(stat_val.interval_limit), "From now is  less than interval_limit");
+                eosio_assert(freq+1<=stat_val.frequency_limit, "More than daily frequency limit");
                 break;
             }
             case 2:{
@@ -1043,6 +1053,9 @@ private:
                 auto lim_val = limits_tb.get(sym_code.raw(), "This type of assets not exists in limits table");
                 eosio_assert(quantity <= lim_val.maximum_limit, "withdraw amount is more than the maximum_limit");
                 eosio_assert(quantity >= lim_val.minimum_limit, "withdraw amount is less than the minimum_limit");
+                eosio_assert(total+quantity<=lim_val.total_limit, "More than daily totals amount");
+                eosio_assert(time_point_sec(now())-lasttime>=microseconds(lim_val.interval_limit), "From now is  less than interval_limit");
+                eosio_assert(freq+1<=lim_val.frequency_limit, "More than daily frequency limit");
                 break;
             }
             default:{
