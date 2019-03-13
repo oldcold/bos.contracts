@@ -490,6 +490,33 @@ public:
       return msig_abi_ser;
    }
 
+///bos begin
+   bool contains_blacklist(const shared_vector<account_name>& sv,const std::vector<account_name>& blklst)  {
+     std::vector<account_name> actors = std::vector<account_name>(sv.begin(), sv.end());
+     std::sort(actors.begin(), actors.end());
+     std::vector<account_name> blacklist = std::vector<account_name>(blklst.begin(), blklst.end());
+     std::sort(blacklist.begin(), blacklist.end());
+    
+     vector<account_name> excluded;
+     excluded.reserve(actors.size());
+     std::set_difference(blacklist.begin(), blacklist.end(), actors.begin(), actors.end(), std::back_inserter(excluded));
+   
+     return excluded.empty();
+   }
+
+   bool not_contains_blacklist(const shared_vector<account_name>& sv,const std::vector<account_name>& blklst)  {
+     std::vector<account_name> actors = std::vector<account_name>(sv.begin(), sv.end());
+     std::sort(actors.begin(), actors.end());
+     std::vector<account_name> blacklist = std::vector<account_name>(blklst.begin(), blklst.end());
+     std::sort(blacklist.begin(), blacklist.end());
+    
+     vector<account_name> excluded;
+     excluded.reserve(actors.size());
+     std::set_intersection(blacklist.begin(), blacklist.end(), actors.begin(), actors.end(), std::back_inserter(excluded));
+   
+     return excluded.empty();
+   }
+///bos end
    vector<name> active_and_vote_producers() {
       //stake more than 15% of total EOS supply to activate chain
       transfer( "eosio", "alice1111111", core_sym::from_string("650000000.0000"), "eosio" );

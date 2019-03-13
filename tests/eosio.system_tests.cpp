@@ -3062,7 +3062,7 @@ BOOST_FIXTURE_TEST_CASE( namebid_pending_winner, eosio_system_tester ) try {
 } FC_LOG_AND_RETHROW()
 ///bos begin=====================================
 /// bos namelist
-BOOST_FIXTURE_TEST_CASE( namelist, eosio_system_tester ) try {
+BOOST_FIXTURE_TEST_CASE( actor_namelist, eosio_system_tester ) try {
    //install multisig contract
    abi_serializer msig_abi_ser = initialize_multisig();
    auto producer_names = active_and_vote_producers();
@@ -3092,7 +3092,6 @@ BOOST_FIXTURE_TEST_CASE( namelist, eosio_system_tester ) try {
    std::vector<name> contract_blacklist= {N(contrblklst1)};
    std::vector<name> greylist= {N(resgreylst12)};
    
-
    transaction trx;
    {
       variant pretty_trx = fc::mutable_variant_object()
@@ -3110,7 +3109,186 @@ BOOST_FIXTURE_TEST_CASE( namelist, eosio_system_tester ) try {
                   ("data", fc::mutable_variant_object()
                    ("list", "actor_blacklist")
                    ("action", "insert")
-                   ("name", actor_blacklist)
+                   ("names", actor_blacklist)
+                  )
+                  })
+         );
+      abi_serializer::from_variant(pretty_trx, trx, get_resolver(), abi_serializer_max_time);
+   }
+
+   BOOST_REQUIRE_EQUAL(success(), push_action_msig( N(alice1111111), N(propose), mvo()
+                                                    ("proposer",      "alice1111111")
+                                                    ("proposal_name", "namelist1")
+                                                    ("trx",           trx)
+                                                    ("requested", prod_perms)
+                       )
+   );
+
+   // get 16 approvals
+   for ( size_t i = 0; i < 15; ++i ) {
+      BOOST_REQUIRE_EQUAL(success(), push_action_msig( name(producer_names[i]), N(approve), mvo()
+                                                       ("proposer",      "alice1111111")
+                                                       ("proposal_name", "namelist1")
+                                                       ("level",         permission_level{ name(producer_names[i]), config::active_name })
+                          )
+      );
+   }
+
+   transaction_trace_ptr trace;
+   control->applied_transaction.connect([&]( const transaction_trace_ptr& t) { if (t->scheduled) { trace = t; } } );
+   BOOST_REQUIRE_EQUAL(success(), push_action_msig( N(alice1111111), N(exec), mvo()
+                                                    ("proposer",      "alice1111111")
+                                                    ("proposal_name", "namelist1")
+                                                    ("executer",      "alice1111111")
+                       )
+   );
+
+   BOOST_REQUIRE( bool(trace) );
+   BOOST_REQUIRE_EQUAL( 1, trace->action_traces.size() );
+   BOOST_REQUIRE_EQUAL( transaction_receipt::executed, trace->receipt->status );
+
+   produce_blocks( 250 );
+ 
+   // std::vector<name> actor_blacklist= {N(actorblklst1)};
+   // std::vector<name> contract_blacklist= {N(contrblklst1)};
+   // std::vector<name> greylist= {N(resgreylst12)};
+
+   // static auto contains_blacklist = [](const shared_vector<account_name>& sv,const std::vector<account_name>& blklst) -> bool {
+   //   std::vector<account_name> actors = std::vector<account_name>(sv.begin(), sv.end());
+   //   sstd::sort(actors.begin(), actors.end());
+   //   std::vector<account_name> blacklist = std::vector<account_name>(blklst.begin(), blklst.end());
+   //   std::sort(blacklist.begin(), blacklist.end());
+    
+   //   vector<account_name> excluded;
+   //   excluded.reserve(actors.size());
+   //   std::set_difference(blacklist.begin(), blacklist.end(), actors.begin(), actors.end(), std::back_inserter(excluded));
+   
+   //   return excluded.empty();
+   // };
+
+   // make sure that changed parameters were applied
+   const auto& active_cfg2 = control->get_global_properties2().cfg;
+   bool actor = contains_blacklist(active_cfg2.actor_blacklist, actor_blacklist);
+   bool contract = contains_blacklist(active_cfg2.contract_blacklist, contract_blacklist);
+   bool grey = contains_blacklist(active_cfg2.resource_greylist, greylist);
+
+   BOOST_REQUIRE_EQUAL(actor, true);
+   // BOOST_REQUIRE_EQUAL(contract, true);
+   // BOOST_REQUIRE_EQUAL(grey, true);
+
+////remote blacklist check
+{
+   transaction trx;
+   {
+      variant pretty_trx = fc::mutable_variant_object()
+         ("expiration", "2020-01-01T00:30")
+         ("ref_block_num", 2)
+         ("ref_block_prefix", 3)
+         ("net_usage_words", 0)
+         ("max_cpu_usage_ms", 0)
+         ("delay_sec", 0)
+         ("actions", fc::variants({
+               fc::mutable_variant_object()
+                  ("account", name(config::system_account_name))
+                  ("name", "namelist")
+                  ("authorization", vector<permission_level>{ { config::system_account_name, config::active_name } })
+                  ("data", fc::mutable_variant_object()
+                   ("list", "actor_blacklist")
+                   ("action", "remove")
+                   ("names", actor_blacklist)
+                  )
+                  })
+         );
+      abi_serializer::from_variant(pretty_trx, trx, get_resolver(), abi_serializer_max_time);
+   }
+
+   BOOST_REQUIRE_EQUAL(success(), push_action_msig( N(alice1111111), N(propose), mvo()
+                                                    ("proposer",      "alice1111111")
+                                                    ("proposal_name", "namelist2")
+                                                    ("trx",           trx)
+                                                    ("requested", prod_perms)
+                       )
+   );
+
+   // get 16 approvals
+   for ( size_t i = 0; i < 15; ++i ) {
+      BOOST_REQUIRE_EQUAL(success(), push_action_msig( name(producer_names[i]), N(approve), mvo()
+                                                       ("proposer",      "alice1111111")
+                                                       ("proposal_name", "namelist2")
+                                                       ("level",         permission_level{ name(producer_names[i]), config::active_name })
+                          )
+      );
+   }
+
+   transaction_trace_ptr trace;
+   control->applied_transaction.connect([&]( const transaction_trace_ptr& t) { if (t->scheduled) { trace = t; } } );
+   BOOST_REQUIRE_EQUAL(success(), push_action_msig( N(alice1111111), N(exec), mvo()
+                                                    ("proposer",      "alice1111111")
+                                                    ("proposal_name", "namelist2")
+                                                    ("executer",      "alice1111111")
+                       )
+   );
+
+   BOOST_REQUIRE( bool(trace) );
+   BOOST_REQUIRE_EQUAL( 1, trace->action_traces.size() );
+   BOOST_REQUIRE_EQUAL( transaction_receipt::executed, trace->receipt->status );
+
+   produce_blocks( 250 );
+
+   const auto& active_cfg2 = control->get_global_properties2().cfg;
+   bool actor = not_contains_blacklist(active_cfg2.actor_blacklist, actor_blacklist);
+   bool contract = contains_blacklist(active_cfg2.contract_blacklist, contract_blacklist);
+   bool grey = contains_blacklist(active_cfg2.resource_greylist, greylist);
+
+   BOOST_REQUIRE_EQUAL(actor, true);
+}
+
+} FC_LOG_AND_RETHROW()
+
+BOOST_FIXTURE_TEST_CASE( contract_namelist, eosio_system_tester ) try {
+   //install multisig contract
+   abi_serializer msig_abi_ser = initialize_multisig();
+   auto producer_names = active_and_vote_producers();
+
+   //helper function
+   auto push_action_msig = [&]( const account_name& signer, const action_name &name, const variant_object &data, bool auth = true ) -> action_result {
+         string action_type_name = msig_abi_ser.get_action_type(name);
+
+         action act;
+         act.account = N(eosio.msig);
+         act.name = name;
+         act.data = msig_abi_ser.variant_to_binary( action_type_name, data, abi_serializer_max_time );
+
+         return base_tester::push_action( std::move(act), auth ? uint64_t(signer) : signer == N(bob111111111) ? N(alice1111111) : N(bob111111111) );
+   };
+
+   // test begins
+   vector<permission_level> prod_perms;
+   for ( auto& x : producer_names ) {
+      prod_perms.push_back( { name(x), config::active_name } );
+   }
+
+   std::vector<name> contract_blacklist= {N(contrblklst1)};
+
+   
+   transaction trx;
+   {
+      variant pretty_trx = fc::mutable_variant_object()
+         ("expiration", "2020-01-01T00:30")
+         ("ref_block_num", 2)
+         ("ref_block_prefix", 3)
+         ("net_usage_words", 0)
+         ("max_cpu_usage_ms", 0)
+         ("delay_sec", 0)
+         ("actions", fc::variants({
+               fc::mutable_variant_object()
+                  ("account", name(config::system_account_name))
+                  ("name", "namelist")
+                  ("authorization", vector<permission_level>{ { config::system_account_name, config::active_name } })
+                  ("data", fc::mutable_variant_object()
+                   ("list", "contract_blacklist")
+                   ("action", "insert")
+                   ("names", contract_blacklist)
                   )
                   })
          );
@@ -3150,44 +3328,233 @@ BOOST_FIXTURE_TEST_CASE( namelist, eosio_system_tester ) try {
 
    produce_blocks( 250 );
 
-
-// 
-   // std::vector<name> actor_blacklist= {N(actorblklst1)};
-   // std::vector<name> contract_blacklist= {N(contrblklst1)};
-   // std::vector<name> greylist= {N(resgreylst12)};
-
-   static auto contains_blacklist =
-       [](const shared_vector<account_name>& sv,
-          const std::vector<account_name>& blklst) -> bool {
-     std::vector<account_name> actors =
-         std::vector<account_name>(sv.begin(), sv.end());
-     std::sort(actors.begin(), actors.end());
-     std::vector<account_name> blacklist =
-         std::vector<account_name>(blklst.begin(), blklst.end());
-     std::sort(blacklist.begin(), blacklist.end());
-     vector<account_name> blacklisted;
-     blacklisted.reserve(actors.size());
-     set_intersection(actors.begin(), actors.end(), blacklist.begin(),
-                      blacklist.end(), std::back_inserter(blacklisted));
-
-     std::sort(blacklisted.begin(), blacklisted.end());
-     vector<account_name> excluded;
-     excluded.reserve(actors.size());
-     std::set_symmetric_difference(actors.begin(), actors.end(), blacklisted.begin(),
-                              blacklisted.end(), std::back_inserter(excluded));
-
-     return excluded.empty();
-   };
-
    // make sure that changed parameters were applied
    const auto& active_cfg2 = control->get_global_properties2().cfg;
-   bool actor = contains_blacklist(active_cfg2.actor_blacklist, actor_blacklist);
    bool contract = contains_blacklist(active_cfg2.contract_blacklist, contract_blacklist);
-   bool grey = contains_blacklist(active_cfg2.resource_greylist, greylist);
 
-   BOOST_REQUIRE_EQUAL(actor, true);
    BOOST_REQUIRE_EQUAL(contract, true);
+
+////remote blacklist check
+{
+   transaction trx;
+   {
+      variant pretty_trx = fc::mutable_variant_object()
+         ("expiration", "2020-01-01T00:30")
+         ("ref_block_num", 2)
+         ("ref_block_prefix", 3)
+         ("net_usage_words", 0)
+         ("max_cpu_usage_ms", 0)
+         ("delay_sec", 0)
+         ("actions", fc::variants({
+               fc::mutable_variant_object()
+                  ("account", name(config::system_account_name))
+                  ("name", "namelist")
+                  ("authorization", vector<permission_level>{ { config::system_account_name, config::active_name } })
+                  ("data", fc::mutable_variant_object()
+                   ("list", "contract_blacklist")
+                   ("action", "remove")
+                   ("names", contract_blacklist)
+                  )
+                  })
+         );
+      abi_serializer::from_variant(pretty_trx, trx, get_resolver(), abi_serializer_max_time);
+   }
+
+   BOOST_REQUIRE_EQUAL(success(), push_action_msig( N(alice1111111), N(propose), mvo()
+                                                    ("proposer",      "alice1111111")
+                                                    ("proposal_name", "namelist2")
+                                                    ("trx",           trx)
+                                                    ("requested", prod_perms)
+                       )
+   );
+
+   // get 16 approvals
+   for ( size_t i = 0; i < 15; ++i ) {
+      BOOST_REQUIRE_EQUAL(success(), push_action_msig( name(producer_names[i]), N(approve), mvo()
+                                                       ("proposer",      "alice1111111")
+                                                       ("proposal_name", "namelist2")
+                                                       ("level",         permission_level{ name(producer_names[i]), config::active_name })
+                          )
+      );
+   }
+
+   transaction_trace_ptr trace;
+   control->applied_transaction.connect([&]( const transaction_trace_ptr& t) { if (t->scheduled) { trace = t; } } );
+   BOOST_REQUIRE_EQUAL(success(), push_action_msig( N(alice1111111), N(exec), mvo()
+                                                    ("proposer",      "alice1111111")
+                                                    ("proposal_name", "namelist2")
+                                                    ("executer",      "alice1111111")
+                       )
+   );
+
+   BOOST_REQUIRE( bool(trace) );
+   BOOST_REQUIRE_EQUAL( 1, trace->action_traces.size() );
+   BOOST_REQUIRE_EQUAL( transaction_receipt::executed, trace->receipt->status );
+
+   produce_blocks( 250 );
+
+   const auto& active_cfg2 = control->get_global_properties2().cfg;
+   bool contract = not_contains_blacklist(active_cfg2.contract_blacklist, contract_blacklist);
+
+
+   BOOST_REQUIRE_EQUAL(contract, true);
+}
+
+} FC_LOG_AND_RETHROW()
+
+BOOST_FIXTURE_TEST_CASE( resource_namelist, eosio_system_tester ) try {
+   //install multisig contract
+   abi_serializer msig_abi_ser = initialize_multisig();
+   auto producer_names = active_and_vote_producers();
+
+   //helper function
+   auto push_action_msig = [&]( const account_name& signer, const action_name &name, const variant_object &data, bool auth = true ) -> action_result {
+         string action_type_name = msig_abi_ser.get_action_type(name);
+
+         action act;
+         act.account = N(eosio.msig);
+         act.name = name;
+         act.data = msig_abi_ser.variant_to_binary( action_type_name, data, abi_serializer_max_time );
+
+         return base_tester::push_action( std::move(act), auth ? uint64_t(signer) : signer == N(bob111111111) ? N(alice1111111) : N(bob111111111) );
+   };
+
+   // test begins
+   vector<permission_level> prod_perms;
+   for ( auto& x : producer_names ) {
+      prod_perms.push_back( { name(x), config::active_name } );
+   }
+
+   std::vector<name> resource_greylist= {N(resgreylst12)};
+   
+   transaction trx;
+   {
+      variant pretty_trx = fc::mutable_variant_object()
+         ("expiration", "2020-01-01T00:30")
+         ("ref_block_num", 2)
+         ("ref_block_prefix", 3)
+         ("net_usage_words", 0)
+         ("max_cpu_usage_ms", 0)
+         ("delay_sec", 0)
+         ("actions", fc::variants({
+               fc::mutable_variant_object()
+                  ("account", name(config::system_account_name))
+                  ("name", "namelist")
+                  ("authorization", vector<permission_level>{ { config::system_account_name, config::active_name } })
+                  ("data", fc::mutable_variant_object()
+                   ("list", "resource_greylist")
+                   ("action", "insert")
+                   ("names", resource_greylist)
+                  )
+                  })
+         );
+      abi_serializer::from_variant(pretty_trx, trx, get_resolver(), abi_serializer_max_time);
+   }
+
+   BOOST_REQUIRE_EQUAL(success(), push_action_msig( N(alice1111111), N(propose), mvo()
+                                                    ("proposer",      "alice1111111")
+                                                    ("proposal_name", "namelist1")
+                                                    ("trx",           trx)
+                                                    ("requested", prod_perms)
+                       )
+   );
+
+   // get 16 approvals
+   for ( size_t i = 0; i < 15; ++i ) {
+      BOOST_REQUIRE_EQUAL(success(), push_action_msig( name(producer_names[i]), N(approve), mvo()
+                                                       ("proposer",      "alice1111111")
+                                                       ("proposal_name", "namelist1")
+                                                       ("level",         permission_level{ name(producer_names[i]), config::active_name })
+                          )
+      );
+   }
+
+   transaction_trace_ptr trace;
+   control->applied_transaction.connect([&]( const transaction_trace_ptr& t) { if (t->scheduled) { trace = t; } } );
+   BOOST_REQUIRE_EQUAL(success(), push_action_msig( N(alice1111111), N(exec), mvo()
+                                                    ("proposer",      "alice1111111")
+                                                    ("proposal_name", "namelist1")
+                                                    ("executer",      "alice1111111")
+                       )
+   );
+
+   BOOST_REQUIRE( bool(trace) );
+   BOOST_REQUIRE_EQUAL( 1, trace->action_traces.size() );
+   BOOST_REQUIRE_EQUAL( transaction_receipt::executed, trace->receipt->status );
+
+   produce_blocks( 250 );
+ 
+   const auto& active_cfg2 = control->get_global_properties2().cfg;
+   bool grey = contains_blacklist(active_cfg2.resource_greylist, resource_greylist);
+
    BOOST_REQUIRE_EQUAL(grey, true);
+
+
+////remote blacklist check
+{
+   transaction trx;
+   {
+      variant pretty_trx = fc::mutable_variant_object()
+         ("expiration", "2020-01-01T00:30")
+         ("ref_block_num", 2)
+         ("ref_block_prefix", 3)
+         ("net_usage_words", 0)
+         ("max_cpu_usage_ms", 0)
+         ("delay_sec", 0)
+         ("actions", fc::variants({
+               fc::mutable_variant_object()
+                  ("account", name(config::system_account_name))
+                  ("name", "namelist")
+                  ("authorization", vector<permission_level>{ { config::system_account_name, config::active_name } })
+                  ("data", fc::mutable_variant_object()
+                   ("list", "resource_greylist")
+                   ("action", "remove")
+                   ("names", resource_greylist)
+                  )
+                  })
+         );
+      abi_serializer::from_variant(pretty_trx, trx, get_resolver(), abi_serializer_max_time);
+   }
+
+   BOOST_REQUIRE_EQUAL(success(), push_action_msig( N(alice1111111), N(propose), mvo()
+                                                    ("proposer",      "alice1111111")
+                                                    ("proposal_name", "namelist2")
+                                                    ("trx",           trx)
+                                                    ("requested", prod_perms)
+                       )
+   );
+
+   // get 16 approvals
+   for ( size_t i = 0; i < 15; ++i ) {
+      BOOST_REQUIRE_EQUAL(success(), push_action_msig( name(producer_names[i]), N(approve), mvo()
+                                                       ("proposer",      "alice1111111")
+                                                       ("proposal_name", "namelist2")
+                                                       ("level",         permission_level{ name(producer_names[i]), config::active_name })
+                          )
+      );
+   }
+
+   transaction_trace_ptr trace;
+   control->applied_transaction.connect([&]( const transaction_trace_ptr& t) { if (t->scheduled) { trace = t; } } );
+   BOOST_REQUIRE_EQUAL(success(), push_action_msig( N(alice1111111), N(exec), mvo()
+                                                    ("proposer",      "alice1111111")
+                                                    ("proposal_name", "namelist2")
+                                                    ("executer",      "alice1111111")
+                       )
+   );
+
+   BOOST_REQUIRE( bool(trace) );
+   BOOST_REQUIRE_EQUAL( 1, trace->action_traces.size() );
+   BOOST_REQUIRE_EQUAL( transaction_receipt::executed, trace->receipt->status );
+
+   produce_blocks( 250 );
+
+   const auto& active_cfg2 = control->get_global_properties2().cfg;
+   bool grey = not_contains_blacklist(active_cfg2.resource_greylist, resource_greylist);
+
+   BOOST_REQUIRE_EQUAL(grey, true);
+}
+
 } FC_LOG_AND_RETHROW()
 ///bos namelist end
 /// bos garanteed minimum resource 

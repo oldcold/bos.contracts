@@ -63,14 +63,6 @@ namespace eosio {
             return ac.balance;
          }
 
-         ///bos begin
-         static bool check_blacklist(name token_contract_account, name account)
-         {
-            tokenblacklist blklst(token_contract_account, account.value);
-            auto ac = blklst.find(account.value);
-            return ac == blklst.end();
-         }
-         ///bos end
        private:
          struct [[eosio::table]] account {
             asset    balance;
@@ -99,7 +91,7 @@ namespace eosio {
          void sub_balance( name owner, asset value );
          void add_balance( name owner, asset value, name ram_payer );
 
-         bool vcheck_blacklist(name token_contract_account, name account);
+         bool check_blacklist(name account);
         
    };
 
