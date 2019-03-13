@@ -621,6 +621,8 @@ namespace eosio {
     void pegtoken::melt(name from_account, string to_address, asset quantity, uint64_t index, string memo){
         symbol_code sym_code = quantity.symbol.code();
         withdraw_check(sym_code, quantity, from_account);
+        //不能为角色账户
+        is_auth_role(sym_code,from_account);
         eosio_assert(is_locked(sym_code),"The token has been locked");
         eosio_assert(!getoutcheck(sym_code), "This action require out_check to be false");
         eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
@@ -803,6 +805,7 @@ namespace eosio {
 
     void pegtoken::withdraw(name from, string to, asset quantity, uint64_t index, string memo) {
         auto sym_code = quantity.symbol.code();
+        withdraw_check(sym_code, quantity, from);
         eosio_assert(is_locked(sym_code),"The token has been locked");
         eosio_assert(getpeg(sym_code) == 1, "This action require peg version to be 1.");
         eosio_assert(!getoutcheck(sym_code), "This action require out_check to be false");
@@ -823,6 +826,7 @@ namespace eosio {
 
     void pegtoken::prewithdraw( name from, string to, asset quantity, uint64_t index, string memo){
         auto sym_code = quantity.symbol.code();
+        withdraw_check(sym_code, quantity, from);
         eosio_assert(is_locked(sym_code),"The token has been locked");
         eosio_assert(getpeg(sym_code) == 1, "This action require peg version to be 1.");
         eosio_assert(!getoutcheck(sym_code), "out_check is true for this symbol");
@@ -905,12 +909,16 @@ namespace eosio {
         eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
         eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
      }
-
+    
+    // TODO: finish ruin_v2
      void pegtoken::ruin( asset quantity ){
         auto sym_code = quantity.symbol.code();
         eosio_assert(is_locked(sym_code),"The token has been locked");
         eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
         eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
+        eosio_assert(quantity>asset{0,quantity.symbol}, "The quantity to ruin is less or equal to 0");
+        //如何导入账户
+        // is_auth_role(sym_code);
         ruin_v2(quantity);
     }
 

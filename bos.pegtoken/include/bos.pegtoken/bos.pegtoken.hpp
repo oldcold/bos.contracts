@@ -347,6 +347,7 @@ private:
     bool is_locked(symbol_code sym_code);
 
     void withdraw_check(symbol_code sym_code, asset quantity, name account);
+    void vip_withdraw_check(symbol_code sym_code, asset quantity, name account);
     bool balance_check( symbol_code sym_code, name user );
     bool addr_check( symbol_code sym_code, name user );
 
@@ -828,16 +829,16 @@ private:
     }
 
     void pegtoken::sub_balance(name owner, asset value) {
-        auto acct = accounts(get_self(), owner.value);
-        auto from = acct.find(value.symbol.code().raw());
-        eosio_assert(from != acct.end(), "no balance object found");
-        eosio_assert(from->balance.amount >= value.amount, "overdrawn balance");
-        if (from->balance.amount == value.amount) {
-            acct.erase(from);
+        auto acct = accounts( get_self(), owner.value );
+        auto from = acct.find( value.symbol.code().raw() );
+        eosio_assert( from != acct.end(), "no balance object found" );
+        eosio_assert( from->balance.amount >= value.amount, "overdrawn balance" );
+        if ( from->balance.amount == value.amount ) {
+            acct.erase( from );
         } else {
-            acct.modify(from, same_payer, [&](auto &p) {
+            acct.modify( from, same_payer, [&]( auto& p ) {
                 p.balance -= value;
-            });
+            } );
         }
     }
 
@@ -1025,10 +1026,43 @@ private:
             }
         }
     }
+
+       // 提币时的检查条件
+    void pegtoken::vip_withdraw_check(symbol_code sym_code, asset quantity, name account){
+        auto editionval = getedition(sym_code);
+        //VIP checking limit
+        // total_limit, frequency_limit, interval_limit
+        //  time_point_sec(now())
+        //获取上一次的提币时间
+        auto statistics_tb = statistics(get_self(), sym_code.raw());
+        auto statistic_val = statistics_tb.get(account.value, "No such account in viplimits table");
+        time_point_sec lasttime = statistic_val.last_time;
+        uint64_t freq = statistic_val.frequency;
+        asset total = statistic_val.total;
+        switch (editionval){
+            case 2:{
+                auto limits_tb = limits(get_self(),sym_code.raw());
+                auto lim_val = limits_tb.get(sym_code.raw(), "This type of assets not exists in limits table");
+                eosio_assert(quantity <= lim_val.maximum_limit, "withdraw amount is more than the maximum_limit");
+                eosio_assert(quantity >= lim_val.minimum_limit, "withdraw amount is less than the minimum_limit");
+                eosio_assert(total+quantity<=lim_val.total_limit, "More than daily totals amount");
+                eosio_assert(time_point_sec(now())-lasttime>=microseconds(lim_val.interval_limit), "From now is  less than interval_limit");
+                eosio_assert(freq+1<=lim_val.frequency_limit, "More than daily frequency limit");
+                break;
+            }
+            default:{
+                eosio_assert(false, "edition should be 1 or 2");
+                break;
+            }
+  
+        }   
+    }
+
+
     // 提币时的检查条件
     void pegtoken::withdraw_check(symbol_code sym_code, asset quantity, name account){
         auto editionval = getedition(sym_code);
-        //TODO: checking limit
+        //Normal user checking limit
         // total_limit, frequency_limit, interval_limit
         //  time_point_sec(now())
         //获取上一次的提币时间

@@ -569,9 +569,32 @@ namespace eosio {
     }
 
     void pegtoken::melt_v2(name from_account, string to_address, asset quantity, uint64_t index, string memo){
+        auto sym_code = quantity.symbol.code();
         ACCOUNT_CHECK(from_account);
-        // verify_address(to_address);
-        is_vip(quantity.symbol.code(), from_account);
+        if(is_vip(quantity.symbol.code(), from_account)){
+                vip_withdraw_check(sym_code, quantity, from_account);
+        }else{
+            withdraw_check(sym_code, quantity, from_account);
+        }   
+
+        action(
+            permission_level{get_self(),"active"_n},
+            get_self(),
+            "ruin"_n,
+            std::make_tuple(quantity)
+        ).send();
+        auto infos_table = infos(get_self(),sym_code.raw());
+        auto info_iter = infos_table.find(sym_code.raw());
+        eosio_assert(info_iter != infos_table.end(), "token not exist");
+        verify_address(info_iter->address_style, to_address);
+
+        auto acct_tb = accounts(get_self(),sym_code.raw());
+        auto acct_iter = acct_tb.find(from_account.value);
+        acct_tb.modify(acct_iter, same_payer, [&](auto &p) {
+            p.balance -= quantity;
+        });
+        
+
         // limits.find()
         // compare the quantity with minimum_limit and maximum_limit
 
@@ -582,7 +605,7 @@ namespace eosio {
         // 减小infos表中supply的值，数值为总额减去费用。
 
         // 在melts添加一条记录，need_check置为false，enable字段置为false。
-        auto melt_tb = melts(get_self(), quantity.symbol.code().raw());
+        auto melt_tb = melts(get_self(),  sym_code.raw());
         // melts meltss(_self, _self.value); //到底应当事先哪一种呢
         melt_tb.emplace(same_payer, [&](auto& mt){
             mt.id = melt_tb.available_primary_key();
@@ -597,7 +620,7 @@ namespace eosio {
         // need_check
     }
     void pegtoken::premelt_v2(name from_account, string to_address, asset quantity, uint64_t index, string memo){
-
+            is_vip(quantity.symbol.code(), from_account);
     }
 
     void pegtoken::agreemelt_v2(name from_account, string to_address, asset quantity, uint64_t index, string memo){
@@ -618,6 +641,8 @@ namespace eosio {
             p.owner = to;
             p.state = to.value;
             p.create_time = time_point_sec(now());  
+            // assign_time为空
+            // address字段为空
         });
     }
     // 能设置多个
@@ -742,12 +767,13 @@ namespace eosio {
         
     }
 
-    void pegtoken::assignaddr_v2(symbol_code sym_code, name to, string address) {
-   
+    void pegtoken::assignaddr_v2(symbol_code sym_code, name to, string address) {   
         auto sym_raw = sym_code.raw();
         auto infos_table = stats(get_self(), sym_raw);
         auto info_iter = infos_table.find(sym_raw);
         eosio_assert(info_iter != infos_table.end(), "token not exist");
+        // BTC 精度为8 ETH精度为8 USDT精度为8 
+        // 根据quantity所携带的symbol信息确定scope
         verify_address(info_iter->address_style, address);
         //TODO:
         // 根据to，查询addrs表，若不存在，则报错；若address字段不为空，则报错。
@@ -762,11 +788,11 @@ namespace eosio {
     }
     
     void pegtoken::withdraw_v2( name from, string to, asset quantity, uint64_t index, string memo){
-
+            is_vip(quantity.symbol.code(), from);
     }
 
     void pegtoken::prewithdraw_v2(name from, string to, asset quantity, uint64_t index, string memo){
-
+            is_vip(quantity.symbol.code(), from);
     }
 
     void pegtoken::agrewithdraw_v2( name from, string to, asset quantity, uint64_t index, string memo){
@@ -784,9 +810,11 @@ namespace eosio {
     void pegtoken::pay_v2( asset quantity ){
     
     }
-
+    // 普通用户毁掉代币
     void pegtoken::ruin_v2( asset quantity ){
-    
+        // auto acct_tb = accounts(get_self(), owner.value);
+        // auto acct_iter = acct.find(value.symbol.code().raw());
+        // eosio_assert(iter != acct_tb.end(), "account doesnot exist");
     }
     
 
