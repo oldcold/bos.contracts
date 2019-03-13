@@ -599,20 +599,20 @@ private:
         name to_account;
         string to_address;
         asset quantity;
-        uint64_t state;        
-        string remote_trx_id;
-        uint64_t index;
-        uint64_t remote_index;
-        uint64_t enable;
-
-        // FIXME: auditor is not set in doc
+        uint64_t state;
+        bool need_check;
+        bool enable;
         name auditor;
+        uint64_t index;
+        string remote_trx_id;
+        uint64_t remote_index;
 
         string msg;
         time_point_sec create_time;
         time_point_sec update_time;
-
+        
         uint64_t primary_key() const { return id; }
+        uint64_t by_state() const { return state; }
     };
     using casts = eosio::multi_index< "casts"_n, cast_ts >;
 
