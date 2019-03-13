@@ -43,11 +43,11 @@ namespace eosio {
          [[eosio::action]]
          void close( name owner, const symbol& symbol );
 
-          [[eosio::action]]
-         void addblacklist(const std::vector<name>& list );
+         [[eosio::action]] 
+         void addblacklist(const std::vector<name>& accounts);
 
-         [[eosio::action]]
-         void rmblacklist(const std::vector<name>& list );
+         [[eosio::action]] 
+         void rmblacklist(const std::vector<name>& accounts);
 
          static asset get_supply( name token_contract_account, symbol_code sym_code )
          {
@@ -77,22 +77,23 @@ namespace eosio {
 
             uint64_t primary_key()const { return supply.symbol.code().raw(); }
          };
+
          ///bos begin
-        struct [[eosio::table]] blacklist {
-            name     account;
-            uint64_t primary_key()const { return account.value; }
+         struct [[eosio::table]] blacklist
+         {
+            name account;
+            uint64_t primary_key() const { return account.value; }
          };
 
-         typedef eosio::multi_index< "blacklist"_n, blacklist > tokenblacklist;
+         typedef eosio::multi_index<"blacklist"_n, blacklist> tokenblacklist;
          ///bos end
-         typedef eosio::multi_index< "accounts"_n, account > accounts;
-         typedef eosio::multi_index< "stat"_n, currency_stats > stats;
+         typedef eosio::multi_index<"accounts"_n, account> accounts;
+         typedef eosio::multi_index<"stat"_n, currency_stats> stats;
 
-         void sub_balance( name owner, asset value );
-         void add_balance( name owner, asset value, name ram_payer );
+         void sub_balance(name owner, asset value);
+         void add_balance(name owner, asset value, name ram_payer);
 
-         bool check_blacklist(name account);
-        
+         bool is_not_on_blacklist(name account); ///bos
    };
 
 } /// namespace eosio

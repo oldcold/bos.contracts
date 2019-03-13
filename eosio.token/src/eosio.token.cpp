@@ -89,7 +89,7 @@ void token::transfer( name    from,
                       asset   quantity,
                       string  memo )
 {
-    eosio_assert( check_blacklist(from), "account is on the blacklist" );///bos 
+    eosio_assert( is_not_on_blacklist(from), "account is on the blacklist" );///bos 
     eosio_assert( from != to, "cannot transfer to self" );
     require_auth( from );
     eosio_assert( is_account( to ), "to account does not exist");
@@ -166,41 +166,44 @@ void token::close( name owner, const symbol& symbol )
    acnts.erase( it );
 }
 
-   ///bos begin
-   bool token::check_blacklist( name account)
-         {
-            tokenblacklist blklst(_self, account.value);
-            auto ac = blklst.find(account.value);
-            return ac == blklst.end();
-         }
-   void token::addblacklist(const std::vector<name>& list )
-   {
-      require_auth("eosio"_n);
+///bos begin
+bool token::is_not_on_blacklist(name account)
+{
+   tokenblacklist blklst(_self, account.value);
+   auto ac = blklst.find(account.value);
 
-      static const std::string msg  = std::string("account does not exist");
-      
-      for (auto l : list) {
-        std::string m =  l.to_string() + msg;
-        eosio_assert(is_account(l), m.c_str());
-        tokenblacklist blklst( _self, l.value );
-        blklst.emplace(_self, [&](auto &a) {
-            a.account = l; 
-            });
+   return ac == blklst.end();
+}
+
+void token::addblacklist(const std::vector<name>& accounts)
+{
+   require_auth("eosio"_n);
+
+   static const std::string msg = std::string("account does not exist");
+
+   for (auto acc : accounts){
+      std::string m = acc.to_string() + msg;
+      eosio_assert(is_account(acc), m.c_str());
+      tokenblacklist blklst(_self, acc.value);
+      blklst.emplace(_self, [&](auto &a) {
+         a.account = acc;
+      });
+   }
+}
+
+void token::rmblacklist(const std::vector<name>& accounts)
+{
+   require_auth("eosio"_n);
+
+   for (auto acc : accounts){
+      tokenblacklist blklst(_self, acc.value);
+      auto it = blklst.find(acc.value);
+      if (it != blklst.end()){
+         blklst.erase(it);
       }
    }
-
-   void token::rmblacklist(const std::vector<name> &list) {
-     require_auth("eosio"_n);
-
-     for (auto l : list) {
-        tokenblacklist blklst(_self, l.value);
-       auto it = blklst.find(l.value);
-       if (it != blklst.end()) {
-         blklst.erase(it);
-       }
-     }
-   }
-   ///bos end
+}
+///bos end
 
 } /// namespace eosio
 
