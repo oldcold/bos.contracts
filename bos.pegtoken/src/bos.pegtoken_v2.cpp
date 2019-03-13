@@ -6,7 +6,7 @@
 #include "def.cpp"
 
 namespace eosio {
-    void pegtoken::create_v2( symbol sym, name issuer, name address_style){
+    void pegtoken::create_v2( symbol sym, name issuer, name address_style) {
         require_auth(get_self());
 
         ACCOUNT_CHECK(issuer);
@@ -19,22 +19,22 @@ namespace eosio {
         auto info_table = infos(get_self(),sym.code().raw());
         eosio_assert(info_table.find(sym.code().raw()) == info_table.end(), "token with symbol already exists (info)");
 
-        info_table.emplace(get_self(),[&](auto &p) {
+        info_table.emplace(get_self(), [&] (auto &p) {
             p.supply = eosio::asset(0,sym);
             p.issuer = issuer;
             p.address_style = address_style;
             p.active = true; 
         });
 
-        auto summary_table = summaries(get_self(),sym.code().raw());
+        auto summary_table = summaries(get_self(), sym.code().raw());
         eosio_assert(summary_table.find(sym.code().raw()) == summary_table.end(), "token with symbol already exists (summary)");
-        summary_table.emplace(get_self(),[&](auto &p){
+        summary_table.emplace(get_self(), [&] (auto &p) {
             /* do nothing */
         });
 
-        auto limit_table = limits(get_self(),sym.code().raw());
+        auto limit_table = limits(get_self(), sym.code().raw());
         eosio_assert(limit_table.find(sym.code().raw()) == limit_table.end(), "token with symbol already exists (limit)");
-        limit_table.emplace(get_self(),[&](auto &p){
+        limit_table.emplace(get_self(), [&] (auto &p) {
             p.maximum_limit = eosio::asset(0,sym);
             p.minimum_limit = eosio::asset(0,sym);
             p.total_limit = eosio::asset(0,sym);
@@ -54,7 +54,7 @@ namespace eosio {
         auto iter = info_table.find(sym_raw);
         eosio_assert(iter != info_table.end(), "token not exist");
         
-        info_table.modify(iter,same_payer,[&](auto & p) {
+        info_table.modify(iter,same_payer, [&] (auto & p) {
             p.issuer = issuer;
         });
     }

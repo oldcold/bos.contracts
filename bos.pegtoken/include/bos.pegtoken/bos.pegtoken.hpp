@@ -25,6 +25,11 @@ enum withdraw_state : uint64_t {
     ROLL_BACK = 5,
 };
 
+enum peg_type: uint64_t {
+    PRE_RELEASE = 1,
+    STRICT_ANCHOR
+};
+
 class[[eosio::contract("bos.pegtoken")]] pegtoken : public contract
 {
 public:
