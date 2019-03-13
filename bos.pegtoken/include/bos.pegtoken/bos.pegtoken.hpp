@@ -615,8 +615,8 @@ private:
         uint64_t primary_key() const { return id; }
         uint64_t by_state() const { return state; }
     };
-    using casts = eosio::multi_index< "casts"_n, cast_ts >;
-
+    using casts = eosio::multi_index< "casts"_n, cast_ts,
+        indexed_by< "state"_n, const_mem_fun< cast_ts, uint64_t, &cast_ts::by_state > > >;
 
     struct [[eosio::table]] vip_ts{
         name vip;
