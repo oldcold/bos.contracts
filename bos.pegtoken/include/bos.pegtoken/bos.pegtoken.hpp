@@ -583,8 +583,11 @@ private:
         asset amount;
         asset fee;
         uint64_t state;
-        string remote_trx_id;
+        bool need_check;
+        bool enable;
+        name auditor;
         uint64_t index;
+        string remote_trx_id;
         uint64_t remote_index;
         string msg;
         time_point_sec create_time;
