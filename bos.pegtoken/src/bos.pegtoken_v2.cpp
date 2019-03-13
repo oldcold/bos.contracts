@@ -531,25 +531,31 @@ namespace eosio {
         });
     }
 
-    void pegtoken::refusecast_v2(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo){
+    void pegtoken::refusecast_v2(symbol_code sym_code, string to_address, name to_account,
+        string remote_trx_id, asset quantity, uint64_t index, string memo) {
         auto sym_raw = quantity.symbol.code().raw();
         auto infos_tb = infos(get_self(), sym_raw);
         auto iter_info = infos_tb.find(sym_raw);
-        // eosio_assert(iter_info != addr_table.end() && iter_info->address == to_address, "invalid to_address");
+        
+        auto addr_table = addrs(get_self(), sym_raw);
+        auto iter_addr = addr_table.find(to_account.value);
+        eosio_assert(iter_addr != addr_table.end() && iter_addr->address == to_address, "invalid to_address");
 
         auto cast_table = casts(get_self(), sym_raw);
         auto index_str = to_address + to_account.to_string() + remote_trx_id + std::to_string(index) + quantity.to_string();
         auto iter_cast = cast_table.find(hash64(index_str));
         eosio_assert(iter_cast != cast_table.end()
-        && iter_cast -> to_account == to_account
-        && iter_cast -> to_address == to_address
-        && iter_cast -> remote_trx_id == remote_trx_id
-        && iter_cast -> index == index
-        && iter_cast -> quantity == quantity
-         , "invalid cast");
+            && iter_cast -> to_account == to_account
+            && iter_cast -> to_address == to_address
+            && iter_cast -> remote_trx_id == remote_trx_id
+            && iter_cast -> index == index
+            && iter_cast -> quantity == quantity
+            , "invalid cast");
 
-        cast_table.modify(iter_cast,same_payer,[&](auto &p){
-            p.enable = 0;
+        cast_table.modify(iter_cast, same_payer, [&](auto &p) {
+            if (p.need_check && p.enable) {
+                p.enable = false;
+            }
             p.msg = memo;
             p.update_time = time_point_sec(now());
         });
