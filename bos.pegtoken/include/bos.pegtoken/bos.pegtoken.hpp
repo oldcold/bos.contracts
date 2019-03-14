@@ -238,8 +238,8 @@ public:
     void pay_v2( asset quantity );
 
     // TODO: ruin        普通用户毁掉代币【严格锚定制】
-    [[eosio::action]] void ruin( asset quantity );
-    void ruin_v2( asset quantity );
+    [[eosio::action]] void ruin( asset quantity , name user);
+    void ruin_v2( asset quantity ,name user);
 
     [[eosio::action]] void burn( name from, asset quantity);
     void burn_v2( name from, asset quantity);

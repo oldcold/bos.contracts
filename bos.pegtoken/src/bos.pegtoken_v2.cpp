@@ -870,9 +870,9 @@ namespace eosio {
     
     }
     // 普通用户毁掉代币
-    void pegtoken::ruin_v2( asset quantity ){
-        auto acct_tb = accounts(get_self(), get_self().value);
-        auto acct_iter = acct_tb.find(get_self().value);
+    void pegtoken::ruin_v2( asset quantity , name user){
+        auto acct_tb = accounts(get_self(), user.value);
+        auto acct_iter = acct_tb.find(user.value);
         eosio_assert(acct_iter != acct_tb.end(), "account doesnot exist");
     }
     
