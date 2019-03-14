@@ -928,6 +928,7 @@ namespace eosio {
         eosio_assert(is_locked(sym_code),"The token has been locked");
         eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
         eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
+
     }
 
     void pegtoken::retreat(name to, asset quantity){
@@ -935,6 +936,7 @@ namespace eosio {
         eosio_assert(is_locked(sym_code),"The token has been locked");
         eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
         eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
+        eosio_assert(quantity>asset{0,quantity.symbol}, "The quantity to ruin is less or equal to 0");
     }
 
     void pegtoken::clear(symbol_code sym_code, uint64_t num) {
@@ -971,6 +973,7 @@ namespace eosio {
         is_auth_teller(sym_code);
         eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
         eosio_assert(getpeg(sym_code) == 2, "The action require peg to be 2");
+        confirmback_v2(sym_code, trx_id, remote_trx_id, index, remote_index, memo);
     }
 
     void pegtoken::denyback( symbol_code sym_code, transaction_id_type trx_id, uint64_t index,  string memo ){
