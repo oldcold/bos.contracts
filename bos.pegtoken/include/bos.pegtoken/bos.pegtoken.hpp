@@ -25,6 +25,11 @@ enum withdraw_state : uint64_t {
     ROLL_BACK = 5,
 };
 
+enum peg_type: uint64_t {
+    PRE_RELEASE = 1,
+    STRICT_ANCHOR
+};
+
 class[[eosio::contract("bos.pegtoken")]] pegtoken : public contract
 {
 public:
@@ -493,7 +498,7 @@ private:
         uint64_t by_delindex() const { return create_time.utc_seconds; }
     };
 
-    struct [[eosio::table]] newdeposit_ts {
+    struct [[eosio::table]] newdepositts {
         uint64_t id;
         transaction_id_type trx_id;
         name from;
