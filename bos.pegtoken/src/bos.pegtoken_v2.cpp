@@ -898,7 +898,7 @@ namespace eosio {
         infos_tb.modify(iter, same_payer, [&](auto &p) { p.active = false; });
     }
 
-    void pegtoken::unlockall_v2(symbol_code sym_code, name brakeman ){
+    void pegtoken::unlockall_v2(symbol_code sym_code, name brakeman) {
         require_auth(brakeman);
         auto sym_raw = sym_code.raw();
         auto infos_tb = infos(get_self(), sym_raw);
@@ -912,18 +912,21 @@ namespace eosio {
         infos_tb.modify(iter, same_payer, [&](auto &p) { p.active = true; });
     }
 
-    void pegtoken::confirmback_v2(symbol_code sym_code, transaction_id_type trx_id, string remote_trx_id, uint64_t index, uint64_t remote_index, string memo){
+    void pegtoken::confirmback_v2(symbol_code sym_code, transaction_id_type trx_id,
+        string remote_trx_id, uint64_t index, uint64_t remote_index, string memo) {
         auto melt_tb = melts(get_self(), sym_code.raw());
-        for (auto melt_iter = melt_tb.begin(); melt_iter != melt_tb.end(); ++melt_iter) {   // iter pioneer table
+        // TODO: remote_trx_id validation.
+        for (auto melt_iter = melt_tb.begin(); melt_iter != melt_tb.end(); ++melt_iter) {
             // find the trx hash
-            if( std::memcmp(trx_id.hash, melt_iter->trx_id.hash, 32) == 0 && melt_iter->enable == true && melt_iter->state==0){
+            if( std::memcmp(trx_id.hash, melt_iter->trx_id.hash, 32) == 0
+                && melt_iter->enable == true && melt_iter->state == 0) {
                 melt_tb.modify(melt_iter, same_payer, [&](auto &mit) {
                     mit.remote_trx_id = remote_trx_id;
                     mit.state = 2;
+                    mit.msg = memo;
                 });
             }
         }
-        
     }
     // void pegtoken::feedback_v2
 }
