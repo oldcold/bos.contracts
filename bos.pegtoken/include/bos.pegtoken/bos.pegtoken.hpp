@@ -986,6 +986,10 @@ private:
         auto tellers = teller_tb.find(account.value);
         eosio_assert(tellers == teller_tb.end(), "account has been assigned to role: teller");        
 
+        auto gatherer_tb = gatherers(get_self(), sym_code.raw());
+        auto gat = gatherer_tb.find(account.value);
+        eosio_assert(gat == gatherer_tb.end(), "account has been assigned to role: gatherer");    
+
         //不为issuer
         auto editionval = getedition(sym_code);
         switch (editionval)
