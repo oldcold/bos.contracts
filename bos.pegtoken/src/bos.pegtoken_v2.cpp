@@ -850,8 +850,8 @@ namespace eosio {
 
     }
 
-    void pegtoken::retreat_v2(name to, asset quantity ){
-         
+    void pegtoken::retreat_v2(name to, asset quantity ) {
+        add_balance(to, quantity, same_payer);
     }
 
     void pegtoken::denyback_v2( symbol_code sym_code, transaction_id_type trx_id,

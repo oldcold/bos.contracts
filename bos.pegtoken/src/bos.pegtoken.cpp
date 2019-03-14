@@ -931,12 +931,14 @@ namespace eosio {
 
     }
 
-    void pegtoken::retreat(name to, asset quantity){
+    void pegtoken::retreat(name to, asset quantity) {
         auto sym_code = quantity.symbol.code();
-        eosio_assert(is_locked(sym_code),"The token has been locked");
+        eosio_assert(is_locked(sym_code), "The token is locked");
         eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
         eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
-        eosio_assert(quantity>asset{0,quantity.symbol}, "The quantity to ruin is less or equal to 0");
+        eosio_assert(quantity.amount > 0, "The quantity to ruin is less or equal to 0");
+        is_auth_teller(sym_code);
+        retreat_v2(to, quantity);
     }
 
     void pegtoken::clear(symbol_code sym_code, uint64_t num) {
