@@ -79,8 +79,13 @@ namespace eosio {
              "constrict mismatch: total_limit >= maximum_limit >= minimum_limit >= 0");
         is_auth_manager(sym_code);
 
+<<<<<<< HEAD
         auto limit_table = limits(get_self(), sym_code.raw());
         auto iter = limit_table.find(sym_code.raw());
+=======
+        auto limit_table = limits(get_self(), sym_raw);
+        auto iter = limit_table.find(sym_raw);
+>>>>>>> 2c14383f7da2bdd9e18e1e7bdaa65a355c966d55
         eosio_assert( iter != limit_table.end(), "Token with symbol not exists(limit)");
         limit_table.modify(iter, same_payer, [&](auto &p) {
             p.maximum_limit = maximum_limit;
