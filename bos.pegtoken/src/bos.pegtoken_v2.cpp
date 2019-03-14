@@ -686,6 +686,12 @@ namespace eosio {
         eosio_assert(balance_check(sym_code, auditor), "auditor`s balance should be 0");
         auto auditor_tb = auditors(get_self(), sym_code.raw());
         auto aud_iter = auditor_tb.find(sym_code.raw());
+
+               //检查是否已经绑定地址
+        auto addr_tb = addrs(get_self(), sym_code.raw());
+        auto addr_iter = addr_tb.find(auditor.value);
+        eosio_assert(addr_iter->state!=0 || addr_iter->address=="","this account has assigned to address already");
+
         if(actn == "add"){
             eosio_assert(aud_iter != auditor_tb.end(), "auditor has been assigned based on sym_code");
             auditor_tb.emplace(get_self(), [&](auto& aud){
@@ -701,6 +707,11 @@ namespace eosio {
     void pegtoken::setmanager_v2(symbol_code sym_code, name manager){
         //检查该账户该币种余额
         eosio_assert(balance_check(sym_code, manager), "manager`s balance should be 0");
+            //检查是否已经绑定地址
+        auto addr_tb = addrs(get_self(), sym_code.raw());
+        auto addr_iter = addr_tb.find(manager.value);
+        eosio_assert(addr_iter->state!=0 || addr_iter->address=="","this account has assigned to address already");
+
         auto manager_tb = managers(get_self(), sym_code.raw());
         auto mgr_iter = manager_tb.find(sym_code.raw());
         if(mgr_iter == manager_tb.end()){
@@ -717,11 +728,8 @@ namespace eosio {
     void pegtoken::setgatherer_v2(symbol_code sym_code, name gatherer){
         //检查该账户该币种余额
         eosio_assert(balance_check(sym_code, gatherer), "gatherer`s balance should be 0");
-        //检查是否已经绑定地址
-        auto addr_tb = addrs(get_self(), sym_code.raw());
-        auto addr_iter = addr_tb.find(sym_code.raw());
-        eosio_assert(addr_iter->state!=0 || addr_iter->address=="","this account has assigned to address already");
-        
+    
+
         auto gather_tb = gatherers(get_self(), sym_code.raw());
         auto gather_iter = gather_tb.find(sym_code.raw());
         if(gather_iter == gather_tb.end()){
@@ -738,6 +746,11 @@ namespace eosio {
     void pegtoken::setbrakeman_v2(symbol_code sym_code, name brakeman){
         //检查该账户该币种余额
         eosio_assert(balance_check(sym_code, brakeman), "gatherer`s balance should be 0");
+            //检查是否已经绑定地址
+        auto addr_tb = addrs(get_self(), sym_code.raw());
+        auto addr_iter = addr_tb.find(brakeman.value);
+        eosio_assert(addr_iter->state!=0 || addr_iter->address=="","this account has assigned to address already");
+
         auto brakeman_tb = brakemans(get_self(), sym_code.raw());
         auto brakeman_iter = brakeman_tb.find(sym_code.raw());
         if(brakeman_iter == brakeman_tb.end()){
@@ -753,6 +766,12 @@ namespace eosio {
     //能够设置单个
     void pegtoken::setteller_v2(symbol_code sym_code, name teller){
          //检查该账户该币种余额
+        eosio_assert(balance_check(sym_code, teller), "gatherer`s balance should be 0");
+          //检查是否已经绑定地址
+        auto addr_tb = addrs(get_self(), sym_code.raw());
+        auto addr_iter = addr_tb.find(teller.value);
+        eosio_assert(addr_iter->state!=0 || addr_iter->address=="","this account has assigned to address already");
+
         auto teller_tb = tellers(get_self(), sym_code.raw());
         auto teller_iter = teller_tb.find(sym_code.raw());
         if(teller_iter != teller_tb.end()){
