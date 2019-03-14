@@ -313,8 +313,21 @@ namespace eosio {
     
     }
 
-    void pegtoken::setvipintvlm(symbol_code sym_code, name vip, uint64_t interval_limit ) {
-    
+    void pegtoken::setvipintvlm(symbol_code sym_code, name vip, uint64_t interval_limit) {
+        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2, "Edition should be either 1 or 2");
+        auto editionval = getedition(sym_code);
+        switch (editionval)
+        {
+        case 1:
+            setvipintvlm_v1(sym_code, vip, interval_limit);
+            break;
+        case 2:
+            setvipintvlm_v2(sym_code, vip, interval_limit);
+            break;
+        default:
+            eosio_assert(false, "edition should be either 1 or 2");
+            break;
+        }
     }
 
  
