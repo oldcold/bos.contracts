@@ -93,7 +93,7 @@ namespace eosio {
          void sub_balance(name owner, asset value);
          void add_balance(name owner, asset value, name ram_payer);
 
-         bool is_not_on_blacklist(name account); ///bos
+         bool is_on_blacklist(name account); ///bos
    };
 
 } /// namespace eosio

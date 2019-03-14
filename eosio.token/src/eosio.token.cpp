@@ -89,7 +89,7 @@ void token::transfer( name    from,
                       asset   quantity,
                       string  memo )
 {
-    eosio_assert( is_not_on_blacklist(from), "account is on the blacklist" );///bos 
+    eosio_assert( !is_on_blacklist(from), "account is on the blacklist" );///bos 
     eosio_assert( from != to, "cannot transfer to self" );
     require_auth( from );
     eosio_assert( is_account( to ), "to account does not exist");
@@ -167,12 +167,12 @@ void token::close( name owner, const symbol& symbol )
 }
 
 ///bos begin
-bool token::is_not_on_blacklist(name account)
+bool token::is_on_blacklist(name account)
 {
    tokenblacklist blklst(_self, account.value);
    auto ac = blklst.find(account.value);
 
-   return ac == blklst.end();
+   return ac != blklst.end();
 }
 
 void token::addblacklist(const std::vector<name>& accounts)
