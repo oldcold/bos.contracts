@@ -91,9 +91,9 @@ public:
     void setviptotlim_v1(name vip, asset maximum_limit);
     void setviptotlim_v2(name vip, asset maximum_limit);
 
-    [[eosio::action]] void setvipfreqlm(symbol_code sym_code, name vip, uint64_t frequency_limit );
-    void setvipfreqlm_v1(symbol_code sym_code, name vip, uint64_t frequency_limit );
-    void setvipfreqlm_v2(symbol_code sym_code, name vip, uint64_t frequency_limit );
+    [[eosio::action]] void setvipfreqlm(symbol_code sym_code, name vip, uint64_t frequency_limit);
+    void setvipfreqlm_v1(symbol_code sym_code, name vip, uint64_t frequency_limit);
+    void setvipfreqlm_v2(symbol_code sym_code, name vip, uint64_t frequency_limit);
 
     [[eosio::action]] void setvipintvlm(symbol_code sym_code, name vip, uint64_t interval_limit );
     void setvipintvlm_v1(symbol_code sym_code, name vip, uint64_t interval_limit );

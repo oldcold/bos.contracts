@@ -79,13 +79,8 @@ namespace eosio {
              "constrict mismatch: total_limit >= maximum_limit >= minimum_limit >= 0");
         is_auth_manager(sym_code);
 
-<<<<<<< HEAD
         auto limit_table = limits(get_self(), sym_code.raw());
         auto iter = limit_table.find(sym_code.raw());
-=======
-        auto limit_table = limits(get_self(), sym_raw);
-        auto iter = limit_table.find(sym_raw);
->>>>>>> 2c14383f7da2bdd9e18e1e7bdaa65a355c966d55
         eosio_assert( iter != limit_table.end(), "Token with symbol not exists(limit)");
         limit_table.modify(iter, same_payer, [&](auto &p) {
             p.maximum_limit = maximum_limit;
@@ -158,7 +153,7 @@ namespace eosio {
             && minimum_limit.amount >= 0, "mismatch: total >= max >= min >= 0");
 
         auto sym_raw = maximum_limit.symbol.code().raw();
-        is_auth_manager(maximum_limit.symbol);
+        is_auth_manager(maximum_limit.symbol.code());
 
         auto vip_table = vips(get_self(), sym_raw);
         auto viplimit_table = viplimits(get_self(), sym_raw);
@@ -232,6 +227,19 @@ namespace eosio {
         } else {
             setviplimit_v2(vip, iter->maximum_limit, iter->minimum_limit, total_limit,
             iter->frequency_limit,iter->interval_limit);
+        }
+    }
+
+    void pegtoken::setvipfreqlm_v2(symbol_code sym_code, name vip, uint64_t frequency_limit) {
+        auto sym_raw = sym_code.raw();
+        auto viplimit_table = viplimits(get_self(), sym_raw);
+        auto iter = viplimit_table.find(vip.value);
+        if (iter == viplimit_table.end()) {
+            auto zero_asset = eosio::asset(0, symbol(sym_code, 8));
+            setviplimit_v2(vip, zero_asset, zero_asset, zero_asset, frequency_limit, 0);
+        } else {
+            setviplimit_v2(vip, iter->maximum_limit, iter->minimum_limit, iter->total_limit,
+            frequency_limit, iter->interval_limit);
         }
     }
 

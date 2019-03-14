@@ -310,8 +310,21 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setvipfreqlm(symbol_code sym_code, name vip, uint64_t frequency_limit ) {
-    
+    void pegtoken::setvipfreqlm(symbol_code sym_code, name vip, uint64_t frequency_limit) {
+        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2, "Edition should be either 1 or 2");
+        auto editionval = getedition(sym_code);
+        switch (editionval)
+        {
+        case 1:
+            setvipfreqlm_v1(sym_code, vip, frequency_limit);
+            break;
+        case 2:
+            setvipfreqlm_v2(sym_code, vip, frequency_limit);
+            break;
+        default:
+            eosio_assert(false, "edition should be either 1 or 2");
+            break;
+        }
     }
 
     void pegtoken::setvipintvlm(symbol_code sym_code, name vip, uint64_t interval_limit ) {
