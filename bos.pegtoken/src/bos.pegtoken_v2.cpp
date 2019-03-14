@@ -32,17 +32,27 @@ namespace eosio {
             /* do nothing */
         });
 
+        // 建议create币种的时候就初始化
         auto limit_table = limits(get_self(), sym.code().raw());
         eosio_assert(limit_table.find(sym.code().raw()) == limit_table.end(), "token with symbol already exists (limit)");
         limit_table.emplace(get_self(), [&] (auto &p) {
-            p.maximum_limit = eosio::asset(0,sym);
-            p.minimum_limit = eosio::asset(0,sym);
-            p.total_limit = eosio::asset(0,sym);
+            p.maximum_limit = eosio::asset(1,sym);
+            p.minimum_limit = eosio::asset(0.00005,sym);
+            p.total_limit = eosio::asset(10,sym);
 
-            p.frequency_limit = 0;
+            p.frequency_limit = 3;
             p.interval_limit = 300;
             p.reset_limit = 30 * ONE_DAY;
         });
+
+        // 建议create币种的时候就初始化
+        auto fee_table = fees(get_self(),sym.code().raw());
+        eosio_assert(fee_table.begin() == fee_table.end(),"token with symbol already exists (fee)");
+        fee_table.emplace(get_self(),[&](auto &p){
+            p.service_fee_rate = 0.001;
+            p.min_service_fee = eosio::asset(0.0005,sym);;
+            p.miner_fee = eosio::asset(0.00004,sym);;
+        }); 
     }
 
     void pegtoken::setissuer_v2( symbol_code sym_code, name issuer ) {
@@ -78,14 +88,8 @@ namespace eosio {
         eosio_assert(minimum_limit.amount >= 0 && maximum_limit >= minimum_limit && total_limit >= maximum_limit,
              "constrict mismatch: total_limit >= maximum_limit >= minimum_limit >= 0");
         is_auth_manager(sym_code);
-
-<<<<<<< HEAD
         auto limit_table = limits(get_self(), sym_code.raw());
         auto iter = limit_table.find(sym_code.raw());
-=======
-        auto limit_table = limits(get_self(), sym_raw);
-        auto iter = limit_table.find(sym_raw);
->>>>>>> 2c14383f7da2bdd9e18e1e7bdaa65a355c966d55
         eosio_assert( iter != limit_table.end(), "Token with symbol not exists(limit)");
         limit_table.modify(iter, same_payer, [&](auto &p) {
             p.maximum_limit = maximum_limit;
