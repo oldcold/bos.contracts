@@ -679,6 +679,7 @@ namespace eosio {
 
     void pegtoken::setgatherer( symbol_code sym_code,  name gatherer){
         is_auth_issuer(sym_code);
+        is_auth_role(sym_code, gatherer);
         ACCOUNT_CHECK(gatherer);
         //收费员仅针对严格锚钉制和版本2
         eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
@@ -689,11 +690,12 @@ namespace eosio {
 
     void pegtoken::setteller( symbol_code sym_code,  name teller){
         is_auth_issuer(sym_code);
+        is_auth_role(sym_code, teller);
+        ACCOUNT_CHECK(teller);
         // 根据sym_code，查询editions表，校验币的版本，版本不对则报错。
         // 根据sym_code，查询pegs表，校验币的机制，机制不对则报错。
         eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
-        eosio_assert(getpeg(sym_code) == 1 || getpeg(sym_code) == 2, "The action require peg to be 1 or 2");
-        ACCOUNT_CHECK(teller);
+        eosio_assert(getpeg(sym_code) == 1 || getpeg(sym_code) == 2, "The action require peg to be 1 or 2");    
         eosio_assert(balance_check(sym_code, teller), "teller`s balance should be 0");
         auto editionval = getedition(sym_code);
         switch (editionval)
@@ -712,32 +714,34 @@ namespace eosio {
     }
 
     void pegtoken::setmanager(symbol_code sym_code,  name manager){
+        is_auth_issuer(sym_code);
+        is_auth_role(sym_code, manager);
+        ACCOUNT_CHECK(manager);
         // 根据sym_code，查询editions表，校验币的版本，版本不对则报错。
         // 根据sym_code，查询pegs表，校验币的机制，机制不对则报错。
         eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
         eosio_assert(getpeg(sym_code) == 1 || getpeg(sym_code) == 2, "The action require peg to be 1 or 2");
-        ACCOUNT_CHECK(manager);
-        is_auth_issuer(sym_code);
         setmanager_v2(sym_code, manager);
     }
 
     void pegtoken::setbrakeman( symbol_code sym_code,  name brakeman){
+        is_auth_issuer(sym_code);
+        is_auth_role(sym_code, brakeman);
+        ACCOUNT_CHECK(brakeman);
         // 根据sym_code，查询editions表，校验币的版本，版本不对则报错。
         // 根据sym_code，查询pegs表，校验币的机制，机制不对则报错。
         eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
         eosio_assert(getpeg(sym_code) == 1 || getpeg(sym_code) == 2, "The action require peg to be 1 or 2");
-        ACCOUNT_CHECK(brakeman);
-        is_auth_issuer(sym_code);
         setbrakeman_v2(sym_code, brakeman);
 
     }
 
     void pegtoken::setvip(symbol_code sym_code, string actn, name vip){
+        is_auth_manager(sym_code);
         // 根据sym_code，查询editions表，校验币的版本，版本不对则报错。
         // 根据sym_code，查询pegs表，校验币的机制，机制不对则报错。
         eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
         eosio_assert(getpeg(sym_code) == 1 || getpeg(sym_code) == 2, "The action require peg to be 1 or 2");
-        is_auth_manager(sym_code);
         setvip_v2(sym_code,actn,vip);
     }
 
