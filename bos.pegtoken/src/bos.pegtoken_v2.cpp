@@ -241,32 +241,6 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setvipfreqlm_v2(symbol_code sym_code, name vip, uint64_t frequency_limit) {
-        auto sym_raw = sym_code.raw();
-        auto viplimit_table = viplimits(get_self(), sym_raw);
-        auto iter = viplimit_table.find(vip.value);
-        if (iter == viplimit_table.end()) {
-            auto zero_asset = eosio::asset(0, symbol(sym_code, 8));
-            setviplimit_v2(vip, zero_asset, zero_asset, zero_asset, frequency_limit, 0);
-        } else {
-            setviplimit_v2(vip, iter->maximum_limit, iter->minimum_limit, iter->total_limit,
-            frequency_limit, iter->interval_limit);
-        }
-    }
-
-    void pegtoken::setvipintvlm_v2(symbol_code sym_code, name vip, uint64_t interval_limit) {
-        auto sym_raw = sym_code.raw();
-        auto viplimit_table = viplimits(get_self(), sym_raw);
-        auto iter = viplimit_table.find(vip.value);
-        if (iter == viplimit_table.end()) {
-            auto zero_asset = eosio::asset(0, symbol(sym_code, 8));
-            setviplimit_v2(vip, zero_asset, zero_asset, zero_asset, 0, interval_limit);
-        } else {
-            setviplimit_v2(vip, iter->maximum_limit, iter->minimum_limit, iter->total_limit,
-            iter->frequency_limit, interval_limit);
-        }
-    }
-
     void pegtoken::setfee_v2(symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee ){
         eosio_assert(min_service_fee.symbol == miner_fee.symbol, "different symbol");
        // auto info_table = infos(get_self(),sym_raw);

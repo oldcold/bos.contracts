@@ -95,9 +95,9 @@ public:
     void setvipfreqlm_v1(symbol_code sym_code, name vip, uint64_t frequency_limit );
     void setvipfreqlm_v2(symbol_code sym_code, name vip, uint64_t frequency_limit );
 
-    [[eosio::action]] void setvipintvlm(symbol_code sym_code, name vip, uint64_t interval_limit);
-    void setvipintvlm_v1(symbol_code sym_code, name vip, uint64_t interval_limit);
-    void setvipintvlm_v2(symbol_code sym_code, name vip, uint64_t interval_limit);
+    [[eosio::action]] void setvipintvlm(symbol_code sym_code, name vip, uint64_t interval_limit );
+    void setvipintvlm_v1(symbol_code sym_code, name vip, uint64_t interval_limit );
+    void setvipintvlm_v2(symbol_code sym_code, name vip, uint64_t interval_limit );
 
     [[eosio::action]] void setfee(symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee );
     void setfee_v1(symbol_code sym_code,  double service_fee_rate, asset min_service_fee, asset miner_fee );
