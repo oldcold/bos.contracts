@@ -75,29 +75,29 @@ public:
     void setintvlimit_v1( symbol_code sym_code, uint64_t interval_limit);
     void setintvlimit_v2( symbol_code sym_code, uint64_t interval_limit);
 
-    [[eosio::action]] void setviplimit(symbol_code sym_code, name vip, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit);
-    void setviplimit_v1(name vip, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit);
-    void setviplimit_v2(name vip, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit);
+    [[eosio::action]] void setviplimit(symbol_code sym_code, name vip, asset maximum_limit, asset minimum_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit);
+    void setviplimit_v1(name vip, asset maximum_limit, asset minimum_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit);
+    void setviplimit_v2(name vip, asset maximum_limit, asset minimum_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit);
 
-    [[eosio::action]] void setvipmaxlim(name vip, asset maximum_limit);
-    void setvipmaxlim_v1(name vip, asset maximum_limit);
-    void setvipmaxlim_v2(name vip, asset maximum_limit);
+    [[eosio::action]] void setvipmaxlim(name vip, asset maximum_limit );
+    void setvipmaxlim_v1(name vip, asset maximum_limit );
+    void setvipmaxlim_v2(name vip, asset maximum_limit );
 
-    [[eosio::action]] void setvipminlim(name vip, asset maximum_limit);
-    void setvipminlim_v1(name vip, asset maximum_limit);
-    void setvipminlim_v2(name vip, asset maximum_limit);
+    [[eosio::action]] void setvipminlim(name vip, asset maximum_limit );
+    void setvipminlim_v1(name vip, asset maximum_limit );
+    void setvipminlim_v2(name vip, asset maximum_limit );
 
-    [[eosio::action]] void setviptotlim(name vip, asset maximum_limit);
-    void setviptotlim_v1(name vip, asset maximum_limit);
-    void setviptotlim_v2(name vip, asset maximum_limit);
+    [[eosio::action]] void setviptotlim(name vip, asset maximum_limit );
+    void setviptotlim_v1(name vip, asset maximum_limit );
+    void setviptotlim_v2(name vip, asset maximum_limit );
 
-    [[eosio::action]] void setvipfreqlm(symbol_code sym_code, name vip, uint64_t frequency_limit);
-    void setvipfreqlm_v1(symbol_code sym_code, name vip, uint64_t frequency_limit);
-    void setvipfreqlm_v2(symbol_code sym_code, name vip, uint64_t frequency_limit);
+    [[eosio::action]] void setvipfreqlm(symbol_code sym_code, name vip, uint64_t frequency_limit );
+    void setvipfreqlm_v1(symbol_code sym_code, name vip, uint64_t frequency_limit );
+    void setvipfreqlm_v2(symbol_code sym_code, name vip, uint64_t frequency_limit );
 
-    [[eosio::action]] void setvipintvlm(symbol_code sym_code, name vip, uint64_t interval_limit);
-    void setvipintvlm_v1(symbol_code sym_code, name vip, uint64_t interval_limit);
-    void setvipintvlm_v2(symbol_code sym_code, name vip, uint64_t interval_limit);
+    [[eosio::action]] void setvipintvlm(symbol_code sym_code, name vip, uint64_t interval_limit );
+    void setvipintvlm_v1(symbol_code sym_code, name vip, uint64_t interval_limit );
+    void setvipintvlm_v2(symbol_code sym_code, name vip, uint64_t interval_limit );
 
     [[eosio::action]] void setfee(symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee );
     void setfee_v1(symbol_code sym_code,  double service_fee_rate, asset min_service_fee, asset miner_fee );
@@ -238,8 +238,8 @@ public:
     void pay_v2( asset quantity );
 
     // TODO: ruin        普通用户毁掉代币【严格锚定制】
-    [[eosio::action]] void ruin( asset quantity );
-    void ruin_v2( asset quantity );
+    [[eosio::action]] void ruin( asset quantity , name user);
+    void ruin_v2( asset quantity ,name user);
 
     [[eosio::action]] void burn( name from, asset quantity);
     void burn_v2( name from, asset quantity);
@@ -985,6 +985,10 @@ private:
         auto teller_tb = tellers(get_self(), sym_code.raw());
         auto tellers = teller_tb.find(account.value);
         eosio_assert(tellers == teller_tb.end(), "account has been assigned to role: teller");        
+
+        auto gatherer_tb = gatherers(get_self(), sym_code.raw());
+        auto gat = gatherer_tb.find(account.value);
+        eosio_assert(gat == gatherer_tb.end(), "account has been assigned to role: gatherer");    
 
         //不为issuer
         auto editionval = getedition(sym_code);

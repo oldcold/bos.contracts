@@ -233,8 +233,7 @@ namespace eosio {
     //     }
     // }
 
-    void pegtoken::setviplimit(symbol_code sym_code, name vip, asset maximum_limit,
-        asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit) {
+    void pegtoken::setviplimit(symbol_code sym_code, name vip, asset maximum_limit, asset minimum_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit) {
         is_auth_manager(sym_code);
         // 判断所有的asset 是否与sym_code为同一种币，若不是，则报错 
         eosio_assert(is_sym_equal_asset(sym_code, maximum_limit), "sym_code is not same as maximum_limit symbol_code.");
@@ -245,10 +244,10 @@ namespace eosio {
         switch (editionval)
         {
         case 1:
-            setviplimit_v1(vip, maximum_limit, minimum_limit, total_limit, frequency_limit, interval_limit);
+            setviplimit_v1(vip,maximum_limit,minimum_limit,total_limit,frequency_limit,interval_limit );
             break;
         case 2:
-            setviplimit_v2(vip, maximum_limit, minimum_limit, total_limit, frequency_limit, interval_limit);
+            setviplimit_v2(vip,maximum_limit,minimum_limit,total_limit,frequency_limit,interval_limit );
             break;
         default:
             eosio_assert(false, "edition should be either 1 or 2");
@@ -256,17 +255,17 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setvipmaxlim(name vip, asset maximum_limit) {
+    void pegtoken::setvipmaxlim(name vip, asset maximum_limit ) {
         auto sym_code = maximum_limit.symbol.code();
-        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2, "Edition should be either 1 or 2");
+        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2,   "Edition should be either 1 or 2");
         auto editionval = getedition(sym_code);
         switch (editionval)
         {
         case 1:
-            setvipmaxlim_v1(vip,maximum_limit);
+            setvipmaxlim_v1(vip,maximum_limit );
             break;
         case 2:
-            setvipmaxlim_v2(vip,maximum_limit);
+            setvipmaxlim_v2(vip,maximum_limit );
             break;
         default:
             eosio_assert(false, "edition should be either 1 or 2");
@@ -274,17 +273,17 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setvipminlim(name vip, asset minimum_limit) {
+        void pegtoken::setvipminlim(name vip, asset minimum_limit ) {
         auto sym_code = minimum_limit.symbol.code();
-        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2, "Edition should be either 1 or 2");
+        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2,   "Edition should be either 1 or 2");
         auto editionval = getedition(sym_code);
         switch (editionval)
         {
         case 1:
-            setvipminlim_v1(vip,minimum_limit);
+            setvipminlim_v1(vip,minimum_limit );
             break;
         case 2:
-            setvipminlim_v2(vip,minimum_limit);
+            setvipminlim_v2(vip,minimum_limit );
             break;
         default:
             eosio_assert(false, "edition should be either 1 or 2");
@@ -292,17 +291,17 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setviptotlim(name vip, asset totimum_limit) {
+    void pegtoken::setviptotlim(name vip, asset totimum_limit ) {
         auto sym_code = totimum_limit.symbol.code();
-        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2, "Edition should be either 1 or 2");
+        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2,   "Edition should be either 1 or 2");
         auto editionval = getedition(sym_code);
         switch (editionval)
         {
         case 1:
-            setviptotlim_v1(vip,totimum_limit);
+            setviptotlim_v1(vip,totimum_limit );
             break;
         case 2:
-            setviptotlim_v2(vip,totimum_limit);
+            setviptotlim_v2(vip,totimum_limit );
             break;
         default:
             eosio_assert(false, "edition should be either 1 or 2");
@@ -310,39 +309,15 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setvipfreqlm(symbol_code sym_code, name vip, uint64_t frequency_limit) {
-        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2, "Edition should be either 1 or 2");
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            setvipfreqlm_v1(sym_code, vip, frequency_limit);
-            break;
-        case 2:
-            setvipfreqlm_v2(sym_code, vip, frequency_limit);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+    void pegtoken::setvipfreqlm(symbol_code sym_code, name vip, uint64_t frequency_limit ) {
+    
     }
 
-    void pegtoken::setvipintvlm(symbol_code sym_code, name vip, uint64_t interval_limit) {
-        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2, "Edition should be either 1 or 2");
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            setvipintvlm_v1(sym_code, vip, interval_limit);
-            break;
-        case 2:
-            setvipintvlm_v2(sym_code, vip, interval_limit);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+    void pegtoken::setvipintvlm(symbol_code sym_code, name vip, uint64_t interval_limit ) {
+    
     }
+
+ 
 
     void pegtoken::setfee(symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee) {
         //判断所有的asset 是否与sym_code为同一种币，若不是，则报错 
@@ -764,6 +739,8 @@ namespace eosio {
 
     void pegtoken::setvip(symbol_code sym_code, string actn, name vip){
         is_auth_manager(sym_code);
+        is_auth_role(sym_code, vip);
+        ACCOUNT_CHECK(vip);
         // 根据sym_code，查询editions表，校验币的版本，版本不对则报错。
         // 根据sym_code，查询pegs表，校验币的机制，机制不对则报错。
         eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
@@ -941,7 +918,8 @@ namespace eosio {
      }
     
     // TODO: finish ruin_v2
-     void pegtoken::ruin( asset quantity ){
+     void pegtoken::ruin( asset quantity, name user ){
+        require_auth(user);
         auto sym_code = quantity.symbol.code();
         eosio_assert(is_locked(sym_code),"The token has been locked");
         eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
@@ -949,7 +927,7 @@ namespace eosio {
         eosio_assert(quantity>asset{0,quantity.symbol}, "The quantity to ruin is less or equal to 0");
         //如何导入账户
         // is_auth_role(sym_code);
-        ruin_v2(quantity);
+        ruin_v2(quantity, user);
     }
 
     void pegtoken::burn( name from, asset quantity){
