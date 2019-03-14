@@ -854,30 +854,37 @@ namespace eosio {
          
     }
 
-    void pegtoken::denyback_v2( symbol_code sym_code, transaction_id_type trx_id, uint64_t index,  string memo ){
+    void pegtoken::denyback_v2( symbol_code sym_code, transaction_id_type trx_id,
+        uint64_t index, string memo ) {
         auto melt_tb = melts(get_self(), sym_code.raw());
-        name from;
-        for (auto melt_iter = melt_tb.begin(); melt_iter != melt_tb.end(); ++melt_iter) {   // iter pioneer table
+        name melt_to;
+        asset melt_total;
+        asset melt_amount;
+        for (auto melt_iter = melt_tb.begin(); melt_iter != melt_tb.end(); ++melt_iter) {
             // find the trx hash
-            if( std::memcmp(trx_id.hash, melt_iter->trx_id.hash, 32) == 0 && melt_iter->enable == true && melt_iter->state==0){
-                from = melt_iter->from;
+            if( std::memcmp(trx_id.hash, melt_iter->trx_id.hash, 32) == 0
+                && melt_iter->enable == true && melt_iter->state == 0 ) {
+                melt_to = melt_iter->from;
+                melt_total = melt_iter->total;
+                melt_amount = melt_iter->amount;
                 melt_tb.modify(melt_iter, same_payer, [&](auto &mit) {
-                    // mit.remote_trx_id = remote_trx_id;
                     mit.state = 5;
+                    mit.msg = memo;
                 });
+                break;
             }
         }
         auto info_tb = infos(get_self(), sym_code.raw());
         auto info_iter = info_tb.get(sym_code.raw(), "sym_code do not exist in infos table");
-        // 调用notify插件接口通知该账号, 将来前端可以监听到并提示。可以根据trx_id查询melts表得到用户名。
-        info_tb.modify(info_iter, same_payer, [&](auto &p) { p.supply -= p.supply ; });        // TODO: 扣除手续费
+        info_tb.modify(info_iter, same_payer, [&](auto &p) { p.supply -= melt_total ; });
 
-        // action(
-        //     permission_level{get_self(),"active"_n},
-        //     get_self(),
-        //     "retreat"_n,
-        //     // std::make_tuple({from,quantity})
-        // )
+        // TODO: ADD FEE.
+        action(
+            permission_level{get_self(), "active"_n},
+            get_self(),
+            "retreat"_n,
+            std::make_tuple(melt_to, melt_amount)
+        ).send();
     }
 
     void pegtoken::sendback_v2(transaction_id_type trx_id, name to, asset quantity, string memo ){
