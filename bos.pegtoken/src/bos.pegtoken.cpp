@@ -344,7 +344,8 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setfee(symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee) {
+    void pegtoken::setfee(symbol_code sym_code, double service_fee_rate,
+        asset min_service_fee, asset miner_fee) {
         //判断所有的asset 是否与sym_code为同一种币，若不是，则报错 
         eosio_assert(is_sym_equal_asset(sym_code, min_service_fee), "sym_code is not same as min_service_fee symbol_code.");
         eosio_assert(is_sym_equal_asset(sym_code, miner_fee), "sym_code is not same as miner_fee symbol_code.");
@@ -353,10 +354,10 @@ namespace eosio {
         switch (editionval)
         {
         case 1:
-            setfee_v1(sym_code,service_fee_rate,min_service_fee,miner_fee);
+            setfee_v1(sym_code, service_fee_rate, min_service_fee, miner_fee);
             break;
         case 2:
-            setfee_v2(sym_code,service_fee_rate,min_service_fee,miner_fee);
+            setfee_v2(sym_code, service_fee_rate, min_service_fee, miner_fee);
             break;
         default:
             eosio_assert(false, "edition should be either 1 or 2");

@@ -99,9 +99,9 @@ public:
     void setvipintvlm_v1(symbol_code sym_code, name vip, uint64_t interval_limit);
     void setvipintvlm_v2(symbol_code sym_code, name vip, uint64_t interval_limit);
 
-    [[eosio::action]] void setfee(symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee );
-    void setfee_v1(symbol_code sym_code,  double service_fee_rate, asset min_service_fee, asset miner_fee );
-    void setfee_v2(symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee );
+    [[eosio::action]] void setfee(symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee);
+    void setfee_v1(symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee);
+    void setfee_v2(symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee);
 
     [[eosio::action]] void setservfeert(symbol_code sym_code, double service_fee_rate);
     void setservfeert_v1(symbol_code sym_code, double service_fee_rate);
@@ -880,12 +880,11 @@ private:
         auto balance = acct.find(sym_code.raw());
         return balance == acct.end() || balance->balance.amount == 0;
     }
-
+    
     bool pegtoken::addr_check(symbol_code sym_code, name user) {
         auto addresses = addrs(get_self(), sym_code.raw());
         return addresses.find(user.value) == addresses.end();
     }
-
 
     uint64_t pegtoken::getpeg(symbol_code sym_code){
         auto peg_table = pegs(get_self(),sym_code.raw());

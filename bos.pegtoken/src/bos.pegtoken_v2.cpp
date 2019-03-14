@@ -256,15 +256,13 @@ namespace eosio {
         }
     }
     
-    void pegtoken::setfee_v2(symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee ){
+    void pegtoken::setfee_v2(symbol_code sym_code, double service_fee_rate,
+        asset min_service_fee, asset miner_fee) {
         eosio_assert(min_service_fee.symbol == miner_fee.symbol, "different symbol");
        // auto info_table = infos(get_self(),sym_raw);
         // auto val = info_table.get(sym_raw, "token with symbol not exists(info)");
         // 直接从位于sym_code scope中的managers中获取
         auto sym_raw = sym_code.raw();
-        auto manager_table = managers(get_self(), sym_raw);
-        auto val = manager_table.get(sym_raw, "No managers table based on symbol");
-        require_auth(val.manager);
 
         auto fee_table = fees(get_self(),sym_raw);
         if( fee_table.begin() == fee_table.end()) {
