@@ -25,6 +25,11 @@ enum withdraw_state : uint64_t {
     ROLL_BACK = 5,
 };
 
+enum peg_type: uint64_t {
+    PRE_RELEASE = 1,
+    STRICT_ANCHOR
+};
+
 class[[eosio::contract("bos.pegtoken")]] pegtoken : public contract
 {
 public:
@@ -493,7 +498,7 @@ private:
         uint64_t by_delindex() const { return create_time.utc_seconds; }
     };
 
-    struct [[eosio::table]] newdeposit_ts {
+    struct [[eosio::table]] newdepositts {
         uint64_t id;
         transaction_id_type trx_id;
         name from;
@@ -603,23 +608,23 @@ private:
         name to_account;
         string to_address;
         asset quantity;
-        uint64_t state;        
-        string remote_trx_id;
-        uint64_t index;
-        uint64_t remote_index;
-        uint64_t enable;
-
-        // FIXME: auditor is not set in doc
+        uint64_t state;
+        bool need_check;
+        bool enable;
         name auditor;
+        uint64_t index;
+        string remote_trx_id;
+        uint64_t remote_index;
 
         string msg;
         time_point_sec create_time;
         time_point_sec update_time;
-
+        
         uint64_t primary_key() const { return id; }
+        uint64_t by_state() const { return state; }
     };
-    using casts = eosio::multi_index< "casts"_n, cast_ts >;
-
+    using casts = eosio::multi_index< "casts"_n, cast_ts,
+        indexed_by< "state"_n, const_mem_fun< cast_ts, uint64_t, &cast_ts::by_state > > >;
 
     struct [[eosio::table]] vip_ts{
         name vip;
