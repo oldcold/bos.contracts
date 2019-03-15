@@ -84,9 +84,9 @@ public:
     void setintvlimit_v1( symbol_code sym_code, uint64_t interval_limit );
     void setintvlimit_v2( symbol_code sym_code, uint64_t interval_limit );
 
-    [[eosio::action]] void setviplimit(symbol_code sym_code, name vip, asset maximum_limit, asset minimum_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit);
-    void setviplimit_v1(name vip, asset maximum_limit, asset minimum_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit);
-    void setviplimit_v2(name vip, asset maximum_limit, asset minimum_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit);
+    [[eosio::action]] void setviplimit( symbol_code sym_code, name vip, asset maximum_limit, asset minimum_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit );
+    void setviplimit_v1( name vip, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
+    void setviplimit_v2( name vip, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
 
     [[eosio::action]] void setvipmaxlim(name vip, asset maximum_limit );
     void setvipmaxlim_v1(name vip, asset maximum_limit );

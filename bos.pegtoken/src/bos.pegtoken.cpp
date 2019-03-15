@@ -118,26 +118,13 @@ namespace eosio {
     //     }
     // }
 
-    void pegtoken::setviplimit(symbol_code sym_code, name vip, asset maximum_limit, asset minimum_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit) {
+    void pegtoken::setviplimit( symbol_code sym_code, name vip, asset maximum_limit,asset minimum_limit,
+        asset total_limit, uint64_t frequency_limit, uint64_t interval_limit ) {
         is_auth_manager(sym_code);
-        // 判断所有的asset 是否与sym_code为同一种币，若不是，则报错 
         eosio_assert(is_sym_equal_asset(sym_code, maximum_limit), "sym_code is not same as maximum_limit symbol_code.");
         eosio_assert(is_sym_equal_asset(sym_code, minimum_limit), "sym_code is not same as minimum_limit symbol_code.");
         eosio_assert(is_sym_equal_asset(sym_code, total_limit), "sym_code is not same as total_limit symbol_code.");
-        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2,   "Edition should be either 1 or 2");
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            setviplimit_v1(vip,maximum_limit,minimum_limit,total_limit,frequency_limit,interval_limit );
-            break;
-        case 2:
-            setviplimit_v2(vip,maximum_limit,minimum_limit,total_limit,frequency_limit,interval_limit );
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        setviplimit_v2(vip, maximum_limit, minimum_limit, total_limit, frequency_limit, interval_limit);
     }
 
     void pegtoken::setvipmaxlim(name vip, asset maximum_limit ) {
