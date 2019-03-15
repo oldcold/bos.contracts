@@ -60,7 +60,7 @@ public:
     void update_v1( symbol_code sym_code, string organization, string website );
     void update_v2( symbol_code sym_code, string organization, string website );
 
-    [[eosio::action]] void setlimit(symbol_code sym_code, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
+    [[eosio::action]] void setlimit( symbol_code sym_code, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
     void setlimit_v1(symbol_code sym_code, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
     void setlimit_v2(symbol_code sym_code, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
 
@@ -300,21 +300,21 @@ public:
     void setauditor_v1( symbol_code sym_code, string action, name auditor);
     void setauditor_v2( symbol_code sym_code, string actn, name auditor);
 
-    [[eosio::action]] void setgatherer( symbol_code sym_code,  name gatherer);
-    void setgatherer_v1( symbol_code sym_code,  name gatherer);
-    void setgatherer_v2( symbol_code sym_code,  name gatherer);
+    [[eosio::action]] void setgatherer( symbol_code sym_code, name gatherer );
+    void setgatherer_v1( symbol_code sym_code, name gatherer );
+    void setgatherer_v2( symbol_code sym_code, name gatherer );
 
-    [[eosio::action]] void setteller( symbol_code sym_code,  name teller);
-    void setteller_v1( symbol_code sym_code,  name teller);
-    void setteller_v2( symbol_code sym_code,  name teller);
+    [[eosio::action]] void setteller( symbol_code sym_code, name teller );
+    void setteller_v1( symbol_code sym_code, name teller );
+    void setteller_v2( symbol_code sym_code, name teller );
 
-    [[eosio::action]] void setmanager( symbol_code sym_code,  name manager);
-    void setmanager_v1( symbol_code sym_code,  name manager);
-    void setmanager_v2( symbol_code sym_code,  name manager);
+    [[eosio::action]] void setmanager( symbol_code sym_code, name manager );
+    void setmanager_v1( symbol_code sym_code, name manager );
+    void setmanager_v2( symbol_code sym_code, name manager );
 
-    [[eosio::action]] void setbrakeman( symbol_code sym_code,  name brakeman);
-    void setbrakeman_v1( symbol_code sym_code,  name brakeman);
-    void setbrakeman_v2( symbol_code sym_code,  name brakeman);
+    [[eosio::action]] void setbrakeman( symbol_code sym_code, name brakeman );
+    void setbrakeman_v1( symbol_code sym_code, name brakeman );
+    void setbrakeman_v2( symbol_code sym_code, name brakeman );
 
     // TODO: 管理员为某个相应的币种的某个用户设置为VIP, action有add或remove
     [[eosio::action]] void setvip( symbol sym,  string action, name vip);
@@ -402,7 +402,7 @@ private:
         uint64_t by_state() const { return state; }
     };
 
-    struct [[eosio::table]] record_ts{
+    struct [[eosio::table]] record_ts {
         name owner;
         string address;
         time_point_sec reset_time;
@@ -759,19 +759,17 @@ private:
     };
     using bills = eosio::multi_index< "bills"_n, bill_ts >;
 
-    // TODO: managers
     struct [[eosio::table]] manager_ts {
         name manager;
 
-        uint64_t primary_key() const { return manager.value;}
+        uint64_t primary_key() const { return manager.value; }
     };
     using managers = eosio::multi_index<"managers"_n, manager_ts>;
 
-    // TODO: tellers
     struct [[eosio::table]] teller_ts {
         name teller;
 
-        uint64_t primary_key() const { return teller.value;}
+        uint64_t primary_key() const { return teller.value; }
     };
     using tellers = eosio::multi_index<"tellers"_n, teller_ts>;
 
@@ -790,9 +788,6 @@ private:
     };
     using auditors = eosio::multi_index<"auditors"_n, auditor_ts>;
 
-    
-   
-    // TODO: 收费员 gatherers
     struct [[eosio::table]] gatherer_ts {
         name gatherer;
 
@@ -800,9 +795,6 @@ private:
     };
     using gatherers = eosio::multi_index< "gathers"_n, gatherer_ts >;
 
-
-   
-    // TODO: 制动员 gatherers
     struct [[eosio::table]] brakeman_ts {
         name brakeman;
 
@@ -892,7 +884,8 @@ private:
     
     bool pegtoken::addr_check(symbol_code sym_code, name user) {
         auto addresses = addrs(get_self(), sym_code.raw());
-        return addresses.find(user.value) == addresses.end();
+        auto addr_iter = addresses.find(user.value);
+        return addr_iter == addresses.end() || (addr_iter->state != 0 || addr_iter->address == "");
     }
 
     uint64_t pegtoken::getpeg(symbol_code sym_code){
@@ -936,16 +929,18 @@ private:
         require_auth(info_val.issuer);
     }
 
-    void pegtoken::is_auth_manager(symbol_code sym_code){
-        auto manager_tb = managers(get_self(),sym_code.raw());
-        auto mgr_val = manager_tb.get(sym_code.raw(), "the v2 token NOT in managers table");
-        require_auth(mgr_val.manager);
+    void pegtoken::is_auth_manager(symbol_code sym_code) {
+        auto manager_tb = managers(get_self(), sym_code.raw());
+        auto mgr_iter = manager_tb.begin();
+        eosio_assert(mgr_iter != manager_tb.end(), "the token not in managers table");
+        require_auth(mgr_iter->manager);
     }
 
     void pegtoken::is_auth_teller(symbol_code sym_code){
         auto teller_tb = tellers(get_self(),sym_code.raw());
-        auto teller_val = teller_tb.get(sym_code.raw(), "the v2 token NOT in tellers table");
-        require_auth(teller_val.teller);
+        auto teller_iter = teller_tb.begin();
+        eosio_assert(teller_iter != teller_tb.end(), "the token not in tellers table");
+        require_auth(teller_iter->teller);
     }
 
     void pegtoken::is_auth_auditor(symbol_code sym_code){
@@ -954,10 +949,11 @@ private:
         require_auth(auditor_val.auditor);
     }
 
-    void pegtoken::is_auth_brakeman(symbol_code sym_code){
-        auto brakeman_tb = brakemans(get_self(),sym_code.raw());
-        auto brakeman_val = brakeman_tb.get(sym_code.raw(), "the v2 token NOT in brakemans table");
-        require_auth(brakeman_val.brakeman);
+    void pegtoken::is_auth_brakeman(symbol_code sym_code) {
+        auto brakeman_tb = brakemans(get_self(), sym_code.raw());
+        auto brake_iter = brakeman_tb.begin();
+        eosio_assert(brake_iter != brakeman_tb.end(), "the token not in brakemans table");
+        require_auth(brake_iter->brakeman);
     }
 
     void pegtoken::is_auth_role(symbol_code sym_code, name account) {

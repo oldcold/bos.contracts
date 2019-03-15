@@ -711,16 +711,13 @@ namespace eosio {
     }
     
     void pegtoken::setauditor_v2(symbol_code sym_code, string actn, name auditor) {
+        // Check if the address is already bound
+        eosio_assert(addr_check(sym_code, auditor), "this account has assigned to address already");
         // Balance check
         eosio_assert(balance_check(sym_code, auditor), "auditor`s balance should be 0");
+
         auto auditor_tb = auditors(get_self(), sym_code.raw());
         auto aud_iter = auditor_tb.find(auditor.value);
-        
-        // Check if the address is already bound
-        auto addr_tb = addrs(get_self(), sym_code.raw());
-        auto addr_iter = addr_tb.find(auditor.value);
-        eosio_assert(addr_iter->state != 0 || addr_iter->address == "", "this account has assigned to address already");
-
         if(actn == "add") {
             eosio_assert(aud_iter == auditor_tb.end(), "auditor has been assigned based on sym_code");
             auditor_tb.emplace(get_self(), [&](auto& aud) {
@@ -732,84 +729,82 @@ namespace eosio {
         }
     }
 
-    //能够设置单个
-    void pegtoken::setmanager_v2(symbol_code sym_code, name manager){
-        //检查该账户该币种余额
+    // There is only one manager
+    void pegtoken::setmanager_v2( symbol_code sym_code, name manager ) {
+        // Check if the address is already bound
+        eosio_assert(addr_check(sym_code, manager), "this account has assigned to address already");
+        // Balance check
         eosio_assert(balance_check(sym_code, manager), "manager`s balance should be 0");
-            //检查是否已经绑定地址
-        auto addr_tb = addrs(get_self(), sym_code.raw());
-        auto addr_iter = addr_tb.find(manager.value);
-        eosio_assert(addr_iter->state!=0 || addr_iter->address=="","this account has assigned to address already");
 
         auto manager_tb = managers(get_self(), sym_code.raw());
-        auto mgr_iter = manager_tb.find(sym_code.raw());
-        if(mgr_iter == manager_tb.end()){
-            manager_tb.emplace(get_self(), [&](auto& mgr){
+        if (manager_tb.begin() == manager_tb.end()) {
+            manager_tb.emplace(get_self(), [&](auto& mgr) {
                 mgr.manager = manager;
             });
-        } else{
-            manager_tb.modify(mgr_iter,same_payer,[&](auto &mgr){
+        } else {
+            manager_tb.erase(manager_tb.begin());
+            manager_tb.emplace(get_self(), [&](auto& mgr) {
                 mgr.manager = manager;
             });
         }
     }
-    //能够设置单个
-    void pegtoken::setgatherer_v2(symbol_code sym_code, name gatherer){
-        //检查该账户该币种余额
+
+    // There is only one gatherer
+    void pegtoken::setgatherer_v2(symbol_code sym_code, name gatherer) {
+        // Check if the address is already bound
+        eosio_assert(addr_check(sym_code, gatherer), "this account has assigned to address already");
+        // Balance check
         eosio_assert(balance_check(sym_code, gatherer), "gatherer`s balance should be 0");
-    
 
         auto gather_tb = gatherers(get_self(), sym_code.raw());
-        auto gather_iter = gather_tb.find(sym_code.raw());
-        if(gather_iter == gather_tb.end()){
-            gather_tb.emplace(get_self(), [&](auto& gather){
-                gather.gatherer = gatherer;
+        if (gather_tb.begin() == gather_tb.end()) {
+            gather_tb.emplace(get_self(), [&](auto& p) {
+                p.gatherer = gatherer;
             });
-        }else{
-            gather_tb.modify(gather_iter,same_payer,[&](auto &gather){
-                gather.gatherer = gatherer;
+        } else {
+            gather_tb.erase(gather_tb.begin());
+            gather_tb.emplace(get_self(), [&](auto& p) {
+                p.gatherer = gatherer;
             });
         }
     }
-    //能够设置单个
-    void pegtoken::setbrakeman_v2(symbol_code sym_code, name brakeman){
-        //检查该账户该币种余额
-        eosio_assert(balance_check(sym_code, brakeman), "gatherer`s balance should be 0");
-            //检查是否已经绑定地址
-        auto addr_tb = addrs(get_self(), sym_code.raw());
-        auto addr_iter = addr_tb.find(brakeman.value);
-        eosio_assert(addr_iter->state!=0 || addr_iter->address=="","this account has assigned to address already");
+
+    // There is only one brakeman
+    void pegtoken::setbrakeman_v2( symbol_code sym_code, name brakeman ) {
+        // Check if the address is already bound
+        eosio_assert(addr_check(sym_code, brakeman), "this account has assigned to address already");
+        // Balance check
+        eosio_assert(balance_check(sym_code, brakeman), "brakeman`s balance should be 0");
 
         auto brakeman_tb = brakemans(get_self(), sym_code.raw());
-        auto brakeman_iter = brakeman_tb.find(sym_code.raw());
-        if(brakeman_iter == brakeman_tb.end()){
-            brakeman_tb.emplace(get_self(), [&](auto& brak){
-                brak.brakeman = brakeman;
+        if (brakeman_tb.begin() == brakeman_tb.end()) {
+            brakeman_tb.emplace(get_self(), [&](auto& p) {
+                p.brakeman = brakeman;
             });
-        }else{
-            brakeman_tb.modify(brakeman_iter,same_payer,[&](auto &brak){
-                brak.brakeman = brakeman;
+        } else {
+            brakeman_tb.erase(brakeman_tb.begin());
+            brakeman_tb.emplace(get_self(), [&](auto& p) {
+                p.brakeman = brakeman;
             });
         }
     }
-    //能够设置单个
-    void pegtoken::setteller_v2(symbol_code sym_code, name teller){
-         //检查该账户该币种余额
-        eosio_assert(balance_check(sym_code, teller), "gatherer`s balance should be 0");
-          //检查是否已经绑定地址
-        auto addr_tb = addrs(get_self(), sym_code.raw());
-        auto addr_iter = addr_tb.find(teller.value);
-        eosio_assert(addr_iter->state!=0 || addr_iter->address=="","this account has assigned to address already");
+
+    // There is only one teller
+    void pegtoken::setteller_v2(symbol_code sym_code, name teller) {
+        // Check if the address is already bound
+        eosio_assert(addr_check(sym_code, teller), "this account has assigned to address already");
+        // Balance check
+        eosio_assert(balance_check(sym_code, teller), "teller`s balance should be 0");
 
         auto teller_tb = tellers(get_self(), sym_code.raw());
-        auto teller_iter = teller_tb.find(sym_code.raw());
-        if(teller_iter != teller_tb.end()){
-            teller_tb.emplace(get_self(), [&](auto& tell){
-                tell.teller = teller;
+        if (teller_tb.begin() == teller_tb.end()) {
+            teller_tb.emplace(get_self(), [&](auto& p) {
+                p.teller = teller;
             });
-        } else{
-            teller_tb.modify(teller_iter,same_payer,[&](auto &tell){
-                tell.teller = teller;
+        } else {
+            teller_tb.erase(teller_tb.begin());
+            teller_tb.emplace(get_self(), [&](auto& p) {
+                p.teller = teller;
             });
         }
     }
@@ -840,17 +835,17 @@ namespace eosio {
             });
             viplimit_table.emplace(get_self(),[&](auto &p){
                 p.owner = vip;
-                p.maximum_limit = eosio::asset(1,sym);
-                p.minimum_limit = eosio::asset(0.00005,sym);
-                p.total_limit = eosio::asset(10,sym);;
+                p.maximum_limit = eosio::asset(MAXIMUM_LIMIT, sym);
+                p.minimum_limit = eosio::asset(MINIMUM_LIMIT, sym);
+                p.total_limit = eosio::asset(TOTAL_LIMIT, sym);;
                 p.frequency_limit = 3;
                 p.interval_limit = 300;
             });
-            vipfee_table.emplace(get_self(),[&](auto &p){
+            vipfee_table.emplace(get_self(), [&](auto &p) {
                 p.owner = vip;
                 p.service_fee_rate = 0.001;
-                p.min_service_fee = eosio::asset(0.0005,sym);
-                p.miner_fee = eosio::asset(0.00004,sym);
+                p.min_service_fee = eosio::asset(MIN_SERVICE_FEE, sym);
+                p.miner_fee = eosio::asset(MINER_FEE, sym);
             });
         } 
     }
@@ -887,18 +882,23 @@ namespace eosio {
         auto infos_table = stats(get_self(), sym_raw);
         auto info_iter = infos_table.find(sym_raw);
         eosio_assert(info_iter != infos_table.end(), "token not exist");
-        // BTC 精度为8 ETH精度为8 USDT精度为8 
-        // 根据quantity所携带的symbol信息确定scope
         verify_address(info_iter->address_style, address);
-        //TODO:
-        // 根据to，查询addrs表，若不存在，则报错；若address字段不为空，则报错。
+        
+        auto records_tb = records(get_self(), sym_raw);
+        auto records_by_addr = records_tb.template get_index<"addr"_n>();
+        eosio_assert(records_by_addr.find(hash64(address)) == records_by_addr.end(), "address already in use");
+
         auto addrs_tb = addrs(get_self(), sym_raw);
-        auto addr_iter = addrs_tb.find(sym_raw);
-        eosio_assert(addr_iter != addrs_tb.end(), "addrs NOT exist in addrs table");
-        eosio_assert(addr_iter->address == "", "address in addrs table has already existed.");
-        addrs_tb.modify(addr_iter,same_payer,[&](auto &add){
-                add.address = address;
-                add.assign_time = time_point_sec(now());
+        auto addrs_by_addr = addrs_tb.template get_index<"addr"_n>();
+        eosio_assert(addrs_by_addr.find(hash64(address)) == addrs_by_addr.end(), "address already in use");
+
+        auto addr_iter = addrs_tb.find(to.value);
+        eosio_assert(addr_iter != addrs_tb.end(), "addrs not exist in addrs table");
+        eosio_assert(addr_iter->address == "", "address in addrs table already existed.");
+        addrs_tb.modify(addr_iter, same_payer, [&](auto &p) {
+            p.address = address;
+            p.assign_time = time_point_sec(now());
+            p.state = 0;
         });
     }
     
