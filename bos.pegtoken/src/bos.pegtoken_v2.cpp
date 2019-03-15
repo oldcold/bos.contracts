@@ -550,8 +550,8 @@ namespace eosio {
         });
     }
 
-    void pegtoken::refusecast_v2(symbol_code sym_code, string to_address, name to_account,
-        string remote_trx_id, asset quantity, uint64_t index, string memo) {
+    void pegtoken::refusecast_v2( symbol_code sym_code, string to_address, name to_account,
+        string remote_trx_id, asset quantity, uint64_t index, string memo ) {
         auto sym_raw = quantity.symbol.code().raw();
         auto infos_tb = infos(get_self(), sym_raw);
         auto iter_info = infos_tb.find(sym_raw);
@@ -615,12 +615,12 @@ namespace eosio {
         });
     }
 
-    void pegtoken::melt_v2(name from_account, string to_address, asset quantity, uint64_t index, string memo){
+    void pegtoken::melt_v2( name from_account, string to_address, asset quantity, uint64_t index, string memo ) {
         auto sym_code = quantity.symbol.code();
         ACCOUNT_CHECK(from_account);
-        if(is_vip(quantity.symbol.code(), from_account)){
-                vip_withdraw_check(sym_code, quantity, from_account);
-        }else{
+        if(is_vip(quantity.symbol.code(), from_account)) {
+            vip_withdraw_check(sym_code, quantity, from_account);
+        } else {
             withdraw_check(sym_code, quantity, from_account);
         }   
 
@@ -641,7 +641,6 @@ namespace eosio {
             p.balance -= quantity;
         });
         
-
         // limits.find()
         // compare the quantity with minimum_limit and maximum_limit
 
@@ -678,7 +677,7 @@ namespace eosio {
 
     }
 
-    void pegtoken::applyaddr_v2( symbol_code sym_code, name to ){
+    void pegtoken::applyaddr_v2( symbol_code sym_code, name to ) {
         // 根据sym_code，在addrs表中增加一条记录。
         // 此时owner字段置为to，address字段为空， state字段为owner.value
         // create_time为当前时间，assign_time为空
@@ -958,7 +957,7 @@ namespace eosio {
 
     }
 
-    void pegtoken::lockall_v2( symbol_code sym_code, name brakeman ){
+    void pegtoken::lockall_v2( symbol_code sym_code, name brakeman ) {
         require_auth(brakeman);
         auto sym_raw = sym_code.raw();
         auto infos_tb = infos(get_self(), sym_raw);
@@ -972,7 +971,7 @@ namespace eosio {
         infos_tb.modify(iter, same_payer, [&](auto &p) { p.active = false; });
     }
 
-    void pegtoken::unlockall_v2(symbol_code sym_code, name brakeman) {
+    void pegtoken::unlockall_v2( symbol_code sym_code, name brakeman ) {
         require_auth(brakeman);
         auto sym_raw = sym_code.raw();
         auto infos_tb = infos(get_self(), sym_raw);

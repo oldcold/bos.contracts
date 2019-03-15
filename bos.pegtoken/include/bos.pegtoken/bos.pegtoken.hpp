@@ -178,14 +178,14 @@ public:
     [[eosio::action]] void precast( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
     void precast_v2( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
 
-    [[eosio::action]] void agreecast(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo);
-    void agreecast_v2(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo);
+    [[eosio::action]] void agreecast( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
+    void agreecast_v2( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
     
-    [[eosio::action]] void refusecast(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo);
-    void refusecast_v2(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo);
+    [[eosio::action]] void refusecast( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
+    void refusecast_v2( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
     
-    [[eosio::action]] void melt(name from_account, string to_address, asset quantity, uint64_t index, string memo);
-    void melt_v2(name from_account, string to_address, asset quantity, uint64_t index, string memo);
+    [[eosio::action]] void melt( name from_account, string to_address, asset quantity, uint64_t index, string memo );
+    void melt_v2( name from_account, string to_address, asset quantity, uint64_t index, string memo );
 
     [[eosio::action]] void premelt(name from_account, string to_address, asset quantity, uint64_t index, string memo);
     void premelt_v2(name from_account, string to_address, asset quantity, uint64_t index, string memo);
@@ -271,9 +271,8 @@ public:
     [[eosio::action]] void confirmback( symbol_code sym_code, transaction_id_type trx_id, string remote_trx_id, uint64_t index, uint64_t remote_index, string memo );
     void confirmback_v2( symbol_code sym_code, transaction_id_type trx_id, string remote_trx_id, uint64_t index, uint64_t remote_index, string memo );
 
-    // TODO: denyback      出纳员想承兑商反馈信息 从BOS链想其他链环比
-    [[eosio::action]] void denyback( symbol_code sym_code, transaction_id_type trx_id, uint64_t index,  string memo );
-    void denyback_v2( symbol_code sym_code, transaction_id_type trx_id, uint64_t index,  string memo );
+    [[eosio::action]] void denyback( symbol_code sym_code, transaction_id_type trx_id, uint64_t index, string memo );
+    void denyback_v2( symbol_code sym_code, transaction_id_type trx_id, uint64_t index, string memo );
 
     // TODO: sendback       提币失败后承兑商退币给普通用户
     [[eosio::action]] void sendback(transaction_id_type trx_id, name to, asset quantity, string memo);
@@ -283,7 +282,6 @@ public:
 //    [[eosio::action]] void setacceptor( symbol_code sym_code, name acceptor );
    void setacceptor_v1( symbol_code sym_code, name acceptor );
 
-    // TODO: auditor->brakeman
     [[eosio::action]] void lockall( symbol_code sym_code, name brakeman );
     void lockall_v1( symbol_code sym_code, name brakeman );
     void lockall_v2( symbol_code sym_code, name brakeman );
