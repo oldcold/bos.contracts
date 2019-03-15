@@ -308,9 +308,9 @@ public:
     void setteller_v1( symbol_code sym_code, name teller );
     void setteller_v2( symbol_code sym_code, name teller );
 
-    [[eosio::action]] void setmanager( symbol_code sym_code,  name manager);
-    void setmanager_v1( symbol_code sym_code,  name manager);
-    void setmanager_v2( symbol_code sym_code,  name manager);
+    [[eosio::action]] void setmanager( symbol_code sym_code, name manager );
+    void setmanager_v1( symbol_code sym_code, name manager );
+    void setmanager_v2( symbol_code sym_code, name manager );
 
     [[eosio::action]] void setbrakeman( symbol_code sym_code,  name brakeman);
     void setbrakeman_v1( symbol_code sym_code,  name brakeman);
@@ -758,11 +758,10 @@ private:
     };
     using bills = eosio::multi_index< "bills"_n, bill_ts >;
 
-    // TODO: managers
     struct [[eosio::table]] manager_ts {
         name manager;
 
-        uint64_t primary_key() const { return manager.value;}
+        uint64_t primary_key() const { return manager.value; }
     };
     using managers = eosio::multi_index<"managers"_n, manager_ts>;
 

@@ -729,23 +729,21 @@ namespace eosio {
         }
     }
 
-    //能够设置单个
-    void pegtoken::setmanager_v2(symbol_code sym_code, name manager){
-        //检查该账户该币种余额
+    // There is only one manager
+    void pegtoken::setmanager_v2( symbol_code sym_code, name manager ) {
+        // Check if the address is already bound
+        eosio_assert(addr_check(sym_code, manager), "this account has assigned to address already");
+        // Balance check
         eosio_assert(balance_check(sym_code, manager), "manager`s balance should be 0");
-            //检查是否已经绑定地址
-        auto addr_tb = addrs(get_self(), sym_code.raw());
-        auto addr_iter = addr_tb.find(manager.value);
-        eosio_assert(addr_iter->state!=0 || addr_iter->address=="","this account has assigned to address already");
 
         auto manager_tb = managers(get_self(), sym_code.raw());
-        auto mgr_iter = manager_tb.find(sym_code.raw());
-        if(mgr_iter == manager_tb.end()){
-            manager_tb.emplace(get_self(), [&](auto& mgr){
+        if (manager_tb.begin() == manager_tb.end()) {
+            manager_tb.emplace(get_self(), [&](auto& mgr) {
                 mgr.manager = manager;
             });
-        } else{
-            manager_tb.modify(mgr_iter,same_payer,[&](auto &mgr){
+        } else {
+            manager_tb.erase(manager_tb.begin());
+            manager_tb.emplace(get_self(), [&](auto& mgr) {
                 mgr.manager = manager;
             });
         }
@@ -759,13 +757,13 @@ namespace eosio {
         eosio_assert(balance_check(sym_code, gatherer), "gatherer`s balance should be 0");
 
         auto gather_tb = gatherers(get_self(), sym_code.raw());
-        auto gather_iter = gather_tb.find(sym_code.raw());
-        if(gather_iter == gather_tb.end()) {
-            gather_tb.emplace(get_self(), [&]( auto& p) {
+        if (gather_tb.begin() == gather_tb.end()) {
+            gather_tb.emplace(get_self(), [&](auto& p) {
                 p.gatherer = gatherer;
             });
         } else {
-            gather_tb.modify(gather_iter, same_payer, [&](auto &p) {
+            gather_tb.erase(gather_tb.begin());
+            gather_tb.emplace(get_self(), [&](auto& p) {
                 p.gatherer = gatherer;
             });
         }
@@ -801,13 +799,13 @@ namespace eosio {
         eosio_assert(balance_check(sym_code, teller), "teller`s balance should be 0");
 
         auto teller_tb = tellers(get_self(), sym_code.raw());
-        auto teller_iter = teller_tb.find(sym_code.raw());
-        if(teller_iter == teller_tb.end()) {
+        if (teller_tb.begin() == teller_tb.end()) {
             teller_tb.emplace(get_self(), [&](auto& p) {
                 p.teller = teller;
             });
-        } else{
-            teller_tb.modify(teller_iter, same_payer, [&](auto &p) {
+        } else {
+            teller_tb.erase(teller_tb.begin());
+            teller_tb.emplace(get_self(), [&](auto& p) {
                 p.teller = teller;
             });
         }
