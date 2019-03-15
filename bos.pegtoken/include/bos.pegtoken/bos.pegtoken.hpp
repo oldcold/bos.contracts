@@ -296,7 +296,7 @@ public:
     [[eosio::action]] void rm( symbol_code sym_code, uint64_t id, uint64_t type);
     void rm_v2( symbol_code sym_code, uint64_t id, uint64_t type);
     
-    [[eosio::action]] void setauditor( symbol_code sym_code, string actn, name auditor);
+    [[eosio::action]] void setauditor( symbol_code sym_code, string actn, name auditor );
     void setauditor_v1( symbol_code sym_code, string action, name auditor);
     void setauditor_v2( symbol_code sym_code, string actn, name auditor);
 
@@ -782,11 +782,10 @@ private:
     };
     using acceptors = eosio::multi_index< "acceptors"_n, acceptor_ts >;
 
-    // TODO: auditors
     struct [[eosio::table]] auditor_ts {
         name auditor;
 
-        uint64_t primary_key() const { return auditor.value;}
+        uint64_t primary_key() const { return auditor.value; }
     };
     using auditors = eosio::multi_index<"auditors"_n, auditor_ts>;
 
@@ -930,27 +929,10 @@ private:
         return !(iter != vip_tb.end()); 
     }
 
-    void pegtoken::is_auth_issuer(symbol_code sym_code){
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-            case 1: {
-                auto stats_table = stats(get_self(),sym_code.raw());
-                auto stat_val = stats_table.get(sym_code.raw(),"the v1 token NOT in stats table");
-                require_auth(stat_val.issuer);
-                break;
-            }
-            case 2:{
-                auto info_table = infos(get_self(),sym_code.raw());
-                auto info_val = info_table.get(sym_code.raw(), "the v2 token NOT in infos table");
-                require_auth(info_val.issuer);
-                break;
-            }
-            default:{
-                eosio_assert(false, "edition should be 1 or 2");
-                break;
-            }
-        }
+    void pegtoken::is_auth_issuer(symbol_code sym_code) {
+        auto info_table = infos(get_self(), sym_code.raw());
+        auto info_val = info_table.get(sym_code.raw(), "the token not in infos table");
+        require_auth(info_val.issuer);
     }
 
     void pegtoken::is_auth_manager(symbol_code sym_code){
@@ -977,12 +959,12 @@ private:
         require_auth(brakeman_val.brakeman);
     }
 
-    void pegtoken::is_auth_role(symbol_code sym_code, name account){
+    void pegtoken::is_auth_role(symbol_code sym_code, name account) {
         auto brakeman_tb = brakemans(get_self(), sym_code.raw());
         auto braks = brakeman_tb.find(account.value);
         eosio_assert(braks == brakeman_tb.end(), "account has been assigned to role: brakeman");
 
-        auto auditor_tb = auditors(get_self(),sym_code.raw());
+        auto auditor_tb = auditors(get_self(), sym_code.raw());
         auto auds = auditor_tb.find(account.value);
         eosio_assert(auds == auditor_tb.end(), "account has been assigned to role: auditor");
 
@@ -998,29 +980,10 @@ private:
         auto gat = gatherer_tb.find(account.value);
         eosio_assert(gat == gatherer_tb.end(), "account has been assigned to role: gatherer");    
 
-        //不为issuer
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-            case 1: {
-                auto stats_table = stats(get_self(),sym_code.raw());
-                auto stat_iter = stats_table.find(sym_code.raw());
-                eosio_assert(stat_iter == stats_table.end(), "No such symbol");
-                eosio_assert(account == stat_iter->issuer , "The account has been assigned to issuer");
-                break;
-            }
-            case 2:{
-                auto info_table = infos(get_self(),sym_code.raw());
-                auto info_iter = info_table.find(sym_code.raw());
-                eosio_assert(info_iter == info_table.end(), "No such symbol");
-                eosio_assert(account == info_iter->issuer, "The account has been assigned to issuer");
-                break;
-            }
-            default:{
-                eosio_assert(false, "edition should be 1 or 2");
-                break;
-            }
-        }
+        auto info_table = infos(get_self(), sym_code.raw());
+        auto info_iter = info_table.find(sym_code.raw());
+        eosio_assert(info_iter != info_table.end(), "No such symbol");
+        eosio_assert(account != info_iter->issuer, "The account has been assigned to issuer");
     }
 
     bool pegtoken::is_locked(symbol_code sym_code){

@@ -12,7 +12,7 @@ namespace eosio {
 // actions
 ////////////////////////
 
-    void pegtoken::create(symbol sym, name issuer, name address_style, uint64_t peg) {
+    void pegtoken::create( symbol sym, name issuer, name address_style, uint64_t peg ) {
         eosio_assert(peg == PRE_RELEASE || peg == STRICT_ANCHOR, "peg can only be 1 or 2");
         require_auth(get_self());
         ACCOUNT_CHECK(issuer);
@@ -26,19 +26,7 @@ namespace eosio {
 
     void pegtoken::setissuer( symbol_code sym_code, name issuer )
     {
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            setissuer_v1(sym_code,issuer);
-            break;
-        case 2:
-            setissuer_v2(sym_code,issuer);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        setissuer_v2(sym_code, issuer);
     }
 
     void pegtoken::setedition( symbol_code sym_code ) {
@@ -675,15 +663,13 @@ namespace eosio {
     }
 
     // check 5 roles: deployer, teller, gatherer, manager, brakeman, issuer (check in different version)
-    void pegtoken::setauditor( symbol_code sym_code, string actn, name auditor){
+    void pegtoken::setauditor( symbol_code sym_code, string actn, name auditor ) {
         is_auth_issuer(sym_code);
-        is_auth_role(sym_code,auditor);
+        if (actn == "add") {
+            is_auth_role(sym_code, auditor);
+        }
         ACCOUNT_CHECK(auditor);
         setauditor_v2(sym_code, actn, auditor);
-        // issuer check in different version
-        // auto issuer_tb = (get_self(), sym_code.raw());
-        // auto iss_iter = issuer_tb.find(auditor.value);
-        // eosio_assert(iss_iter == issuer_tb.end(), "The account has been set to issuer");
     }
 
     void pegtoken::setgatherer( symbol_code sym_code,  name gatherer){

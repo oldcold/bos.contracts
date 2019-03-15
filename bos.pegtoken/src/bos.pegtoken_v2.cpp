@@ -69,7 +69,7 @@ namespace eosio {
         auto iter = info_table.find(sym_raw);
         eosio_assert(iter != info_table.end(), "token not exist");
         
-        info_table.modify(iter,same_payer, [&] (auto & p) {
+        info_table.modify(iter, same_payer, [&](auto &p) {
             p.issuer = issuer;
         });
     }
@@ -709,24 +709,24 @@ namespace eosio {
             // address字段为空
         });
     }
-    // 能设置多个
-    void pegtoken::setauditor_v2(symbol_code sym_code, string actn, name auditor){
-        //检查该账户该币种余额
+    
+    void pegtoken::setauditor_v2(symbol_code sym_code, string actn, name auditor) {
+        // Balance check
         eosio_assert(balance_check(sym_code, auditor), "auditor`s balance should be 0");
         auto auditor_tb = auditors(get_self(), sym_code.raw());
-        auto aud_iter = auditor_tb.find(sym_code.raw());
-
-               //检查是否已经绑定地址
+        auto aud_iter = auditor_tb.find(auditor.value);
+        
+        // Check if the address is already bound
         auto addr_tb = addrs(get_self(), sym_code.raw());
         auto addr_iter = addr_tb.find(auditor.value);
-        eosio_assert(addr_iter->state!=0 || addr_iter->address=="","this account has assigned to address already");
+        eosio_assert(addr_iter->state != 0 || addr_iter->address == "", "this account has assigned to address already");
 
-        if(actn == "add"){
-            eosio_assert(aud_iter != auditor_tb.end(), "auditor has been assigned based on sym_code");
-            auditor_tb.emplace(get_self(), [&](auto& aud){
+        if(actn == "add") {
+            eosio_assert(aud_iter == auditor_tb.end(), "auditor has been assigned based on sym_code");
+            auditor_tb.emplace(get_self(), [&](auto& aud) {
                 aud.auditor = auditor;
             });
-        } else if(actn == "remove"){
+        } else if(actn == "remove") {
             eosio_assert(aud_iter != auditor_tb.end(), "No auditor can be removed based on sym_code");
             auditor_tb.erase(aud_iter);
         }
