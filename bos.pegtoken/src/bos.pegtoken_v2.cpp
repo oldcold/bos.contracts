@@ -792,24 +792,23 @@ namespace eosio {
             });
         }
     }
-    //能够设置单个
-    void pegtoken::setteller_v2(symbol_code sym_code, name teller){
-         //检查该账户该币种余额
-        eosio_assert(balance_check(sym_code, teller), "gatherer`s balance should be 0");
-          //检查是否已经绑定地址
-        auto addr_tb = addrs(get_self(), sym_code.raw());
-        auto addr_iter = addr_tb.find(teller.value);
-        eosio_assert(addr_iter->state!=0 || addr_iter->address=="","this account has assigned to address already");
+
+    // There is only one teller
+    void pegtoken::setteller_v2(symbol_code sym_code, name teller) {
+        // Check if the address is already bound
+        eosio_assert(addr_check(sym_code, teller), "this account has assigned to address already");
+        // Balance check
+        eosio_assert(balance_check(sym_code, teller), "teller`s balance should be 0");
 
         auto teller_tb = tellers(get_self(), sym_code.raw());
         auto teller_iter = teller_tb.find(sym_code.raw());
-        if(teller_iter != teller_tb.end()){
-            teller_tb.emplace(get_self(), [&](auto& tell){
-                tell.teller = teller;
+        if(teller_iter == teller_tb.end()) {
+            teller_tb.emplace(get_self(), [&](auto& p) {
+                p.teller = teller;
             });
         } else{
-            teller_tb.modify(teller_iter,same_payer,[&](auto &tell){
-                tell.teller = teller;
+            teller_tb.modify(teller_iter, same_payer, [&](auto &p) {
+                p.teller = teller;
             });
         }
     }

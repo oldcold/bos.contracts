@@ -680,30 +680,12 @@ namespace eosio {
         setgatherer_v2(sym_code, gatherer);
     }
 
-
-    void pegtoken::setteller( symbol_code sym_code,  name teller){
+    void pegtoken::setteller( symbol_code sym_code, name teller) {
         is_auth_issuer(sym_code);
         is_auth_role(sym_code, teller);
         ACCOUNT_CHECK(teller);
-        // 根据sym_code，查询editions表，校验币的版本，版本不对则报错。
-        // 根据sym_code，查询pegs表，校验币的机制，机制不对则报错。
-        eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
-        eosio_assert(getpeg(sym_code) == 1 || getpeg(sym_code) == 2, "The action require peg to be 1 or 2");    
-        eosio_assert(balance_check(sym_code, teller), "teller`s balance should be 0");
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            setteller_v1(sym_code, teller);
-            break;
-        case 2: 
-            setteller_v2(sym_code, teller);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
-        
+        eosio_assert(getpeg(sym_code) == peg_type::PRE_RELEASE || getpeg(sym_code) == peg_type::STRICT_ANCHOR, "The action require peg to be pre release or strict anchor");
+        setteller_v2(sym_code, teller);
     }
 
     void pegtoken::setmanager(symbol_code sym_code,  name manager){

@@ -304,9 +304,9 @@ public:
     void setgatherer_v1( symbol_code sym_code, name gatherer );
     void setgatherer_v2( symbol_code sym_code, name gatherer );
 
-    [[eosio::action]] void setteller( symbol_code sym_code,  name teller);
-    void setteller_v1( symbol_code sym_code,  name teller);
-    void setteller_v2( symbol_code sym_code,  name teller);
+    [[eosio::action]] void setteller( symbol_code sym_code, name teller );
+    void setteller_v1( symbol_code sym_code, name teller );
+    void setteller_v2( symbol_code sym_code, name teller );
 
     [[eosio::action]] void setmanager( symbol_code sym_code,  name manager);
     void setmanager_v1( symbol_code sym_code,  name manager);
@@ -766,11 +766,10 @@ private:
     };
     using managers = eosio::multi_index<"managers"_n, manager_ts>;
 
-    // TODO: tellers
     struct [[eosio::table]] teller_ts {
         name teller;
 
-        uint64_t primary_key() const { return teller.value;}
+        uint64_t primary_key() const { return teller.value; }
     };
     using tellers = eosio::multi_index<"tellers"_n, teller_ts>;
 
