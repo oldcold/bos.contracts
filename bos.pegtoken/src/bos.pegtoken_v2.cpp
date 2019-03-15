@@ -1014,7 +1014,7 @@ namespace eosio {
 
             //下面的检查条件是melt需要审核且审核通过或者melt无须审核的情况
             if( std::memcmp(trx_id.hash, melt_iter->trx_id.hash, 32) == 0 && melt_iter->index == index
-                && ((melt_iter->enable == true && melt_iter->need_check == true) && melt_iter->enable == true) && melt_iter->state == 0) {
+                && ((melt_iter->enable == true && melt_iter->need_check == true) || melt_iter->need_check == false) && melt_iter->state == 0) {
                 melt_tb.modify(melt_iter, same_payer, [&](auto &mit) {
                     mit.remote_index = remote_index;
                     mit.remote_trx_id = remote_trx_id;
