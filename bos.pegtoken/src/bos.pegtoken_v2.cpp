@@ -959,7 +959,7 @@ namespace eosio {
             auto braks = brakemans(get_self(), sym_raw);
             eosio_assert(braks.find(brakeman.value) != braks.end(), "brakeman not exist");
         }
-        eosio_assert(iter->active == false, "this token is not being locked");
+        eosio_assert(iter->active == false, "this token has already been locked");
         infos_tb.modify(iter, same_payer, [&](auto &p) { p.active = false; });
     }
 
@@ -973,7 +973,7 @@ namespace eosio {
             auto braks = brakemans(get_self(), sym_raw);
             eosio_assert(braks.find(brakeman.value) != braks.end(), "brakeman not exist");
         }
-        eosio_assert(iter->active == false, "this token is not being locked");
+        eosio_assert(iter->active == true, "this token is not being locked");
         infos_tb.modify(iter, same_payer, [&](auto &p) { p.active = true; });
     }
 
