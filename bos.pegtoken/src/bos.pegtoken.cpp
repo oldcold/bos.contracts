@@ -13,33 +13,16 @@ namespace eosio {
 ////////////////////////
 
     void pegtoken::create(symbol sym, name issuer, name address_style, uint64_t peg) {
-        symbol_code sym_code = sym.code();
-        switch (getedition(sym_code))
-        {
-            case 1:
-                create_v1(sym,issuer,issuer,address_style,"","");
-                break;
-            case 2:
-                create_v2(sym,issuer,address_style);
-                break;
-            default:
-                eosio_assert(false, "edition should be either 1 or 2");
-                break;
-        }
+        eosio_assert(peg == PRE_RELEASE || peg == STRICT_ANCHOR, "peg can only be 1 or 2");
+        require_auth(get_self());
+        ACCOUNT_CHECK(issuer);
+        eosio_assert(sym.is_valid(), "invalid symbol");
+        eosio_assert(address_style == "bitcoin"_n || address_style == "ethereum"_n || 
+                     address_style == "tether"_n || address_style == "other"_n,
+                     "address_style must be one of bitcoin, ethereum, tether or other");
 
-        auto edtion_table = editions(get_self(),sym_code.raw());
-        edtion_table.emplace(get_self(),[&](auto &p) {
-            p.sym = sym;
-            p.edition = 2;
-        });
-
-        auto peg_table = pegs(get_self(),sym_code.raw());
-        peg_table.emplace(get_self(),[&](auto &p) {
-            p.sym = sym;
-            p.peg = peg;
-        });
+        create_v2(sym, issuer, address_style, peg);
     }
-
 
     void pegtoken::setissuer( symbol_code sym_code, name issuer )
     {
@@ -315,7 +298,7 @@ namespace eosio {
         switch (editionval)
         {
         case 1:
-            setvipfreqlm_v1(sym_code, vip, frequency_limit);
+            // setvipfreqlm_v1(sym_code, vip, frequency_limit);
             break;
         case 2:
             setvipfreqlm_v2(sym_code, vip, frequency_limit);
@@ -332,7 +315,7 @@ namespace eosio {
         switch (editionval)
         {
         case 1:
-            setvipintvlm_v1(sym_code, vip, interval_limit);
+            // setvipintvlm_v1(sym_code, vip, interval_limit);
             break;
         case 2:
             setvipintvlm_v2(sym_code, vip, interval_limit);

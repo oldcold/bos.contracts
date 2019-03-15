@@ -6,52 +6,57 @@
 #include "def.cpp"
 
 namespace eosio {
-    void pegtoken::create_v2( symbol sym, name issuer, name address_style) {
-        require_auth(get_self());
+    void pegtoken::create_v2( symbol sym, name issuer, name address_style, uint64_t peg ) {
+        auto sym_code = sym.code();
+        auto sym_raw = sym_code.raw();
 
-        ACCOUNT_CHECK(issuer);
-        eosio_assert(sym.is_valid(), "invalid symbol");
+        auto symbol_table = symbols(get_self(), sym_raw);
+        symbol_table.emplace(get_self(), [&](auto &p) {
+            p.sym = sym;
+        });
 
-        eosio_assert(address_style == "bitcoin"_n || address_style == "ethereum"_n || address_style == "tether"_n ||
-                     address_style == "other"_n,
-                     "address_style must be one of bitcoin, ethereum, tether or other");
+        auto peg_table = pegs(get_self(), sym_raw);
+        peg_table.emplace(get_self(), [&](auto &p) {
+            p.sym = sym;
+            p.peg = peg;
+        });
 
-        auto info_table = infos(get_self(),sym.code().raw());
-        eosio_assert(info_table.find(sym.code().raw()) == info_table.end(), "token with symbol already exists (info)");
+        auto info_table = infos(get_self(), sym_raw);
+        eosio_assert(info_table.find(sym_raw) == info_table.end(), "token with symbol already exists (info)");
 
         info_table.emplace(get_self(), [&] (auto &p) {
-            p.supply = eosio::asset(0,sym);
+            p.supply = eosio::asset(0, sym);
             p.issuer = issuer;
             p.address_style = address_style;
             p.active = true; 
         });
 
-        auto summary_table = summaries(get_self(), sym.code().raw());
-        eosio_assert(summary_table.find(sym.code().raw()) == summary_table.end(), "token with symbol already exists (summary)");
-        summary_table.emplace(get_self(), [&] (auto &p) {
+        auto summary_table = summaries(get_self(), sym_raw);
+        eosio_assert(summary_table.find(sym_raw) == summary_table.end(), "token with symbol already exists (summary)");
+        summary_table.emplace(get_self(), [&](auto &p) {
             /* do nothing */
         });
 
-        // 建议create币种的时候就初始化
-        auto limit_table = limits(get_self(), sym.code().raw());
-        eosio_assert(limit_table.find(sym.code().raw()) == limit_table.end(), "token with symbol already exists (limit)");
-        limit_table.emplace(get_self(), [&] (auto &p) {
-            p.maximum_limit = eosio::asset(1,sym);
-            p.minimum_limit = eosio::asset(0.00005,sym);
-            p.total_limit = eosio::asset(10,sym);
+        // Init limits.
+        auto limit_table = limits(get_self(), sym_raw);
+        eosio_assert(limit_table.find(sym_raw) == limit_table.end(), "token with symbol already exists (limit)");
+        limit_table.emplace(get_self(), [&](auto &p) {
+            p.maximum_limit = eosio::asset(MAXIMUM_LIMIT, sym);
+            p.minimum_limit = eosio::asset(MINIMUM_LIMIT, sym);
+            p.total_limit = eosio::asset(TOTAL_LIMIT, sym);
 
-            p.frequency_limit = 3;
-            p.interval_limit = 300;
+            p.frequency_limit = FREQUENCY_LIMIT;
+            p.interval_limit = INTERVAL_LIMIT;
             p.reset_limit = 30 * ONE_DAY;
         });
 
-        // 建议create币种的时候就初始化
-        auto fee_table = fees(get_self(),sym.code().raw());
-        eosio_assert(fee_table.begin() == fee_table.end(),"token with symbol already exists (fee)");
-        fee_table.emplace(get_self(),[&](auto &p){
-            p.service_fee_rate = 0.001;
-            p.min_service_fee = eosio::asset(0.0005,sym);;
-            p.miner_fee = eosio::asset(0.00004,sym);;
+        // Init fees.
+        auto fee_table = fees(get_self(), sym_raw);
+        eosio_assert(fee_table.begin() == fee_table.end(), "token with symbol already exists (fee)");
+        fee_table.emplace(get_self(), [&](auto &p) {
+            p.service_fee_rate = SERVICE_FEE_RATE;
+            p.min_service_fee = eosio::asset(MIN_SERVICE_FEE, sym);
+            p.miner_fee = eosio::asset(MINER_FEE, sym);
         }); 
     }
 

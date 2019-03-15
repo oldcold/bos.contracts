@@ -17,6 +17,15 @@ using std::vector;
 using transaction_id_type = capi_checksum256;
 
 constexpr uint32_t ONE_DAY = 24 * 60 * 60;
+constexpr uint64_t PRECISION = 100000000;
+constexpr uint64_t MAXIMUM_LIMIT = 1 * PRECISION;
+constexpr uint64_t MINIMUM_LIMIT = 0.00005 * PRECISION;
+constexpr uint64_t TOTAL_LIMIT = 10 * PRECISION;
+constexpr uint64_t FREQUENCY_LIMIT = 3;
+constexpr uint64_t INTERVAL_LIMIT = 300;
+constexpr double SERVICE_FEE_RATE = 0.001;
+constexpr uint64_t MIN_SERVICE_FEE = 0.0005 * PRECISION;
+constexpr uint64_t MINER_FEE = 0.00004 * PRECISION;
 
 enum withdraw_state : uint64_t {
     INITIAL_STATE = 0,
@@ -37,7 +46,7 @@ public:
 
     [[eosio::action]] void create( symbol sym, name issuer, name address_style, uint64_t peg );
     void create_v1( symbol sym, name issuer, name acceptor, name address_style, string organization, string website );
-    void create_v2( symbol sym, name issuer, name address_style);
+    void create_v2( symbol sym, name issuer, name address_style, uint64_t peg );
 
     [[eosio::action]] void setissuer( symbol_code sym_code, name issuer );
     void setissuer_v1( symbol_code sym_code, name issuer );
