@@ -18,6 +18,7 @@ using transaction_id_type = capi_checksum256;
 
 constexpr uint32_t ONE_DAY = 24 * 60 * 60;
 constexpr uint64_t PRECISION = 100000000;
+constexpr uint8_t SYMBOL_PRECISION = 8;
 constexpr uint64_t MAXIMUM_LIMIT = 1 * PRECISION;
 constexpr uint64_t MINIMUM_LIMIT = 0.00005 * PRECISION;
 constexpr uint64_t TOTAL_LIMIT = 10 * PRECISION;
@@ -375,11 +376,10 @@ private:
         uint64_t primary_key() const { return sym.code().raw(); }
     };
 
-    // TODO： 币种审核表
     struct [[eosio::table]] check_ts {
         symbol sym;
-        bool in_check;  // 相对于BOS链的资金流入是否需要审核
-        bool out_check; // 资金流出是否需要审核
+        bool in_check;  // Whether the capital inflow relative to the BOS chain needs to be checked
+        bool out_check; // Whether the outflow of funds needs to be checked
 
         uint64_t primary_key() const { return sym.code().raw(); }
     };

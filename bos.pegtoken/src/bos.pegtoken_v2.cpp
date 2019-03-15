@@ -395,15 +395,16 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setcheck_v2( symbol_code sym_code, bool in_check, bool out_check ){
-        auto check_tb = checks(get_self(),sym_code.raw());
-        if(check_tb.begin()==check_tb.end()){
-            check_tb.emplace(get_self(),[&](auto &p){
+    void pegtoken::setcheck_v2( symbol_code sym_code, bool in_check, bool out_check ) {
+        auto check_tb = checks(get_self(), sym_code.raw());
+        if(check_tb.begin() == check_tb.end()) {
+            check_tb.emplace(get_self(), [&](auto &p) {
+                p.sym = symbol(sym_code, SYMBOL_PRECISION);
                 p.in_check = in_check;
                 p.out_check = out_check;
             });
         } else {
-            check_tb.modify(check_tb.begin(),same_payer,[&](auto &p){
+            check_tb.modify(check_tb.begin(), same_payer, [&](auto &p) {
                 p.in_check = in_check;
                 p.out_check = out_check;
             });
@@ -792,7 +793,7 @@ namespace eosio {
     }
 
     void pegtoken::setvip_v2(symbol_code sym_code, string actn, name vip) {
-        auto sym = symbol(sym_code, 8);
+        auto sym = symbol(sym_code, SYMBOL_PRECISION);
         auto vip_tb = vips(get_self(), sym_code.raw());
         auto viplimit_table = viplimits(get_self(), sym_code.raw());
         auto vipfee_table = vipfees(get_self(), sym_code.raw());
