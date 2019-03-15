@@ -272,23 +272,20 @@ namespace eosio {
         }
     }
     
-    void pegtoken::setfee_v2(symbol_code sym_code, double service_fee_rate,
-        asset min_service_fee, asset miner_fee) {
+    void pegtoken::setfee_v2( symbol_code sym_code, double service_fee_rate,
+        asset min_service_fee, asset miner_fee ) {
         eosio_assert(min_service_fee.symbol == miner_fee.symbol, "different symbol");
-       // auto info_table = infos(get_self(),sym_raw);
-        // auto val = info_table.get(sym_raw, "token with symbol not exists(info)");
-        // 直接从位于sym_code scope中的managers中获取
         auto sym_raw = sym_code.raw();
 
-        auto fee_table = fees(get_self(),sym_raw);
+        auto fee_table = fees(get_self(), sym_raw);
         if( fee_table.begin() == fee_table.end()) {
-            fee_table.emplace(get_self(),[&](auto &p){
+            fee_table.emplace(get_self(), [&](auto &p) {
                 p.service_fee_rate = service_fee_rate;
                 p.min_service_fee = min_service_fee;
                 p.miner_fee = miner_fee;
             });
         } else {
-            fee_table.modify(fee_table.begin(), same_payer ,[&](auto &p){
+            fee_table.modify(fee_table.begin(), same_payer, [&](auto &p) {
                 p.service_fee_rate = service_fee_rate;
                 p.min_service_fee = min_service_fee;
                 p.miner_fee = miner_fee;
