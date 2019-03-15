@@ -356,6 +356,7 @@ private:
     void is_auth_brakeman(symbol_code sym_code);
 
     void is_auth_role(symbol_code sym_code, name account);
+    void is_auth_role_exc_gatherer(symbol_code sym_code, name account);
     // 检查是否被锁住,stats和infos的active字段
     bool is_locked(symbol_code sym_code);
 
@@ -981,6 +982,29 @@ private:
         eosio_assert(account != info_iter->issuer, "The account has been assigned to issuer");
     }
 
+     void pegtoken::is_auth_role_exc_gatherer(symbol_code sym_code, name account) {
+        auto brakeman_tb = brakemans(get_self(), sym_code.raw());
+        auto braks = brakeman_tb.find(account.value);
+        eosio_assert(braks == brakeman_tb.end(), "account has been assigned to role: brakeman");
+
+        auto auditor_tb = auditors(get_self(), sym_code.raw());
+        auto auds = auditor_tb.find(account.value);
+        eosio_assert(auds == auditor_tb.end(), "account has been assigned to role: auditor");
+
+        auto manager_tb = managers(get_self(), sym_code.raw());
+        auto mgr = manager_tb.find(account.value);
+        eosio_assert(mgr == manager_tb.end(), "account has been assigned to role: manager");
+
+        auto teller_tb = tellers(get_self(), sym_code.raw());
+        auto tellers = teller_tb.find(account.value);
+        eosio_assert(tellers == teller_tb.end(), "account has been assigned to role: teller");        
+
+        auto info_table = infos(get_self(), sym_code.raw());
+        auto info_iter = info_table.find(sym_code.raw());
+        eosio_assert(info_iter != info_table.end(), "No such symbol");
+        eosio_assert(account != info_iter->issuer, "The account has been assigned to issuer");
+    }
+
     bool pegtoken::is_locked(symbol_code sym_code){
         auto editionval = getedition(sym_code);
         // 检查两个不同表中的active字段
@@ -1019,13 +1043,13 @@ private:
         asset total = statistic_val.total;
         switch (editionval){
             case 2:{
-                auto limits_tb = limits(get_self(),sym_code.raw());
-                auto lim_val = limits_tb.get(sym_code.raw(), "This type of assets not exists in limits table");
-                eosio_assert(quantity <= lim_val.maximum_limit, "withdraw amount is more than the maximum_limit");
-                eosio_assert(quantity >= lim_val.minimum_limit, "withdraw amount is less than the minimum_limit");
-                eosio_assert(total+quantity<=lim_val.total_limit, "More than daily totals amount");
-                eosio_assert(time_point_sec(now())-lasttime>=microseconds(lim_val.interval_limit), "From now is  less than interval_limit");
-                eosio_assert(freq+1<=lim_val.frequency_limit, "More than daily frequency limit");
+                auto vlimits_tb = viplimits(get_self(),sym_code.raw());
+                auto vlim_val = vlimits_tb.get(sym_code.raw(), "This type of assets not exists in viplimits table");
+                eosio_assert(quantity <= vlim_val.maximum_limit, "withdraw amount is more than the maximum_limit");
+                eosio_assert(quantity >= vlim_val.minimum_limit, "withdraw amount is less than the minimum_limit");
+                eosio_assert(total+quantity<=vlim_val.total_limit, "More than daily totals amount");
+                eosio_assert(time_point_sec(now())-lasttime>=microseconds(vlim_val.interval_limit), "From now is  less than interval_limit");
+                eosio_assert(freq+1<=vlim_val.frequency_limit, "More than daily frequency limit");
                 break;
             }
             default:{

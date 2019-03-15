@@ -944,7 +944,7 @@ namespace eosio {
         asset melt_amount;
         for (auto melt_iter = melt_tb.begin(); melt_iter != melt_tb.end(); ++melt_iter) {
             // find the trx hash
-            if( std::memcmp(trx_id.hash, melt_iter->trx_id.hash, 32) == 0
+            if( std::memcmp(trx_id.hash, melt_iter->trx_id.hash, 32) == 0 && melt_iter->index == index
                 && melt_iter->enable == true && melt_iter->state == 0 ) {
                 melt_to = melt_iter->from;
                 melt_total = melt_iter->total;
@@ -983,7 +983,7 @@ namespace eosio {
             auto braks = brakemans(get_self(), sym_raw);
             eosio_assert(braks.find(brakeman.value) != braks.end(), "brakeman not exist");
         }
-        eosio_assert(iter->active == false, "this token is not being locked");
+        eosio_assert(iter->active == false, "this token has already been locked");
         infos_tb.modify(iter, same_payer, [&](auto &p) { p.active = false; });
     }
 
@@ -997,7 +997,7 @@ namespace eosio {
             auto braks = brakemans(get_self(), sym_raw);
             eosio_assert(braks.find(brakeman.value) != braks.end(), "brakeman not exist");
         }
-        eosio_assert(iter->active == false, "this token is not being locked");
+        eosio_assert(iter->active == true, "this token is not being locked");
         infos_tb.modify(iter, same_payer, [&](auto &p) { p.active = true; });
     }
 
@@ -1007,7 +1007,7 @@ namespace eosio {
         // TODO: remote_trx_id validation.
         for (auto melt_iter = melt_tb.begin(); melt_iter != melt_tb.end(); ++melt_iter) {
             // find the trx hash
-            if( std::memcmp(trx_id.hash, melt_iter->trx_id.hash, 32) == 0
+            if( std::memcmp(trx_id.hash, melt_iter->trx_id.hash, 32) == 0 && melt_iter->index == index
                 && melt_iter->enable == true && melt_iter->state == 0) {
                 melt_tb.modify(melt_iter, same_payer, [&](auto &mit) {
                     mit.remote_trx_id = remote_trx_id;
