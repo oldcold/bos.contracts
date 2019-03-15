@@ -317,9 +317,9 @@ public:
     void setbrakeman_v2( symbol_code sym_code,  name brakeman);
 
     // TODO: 管理员为某个相应的币种的某个用户设置为VIP, action有add或remove
-    [[eosio::action]] void setvip( symbol_code sym_code,  string action, name vip);
-    void setvip_v1(symbol_code sym_code, string action, name vip);
-    void setvip_v2(symbol_code sym_code, string action, name vip);
+    [[eosio::action]] void setvip( symbol sym,  string action, name vip);
+    void setvip_v1(symbol sym, string action, name vip);
+    void setvip_v2(symbol sym, string action, name vip);
 
     [[eosio::action]] void pubminerfee( asset miner_fee );
 
