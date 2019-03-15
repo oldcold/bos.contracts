@@ -737,15 +737,17 @@ namespace eosio {
 
     }
 
-    void pegtoken::setvip(symbol_code sym_code, string actn, name vip){
-        is_auth_manager(sym_code);
-        is_auth_role(sym_code, vip);
+    void pegtoken::setvip(symbol sym, string actn, name vip){
+        is_auth_manager(sym.code());
+        is_auth_role(sym.code(), vip);
         ACCOUNT_CHECK(vip);
         // 根据sym_code，查询editions表，校验币的版本，版本不对则报错。
         // 根据sym_code，查询pegs表，校验币的机制，机制不对则报错。
-        eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
-        eosio_assert(getpeg(sym_code) == 1 || getpeg(sym_code) == 2, "The action require peg to be 1 or 2");
-        setvip_v2(sym_code,actn,vip);
+        eosio_assert(getedition(sym.code()) == 1 || getedition(sym.code()) == 2, "The action require edition to be 1 or 2");
+        eosio_assert(getpeg(sym.code()) == 1 || getpeg(sym.code()) == 2, "The action require peg to be 1 or 2");
+        // 需要验证该vip账户是否已经被设置成vip账户，若已经设置，则禁用
+        eosio_assert(!is_vip(sym.code(),vip),"the account has been set to vip for the sym");
+        setvip_v2(sym,actn,vip);
     }
 
 
