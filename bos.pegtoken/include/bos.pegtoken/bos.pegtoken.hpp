@@ -401,7 +401,7 @@ private:
         uint64_t by_state() const { return state; }
     };
 
-    struct [[eosio::table]] record_ts{
+    struct [[eosio::table]] record_ts {
         name owner;
         string address;
         time_point_sec reset_time;

@@ -839,17 +839,17 @@ namespace eosio {
             });
             viplimit_table.emplace(get_self(),[&](auto &p){
                 p.owner = vip;
-                p.maximum_limit = eosio::asset(1,sym);
-                p.minimum_limit = eosio::asset(0.00005,sym);
-                p.total_limit = eosio::asset(10,sym);;
+                p.maximum_limit = eosio::asset(MAXIMUM_LIMIT, sym);
+                p.minimum_limit = eosio::asset(MINIMUM_LIMIT, sym);
+                p.total_limit = eosio::asset(TOTAL_LIMIT, sym);;
                 p.frequency_limit = 3;
                 p.interval_limit = 300;
             });
-            vipfee_table.emplace(get_self(),[&](auto &p){
+            vipfee_table.emplace(get_self(), [&](auto &p) {
                 p.owner = vip;
                 p.service_fee_rate = 0.001;
-                p.min_service_fee = eosio::asset(0.0005,sym);
-                p.miner_fee = eosio::asset(0.00004,sym);
+                p.min_service_fee = eosio::asset(MIN_SERVICE_FEE, sym);
+                p.miner_fee = eosio::asset(MINER_FEE, sym);
             });
         } 
     }
@@ -886,18 +886,23 @@ namespace eosio {
         auto infos_table = stats(get_self(), sym_raw);
         auto info_iter = infos_table.find(sym_raw);
         eosio_assert(info_iter != infos_table.end(), "token not exist");
-        // BTC 精度为8 ETH精度为8 USDT精度为8 
-        // 根据quantity所携带的symbol信息确定scope
         verify_address(info_iter->address_style, address);
-        //TODO:
-        // 根据to，查询addrs表，若不存在，则报错；若address字段不为空，则报错。
+        
+        auto records_tb = records(get_self(), sym_raw);
+        auto records_by_addr = records_tb.template get_index<"addr"_n>();
+        eosio_assert(records_by_addr.find(hash64(address)) == records_by_addr.end(), "address already in use");
+
         auto addrs_tb = addrs(get_self(), sym_raw);
-        auto addr_iter = addrs_tb.find(sym_raw);
-        eosio_assert(addr_iter != addrs_tb.end(), "addrs NOT exist in addrs table");
-        eosio_assert(addr_iter->address == "", "address in addrs table has already existed.");
-        addrs_tb.modify(addr_iter,same_payer,[&](auto &add){
-                add.address = address;
-                add.assign_time = time_point_sec(now());
+        auto addrs_by_addr = addrs_tb.template get_index<"addr"_n>();
+        eosio_assert(addrs_by_addr.find(hash64(address)) == addrs_by_addr.end(), "address already in use");
+
+        auto addr_iter = addrs_tb.find(to.value);
+        eosio_assert(addr_iter != addrs_tb.end(), "addrs not exist in addrs table");
+        eosio_assert(addr_iter->address == "", "address in addrs table already existed.");
+        addrs_tb.modify(addr_iter, same_payer, [&](auto &p) {
+            p.address = address;
+            p.assign_time = time_point_sec(now());
+            p.state = 0;
         });
     }
     

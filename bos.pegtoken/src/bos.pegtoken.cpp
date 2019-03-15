@@ -768,22 +768,9 @@ namespace eosio {
     void pegtoken::assignaddr(symbol_code sym_code, name to, string address) {
         is_auth_teller(sym_code);
         is_auth_role(sym_code, to);
-        eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
-        eosio_assert(getpeg(sym_code) == 1 || getpeg(sym_code) == 2, "The action require peg to be 1 or 2");
+        eosio_assert(getpeg(sym_code) == peg_type::PRE_RELEASE || getpeg(sym_code) == peg_type::STRICT_ANCHOR, "The action require peg to be pre release or strict anchor");
         ACCOUNT_CHECK(to);
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            assignaddr_v1(sym_code,to,address);
-            break;
-        case 2:
-            assignaddr_v2(sym_code,to,address);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        assignaddr_v2(sym_code, to, address);
     }
 
     void pegtoken::withdraw(name from, string to, asset quantity, uint64_t index, string memo) {
