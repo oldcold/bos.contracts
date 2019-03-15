@@ -40,6 +40,12 @@ enum peg_type: uint64_t {
     STRICT_ANCHOR
 };
 
+enum melt_state: uint64_t {
+    WITHDRAW_SUCCESS = 2,
+    WITHDRAW_BACK = 3,
+    WITHDRAW_ROLLBACL = 5,
+};
+
 class[[eosio::contract("bos.pegtoken")]] pegtoken : public contract
 {
 public:
@@ -262,7 +268,6 @@ public:
     [[eosio::action]] void rollback( symbol_code sym_code, transaction_id_type trx_id, string memo );
     void rollback_v1( symbol_code sym_code, transaction_id_type trx_id, string memo );
 
-    // TODO: confirmback      notify_plugin
     [[eosio::action]] void confirmback( symbol_code sym_code, transaction_id_type trx_id, string remote_trx_id, uint64_t index, uint64_t remote_index, string memo );
     void confirmback_v2( symbol_code sym_code, transaction_id_type trx_id, string remote_trx_id, uint64_t index, uint64_t remote_index, string memo );
 

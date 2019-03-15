@@ -785,10 +785,9 @@ namespace eosio {
 
     void pegtoken::confirmback( symbol_code sym_code, transaction_id_type trx_id,
         string remote_trx_id, uint64_t index, uint64_t remote_index, string memo ) {
-        eosio_assert(is_locked(sym_code), "The token is locked");
         is_auth_teller(sym_code);
-        eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
-        eosio_assert(getpeg(sym_code) == 2, "The action require peg to be 2");
+        eosio_assert(is_locked(sym_code), "The token is locked");
+        eosio_assert(getpeg(sym_code) == peg_type::STRICT_ANCHOR, "The action require peg to be strict anchor");
         confirmback_v2(sym_code, trx_id, remote_trx_id, index, remote_index, memo);
     }
 

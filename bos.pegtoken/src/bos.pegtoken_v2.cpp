@@ -996,7 +996,7 @@ namespace eosio {
                 && melt_iter->enable == true && melt_iter->state == 0) {
                 melt_tb.modify(melt_iter, same_payer, [&](auto &mit) {
                     mit.remote_trx_id = remote_trx_id;
-                    mit.state = 2;
+                    mit.state = melt_state::WITHDRAW_SUCCESS;
                     mit.msg = memo;
                 });
             }
