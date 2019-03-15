@@ -618,8 +618,8 @@ namespace eosio {
     void pegtoken::melt(name from_account, string to_address, asset quantity, uint64_t index, string memo){
         symbol_code sym_code = quantity.symbol.code();
         withdraw_check(sym_code, quantity, from_account);
-        //不能为角色账户
-        is_auth_role(sym_code,from_account);
+        //不能为角色账户，但除去gatherer
+        is_auth_role_exc_gatherer(sym_code,from_account);
         eosio_assert(is_locked(sym_code),"The token has been locked");
         eosio_assert(!getoutcheck(sym_code), "This action require out_check to be false");
         eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
@@ -751,6 +751,7 @@ namespace eosio {
         eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
         eosio_assert(getpeg(sym_code) == 1 || getpeg(sym_code) == 2, "The action require peg to be 1 or 2");
         ACCOUNT_CHECK(to);
+        is_auth_role(sym_code, to);
         auto editionval = getedition(sym_code);
         switch (editionval){
             case 1:
