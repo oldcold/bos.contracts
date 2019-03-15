@@ -67,32 +67,15 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setlimit(symbol_code sym_code, asset maximum_limit, asset minimum_limit,
-        asset total_limit, uint64_t frequency_limit, uint64_t interval_limit) {
+    void pegtoken::setlimit( symbol_code sym_code, asset maximum_limit, asset minimum_limit,
+        asset total_limit, uint64_t frequency_limit, uint64_t interval_limit ) {
         is_auth_manager(sym_code);
-        //  判断所有的asset 是否与sym_code为同一种币，若不是，则报错
         eosio_assert(is_sym_equal_asset(sym_code, maximum_limit), "sym_code is not same as maximum_limit symbol_code.");
         eosio_assert(is_sym_equal_asset(sym_code, minimum_limit), "sym_code is not same as minimum_limit symbol_code.");
         eosio_assert(is_sym_equal_asset(sym_code, total_limit), "sym_code is not same as total_limit symbol_code.");
-        // 根据sym_code，查询editions表，校验币的版本，版本不对则报错。
-        // 根据sym_code，查询pegs表，校验币的机制，机制不对则报错。
-        eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
-        eosio_assert(getpeg(sym_code) == 1 || getpeg(sym_code) == 2, "The action require peg to be 1 or 2");
-        //自然数检查
-        eosio_assert(minimum_limit.amount >= 0 && maximum_limit >= minimum_limit && total_limit >= maximum_limit,  "constrict mismatch: total_limit >= maximum_limit >= minimum_limit >= 0");
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            setlimit_v1(sym_code, maximum_limit, minimum_limit, total_limit, frequency_limit, interval_limit);
-            break;
-        case 2:
-            setlimit_v2(sym_code, maximum_limit, minimum_limit, total_limit, frequency_limit, interval_limit);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        eosio_assert(getpeg(sym_code) == peg_type::PRE_RELEASE || getpeg(sym_code) == peg_type::STRICT_ANCHOR, "The action require peg to be pre release or strict anchor");
+        eosio_assert(minimum_limit.amount >= 0 && maximum_limit >= minimum_limit && total_limit >= maximum_limit, "constrict mismatch: total_limit >= maximum_limit >= minimum_limit >= 0");
+        setlimit_v2(sym_code, maximum_limit, minimum_limit, total_limit, frequency_limit, interval_limit);
     }
 
     void pegtoken::setmaxlimit(symbol_code sym_code, asset maximum_limit ) {
