@@ -484,12 +484,12 @@ namespace eosio {
         auto iter_addr = addr_table.find(to_account.value);
         eosio_assert(iter_addr != addr_table.end() && iter_addr->address == to_address, "invalid to_address");
 
-        auto cast_table = casts(get_self(), sym_raw); 
+        auto cast_table = casts(get_self(), sym_raw);
         auto index_str = to_address + to_account.to_string() + remote_trx_id + std::to_string(index) + quantity.to_string();
         auto id = hash64(index_str);
         eosio_assert(cast_table.find(id) == cast_table.end(), "Already have the same precast hash.");
 
-        cast_table.emplace(get_self(), [&] (auto &p) {
+        cast_table.emplace(get_self(), [&](auto &p) {
             p.id = id;
             p.to_account = to_account;
             p.to_address = to_address;

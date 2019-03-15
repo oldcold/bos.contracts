@@ -169,8 +169,8 @@ public:
 
     [[eosio::action]] void cast(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo);
 
-    [[eosio::action]] void precast(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo);
-    void precast_v2(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo);
+    [[eosio::action]] void precast( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
+    void precast_v2( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
 
     [[eosio::action]] void agreecast(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo);
     void agreecast_v2(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo);
@@ -903,9 +903,9 @@ private:
         return edition;
     }
 
-    bool pegtoken::getincheck(symbol_code sym_code){
-        auto check_table = checks(get_self(),sym_code.raw());
-        bool incheck = check_table.get(sym_code.raw(),"no such in_check").in_check;
+    bool pegtoken::getincheck(symbol_code sym_code) {
+        auto check_table = checks(get_self(), sym_code.raw());
+        bool incheck = check_table.get(sym_code.raw(), "no such in_check").in_check;
         return incheck;
     }
 
@@ -1009,31 +1009,12 @@ private:
         eosio_assert(account != info_iter->issuer, "The account has been assigned to issuer");
     }
 
-    bool pegtoken::is_locked(symbol_code sym_code){
-        auto editionval = getedition(sym_code);
-        // 检查两个不同表中的active字段
-        switch (editionval)
-        {
-            case 1: {
-                auto stats_table = stats(get_self(),sym_code.raw());
-                auto stat_val = stats_table.get(sym_code.raw(), "No such symbol in stats table");
-                return stat_val.active;
-                break;
-            }
-            case 2:{
-                auto info_table = infos(get_self(),sym_code.raw());
-                auto info_val = info_table.get(sym_code.raw(), "No such symbol in infos table");
-                return info_val.active;
-                break;
-            }
-            default:{
-                eosio_assert(false, "edition should be 1 or 2");
-                break;
-            }
-        }
+    bool pegtoken::is_locked(symbol_code sym_code) {
+        auto info_table = infos(get_self(), sym_code.raw());
+        auto info_val = info_table.get(sym_code.raw(), "No such symbol in infos table");
+        return info_val.active;
     }
 
-       // 提币时的检查条件
     void pegtoken::vip_withdraw_check(symbol_code sym_code, asset quantity, name account){
         auto editionval = getedition(sym_code);
         //VIP checking limit
