@@ -312,9 +312,9 @@ public:
     void setmanager_v1( symbol_code sym_code, name manager );
     void setmanager_v2( symbol_code sym_code, name manager );
 
-    [[eosio::action]] void setbrakeman( symbol_code sym_code,  name brakeman);
-    void setbrakeman_v1( symbol_code sym_code,  name brakeman);
-    void setbrakeman_v2( symbol_code sym_code,  name brakeman);
+    [[eosio::action]] void setbrakeman( symbol_code sym_code, name brakeman );
+    void setbrakeman_v1( symbol_code sym_code, name brakeman );
+    void setbrakeman_v2( symbol_code sym_code, name brakeman );
 
     // TODO: 管理员为某个相应的币种的某个用户设置为VIP, action有add或remove
     [[eosio::action]] void setvip( symbol sym,  string action, name vip);
@@ -794,7 +794,6 @@ private:
     };
     using gatherers = eosio::multi_index< "gathers"_n, gatherer_ts >;
 
-    // TODO: 制动员 gatherers
     struct [[eosio::table]] brakeman_ts {
         name brakeman;
 

@@ -769,24 +769,22 @@ namespace eosio {
         }
     }
 
-    //能够设置单个
-    void pegtoken::setbrakeman_v2(symbol_code sym_code, name brakeman){
-        //检查该账户该币种余额
-        eosio_assert(balance_check(sym_code, brakeman), "gatherer`s balance should be 0");
-            //检查是否已经绑定地址
-        auto addr_tb = addrs(get_self(), sym_code.raw());
-        auto addr_iter = addr_tb.find(brakeman.value);
-        eosio_assert(addr_iter->state!=0 || addr_iter->address=="","this account has assigned to address already");
+    // There is only one brakeman
+    void pegtoken::setbrakeman_v2( symbol_code sym_code, name brakeman ) {
+        // Check if the address is already bound
+        eosio_assert(addr_check(sym_code, brakeman), "this account has assigned to address already");
+        // Balance check
+        eosio_assert(balance_check(sym_code, brakeman), "brakeman`s balance should be 0");
 
         auto brakeman_tb = brakemans(get_self(), sym_code.raw());
-        auto brakeman_iter = brakeman_tb.find(sym_code.raw());
-        if(brakeman_iter == brakeman_tb.end()){
-            brakeman_tb.emplace(get_self(), [&](auto& brak){
-                brak.brakeman = brakeman;
+        if (brakeman_tb.begin() == brakeman_tb.end()) {
+            brakeman_tb.emplace(get_self(), [&](auto& p) {
+                p.brakeman = brakeman;
             });
-        }else{
-            brakeman_tb.modify(brakeman_iter,same_payer,[&](auto &brak){
-                brak.brakeman = brakeman;
+        } else {
+            brakeman_tb.erase(brakeman_tb.begin());
+            brakeman_tb.emplace(get_self(), [&](auto& p) {
+                p.brakeman = brakeman;
             });
         }
     }
