@@ -125,9 +125,9 @@ public:
     void setminerfee_v1(asset miner_fee);
     void setminerfee_v2(asset miner_fee);
 
-    [[eosio::action]] void setvipfee(symbol_code sym_code, name vip, double service_fee_rate, asset min_service_fee, asset miner_fee );
-    void setvipfee_v1(name vip, double service_fee_rate, asset min_service_fee, asset miner_fee );
-    void setvipfee_v2(name vip, double service_fee_rate, asset min_service_fee, asset miner_fee );
+    [[eosio::action]] void setvipfee( symbol_code sym_code, name vip, double service_fee_rate, asset min_service_fee, asset miner_fee );
+    void setvipfee_v1( name vip, double service_fee_rate, asset min_service_fee, asset miner_fee );
+    void setvipfee_v2( name vip, double service_fee_rate, asset min_service_fee, asset miner_fee );
 
     [[eosio::action]] void setvipserfrt(symbol_code sym_code, name vip,double service_fee_rate);
     void setvipserfrt_v1(symbol_code sym_code, name vip,double service_fee_rate);

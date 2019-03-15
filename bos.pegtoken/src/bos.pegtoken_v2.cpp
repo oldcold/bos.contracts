@@ -320,26 +320,17 @@ namespace eosio {
         }
     }
     
-    void pegtoken::setvipfee_v2(name vip, double service_fee_rate, asset min_service_fee, asset miner_fee ){
+    void pegtoken::setvipfee_v2( name vip, double service_fee_rate, asset min_service_fee, asset miner_fee ) {
         eosio_assert(min_service_fee.symbol == miner_fee.symbol, "invalid symbol");
-        
         auto sym_raw = min_service_fee.symbol.code().raw();
-        
-        auto info_table = infos(get_self(),sym_raw);
-        auto val = info_table.get(sym_raw, "token with symbol not exists(info)");
-        // require_auth(val.issuer);
 
-        auto vip_table = vips(get_self(),sym_raw);
-        auto viplimit_table = viplimits(get_self(),sym_raw);
-        auto vipfee_table = vipfees(get_self(),sym_raw);
+        auto vip_table = vips(get_self(), sym_raw);
+        auto vipfee_table = vipfees(get_self(), sym_raw);
         
         auto iter_vip = vip_table.find(vip.value);
-        // 当发现vip表不存在的时候，应该报错，而不是初始化vip表
-        eosio_assert(iter_vip != vip_table.end(), "VIP table NOT found");
+        eosio_assert(iter_vip != vip_table.end(), "not in the VIP table");
         if(iter_vip != vip_table.end()) {
-            vipfee_table.modify(
-                vipfee_table.find(vip.value),same_payer,
-                [&](auto &p){
+            vipfee_table.modify(vipfee_table.find(vip.value), same_payer, [&](auto &p) {
                 p.service_fee_rate = service_fee_rate;
                 p.min_service_fee = min_service_fee;
                 p.miner_fee = miner_fee;
