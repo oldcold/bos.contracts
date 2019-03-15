@@ -522,12 +522,14 @@ namespace eosio {
             && iter_cast -> to_address == to_address
             && iter_cast -> remote_trx_id == remote_trx_id
             && iter_cast -> index == index
+            && iter_cast -> state != 0
             && iter_cast -> quantity == quantity
             , "invalid cast");
 
+    
         auto info_table = infos(get_self(), sym_raw);
         auto iter_info = info_table.find(sym_raw);
-        eosio_assert(iter_info != info_table.end(), "token not exist");
+        eosio_assert(iter_info != info_table.end(), "token not exist in infos table");
 
         // Add balance of to_account
         add_balance(to_account, quantity, iter_info->issuer);
@@ -535,7 +537,6 @@ namespace eosio {
         info_table.modify(iter_info, same_payer, [&] (auto &p) {
             p.supply += quantity;
         });
-
         auto auditor_tb = auditors(get_self(), sym_code.raw());
         auto auditor_val = auditor_tb.get(sym_code.raw(), "the v2 token NOT in auditors table");
         cast_table.modify(iter_cast, same_payer, [&] (auto &p) {
@@ -543,7 +544,7 @@ namespace eosio {
                 p.enable = true;
             }
             p.trx_id = get_trx_id();
-            p.index = 0;
+            p.index = index;
             p.msg = memo;
             p.update_time = time_point_sec(now());
             p.auditor = auditor_val.auditor;
@@ -569,11 +570,13 @@ namespace eosio {
             && iter_cast -> remote_trx_id == remote_trx_id
             && iter_cast -> index == index
             && iter_cast -> quantity == quantity
+            && iter_cast -> state != 0
             , "invalid cast");
 
         cast_table.modify(iter_cast, same_payer, [&](auto &p) {
             if (p.need_check && p.enable) {
                 p.enable = false;
+                p.state = 5;
             }
             p.msg = memo;
             p.update_time = time_point_sec(now());
@@ -649,7 +652,7 @@ namespace eosio {
             permission_level{get_self(),"active"_n},
             get_self(),
             "ruin"_n,
-            std::make_tuple(quantity-userfee)
+            std::make_tuple(quantity-userfee, to_account)
         ).send();
 
 
