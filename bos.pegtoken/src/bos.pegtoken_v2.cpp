@@ -6,52 +6,57 @@
 #include "def.cpp"
 
 namespace eosio {
-    void pegtoken::create_v2( symbol sym, name issuer, name address_style) {
-        require_auth(get_self());
+    void pegtoken::create_v2( symbol sym, name issuer, name address_style, uint64_t peg ) {
+        auto sym_code = sym.code();
+        auto sym_raw = sym_code.raw();
 
-        ACCOUNT_CHECK(issuer);
-        eosio_assert(sym.is_valid(), "invalid symbol");
+        auto symbol_table = symbols(get_self(), sym_raw);
+        symbol_table.emplace(get_self(), [&](auto &p) {
+            p.sym = sym;
+        });
 
-        eosio_assert(address_style == "bitcoin"_n || address_style == "ethereum"_n || address_style == "tether"_n ||
-                     address_style == "other"_n,
-                     "address_style must be one of bitcoin, ethereum, tether or other");
+        auto peg_table = pegs(get_self(), sym_raw);
+        peg_table.emplace(get_self(), [&](auto &p) {
+            p.sym = sym;
+            p.peg = peg;
+        });
 
-        auto info_table = infos(get_self(),sym.code().raw());
-        eosio_assert(info_table.find(sym.code().raw()) == info_table.end(), "token with symbol already exists (info)");
+        auto info_table = infos(get_self(), sym_raw);
+        eosio_assert(info_table.find(sym_raw) == info_table.end(), "token with symbol already exists (info)");
 
         info_table.emplace(get_self(), [&] (auto &p) {
-            p.supply = eosio::asset(0,sym);
+            p.supply = eosio::asset(0, sym);
             p.issuer = issuer;
             p.address_style = address_style;
             p.active = true; 
         });
 
-        auto summary_table = summaries(get_self(), sym.code().raw());
-        eosio_assert(summary_table.find(sym.code().raw()) == summary_table.end(), "token with symbol already exists (summary)");
-        summary_table.emplace(get_self(), [&] (auto &p) {
+        auto summary_table = summaries(get_self(), sym_raw);
+        eosio_assert(summary_table.find(sym_raw) == summary_table.end(), "token with symbol already exists (summary)");
+        summary_table.emplace(get_self(), [&](auto &p) {
             /* do nothing */
         });
 
-        // 建议create币种的时候就初始化
-        auto limit_table = limits(get_self(), sym.code().raw());
-        eosio_assert(limit_table.find(sym.code().raw()) == limit_table.end(), "token with symbol already exists (limit)");
-        limit_table.emplace(get_self(), [&] (auto &p) {
-            p.maximum_limit = eosio::asset(1,sym);
-            p.minimum_limit = eosio::asset(0.00005,sym);
-            p.total_limit = eosio::asset(10,sym);
+        // Init limits.
+        auto limit_table = limits(get_self(), sym_raw);
+        eosio_assert(limit_table.find(sym_raw) == limit_table.end(), "token with symbol already exists (limit)");
+        limit_table.emplace(get_self(), [&](auto &p) {
+            p.maximum_limit = eosio::asset(MAXIMUM_LIMIT, sym);
+            p.minimum_limit = eosio::asset(MINIMUM_LIMIT, sym);
+            p.total_limit = eosio::asset(TOTAL_LIMIT, sym);
 
-            p.frequency_limit = 3;
-            p.interval_limit = 300;
+            p.frequency_limit = FREQUENCY_LIMIT;
+            p.interval_limit = INTERVAL_LIMIT;
             p.reset_limit = 30 * ONE_DAY;
         });
 
-        // 建议create币种的时候就初始化
-        auto fee_table = fees(get_self(),sym.code().raw());
-        eosio_assert(fee_table.begin() == fee_table.end(),"token with symbol already exists (fee)");
-        fee_table.emplace(get_self(),[&](auto &p){
-            p.service_fee_rate = 0.001;
-            p.min_service_fee = eosio::asset(0.0005,sym);;
-            p.miner_fee = eosio::asset(0.00004,sym);;
+        // Init fees.
+        auto fee_table = fees(get_self(), sym_raw);
+        eosio_assert(fee_table.begin() == fee_table.end(), "token with symbol already exists (fee)");
+        fee_table.emplace(get_self(), [&](auto &p) {
+            p.service_fee_rate = SERVICE_FEE_RATE;
+            p.min_service_fee = eosio::asset(MIN_SERVICE_FEE, sym);
+            p.miner_fee = eosio::asset(MINER_FEE, sym);
         }); 
     }
 
@@ -64,7 +69,7 @@ namespace eosio {
         auto iter = info_table.find(sym_raw);
         eosio_assert(iter != info_table.end(), "token not exist");
         
-        info_table.modify(iter,same_payer, [&] (auto & p) {
+        info_table.modify(iter, same_payer, [&](auto &p) {
             p.issuer = issuer;
         });
     }
@@ -241,15 +246,39 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setfee_v2(symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee ){
+    void pegtoken::setvipfreqlm_v2(symbol_code sym_code, name vip, uint64_t frequency_limit) {
+        auto sym_raw = sym_code.raw();
+        auto viplimit_table = viplimits(get_self(), sym_raw);
+        auto iter = viplimit_table.find(vip.value);
+        if (iter == viplimit_table.end()) {
+            auto zero_asset = eosio::asset(0, symbol(sym_code, 8));
+            setviplimit_v2(vip, zero_asset, zero_asset, zero_asset, frequency_limit, 0);
+        } else {
+            setviplimit_v2(vip, iter->maximum_limit, iter->minimum_limit, iter->total_limit,
+            frequency_limit, iter->interval_limit);
+        }
+    }
+
+    void pegtoken::setvipintvlm_v2(symbol_code sym_code, name vip, uint64_t interval_limit) {
+        auto sym_raw = sym_code.raw();
+        auto viplimit_table = viplimits(get_self(), sym_raw);
+        auto iter = viplimit_table.find(vip.value);
+        if (iter == viplimit_table.end()) {
+            auto zero_asset = eosio::asset(0, symbol(sym_code, 8));
+            setviplimit_v2(vip, zero_asset, zero_asset, zero_asset, 0, interval_limit);
+        } else {
+            setviplimit_v2(vip, iter->maximum_limit, iter->minimum_limit, iter->total_limit,
+            iter->frequency_limit, interval_limit);
+        }
+    }
+    
+    void pegtoken::setfee_v2(symbol_code sym_code, double service_fee_rate,
+        asset min_service_fee, asset miner_fee) {
         eosio_assert(min_service_fee.symbol == miner_fee.symbol, "different symbol");
        // auto info_table = infos(get_self(),sym_raw);
         // auto val = info_table.get(sym_raw, "token with symbol not exists(info)");
         // 直接从位于sym_code scope中的managers中获取
         auto sym_raw = sym_code.raw();
-        auto manager_table = managers(get_self(), sym_raw);
-        auto val = manager_table.get(sym_raw, "No managers table based on symbol");
-        require_auth(val.manager);
 
         auto fee_table = fees(get_self(),sym_raw);
         if( fee_table.begin() == fee_table.end()) {
@@ -680,24 +709,24 @@ namespace eosio {
             // address字段为空
         });
     }
-    // 能设置多个
-    void pegtoken::setauditor_v2(symbol_code sym_code, string actn, name auditor){
-        //检查该账户该币种余额
+    
+    void pegtoken::setauditor_v2(symbol_code sym_code, string actn, name auditor) {
+        // Balance check
         eosio_assert(balance_check(sym_code, auditor), "auditor`s balance should be 0");
         auto auditor_tb = auditors(get_self(), sym_code.raw());
-        auto aud_iter = auditor_tb.find(sym_code.raw());
-
-               //检查是否已经绑定地址
+        auto aud_iter = auditor_tb.find(auditor.value);
+        
+        // Check if the address is already bound
         auto addr_tb = addrs(get_self(), sym_code.raw());
         auto addr_iter = addr_tb.find(auditor.value);
-        eosio_assert(addr_iter->state!=0 || addr_iter->address=="","this account has assigned to address already");
+        eosio_assert(addr_iter->state != 0 || addr_iter->address == "", "this account has assigned to address already");
 
-        if(actn == "add"){
-            eosio_assert(aud_iter != auditor_tb.end(), "auditor has been assigned based on sym_code");
-            auditor_tb.emplace(get_self(), [&](auto& aud){
+        if(actn == "add") {
+            eosio_assert(aud_iter == auditor_tb.end(), "auditor has been assigned based on sym_code");
+            auditor_tb.emplace(get_self(), [&](auto& aud) {
                 aud.auditor = auditor;
             });
-        } else if(actn == "remove"){
+        } else if(actn == "remove") {
             eosio_assert(aud_iter != auditor_tb.end(), "No auditor can be removed based on sym_code");
             auditor_tb.erase(aud_iter);
         }

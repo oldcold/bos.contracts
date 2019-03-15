@@ -12,50 +12,21 @@ namespace eosio {
 // actions
 ////////////////////////
 
-    void pegtoken::create(symbol sym, name issuer, name address_style, uint64_t peg) {
-        symbol_code sym_code = sym.code();
-        switch (getedition(sym_code))
-        {
-            case 1:
-                create_v1(sym,issuer,issuer,address_style,"","");
-                break;
-            case 2:
-                create_v2(sym,issuer,address_style);
-                break;
-            default:
-                eosio_assert(false, "edition should be either 1 or 2");
-                break;
-        }
+    void pegtoken::create( symbol sym, name issuer, name address_style, uint64_t peg ) {
+        eosio_assert(peg == PRE_RELEASE || peg == STRICT_ANCHOR, "peg can only be 1 or 2");
+        require_auth(get_self());
+        ACCOUNT_CHECK(issuer);
+        eosio_assert(sym.is_valid(), "invalid symbol");
+        eosio_assert(address_style == "bitcoin"_n || address_style == "ethereum"_n || 
+                     address_style == "tether"_n || address_style == "other"_n,
+                     "address_style must be one of bitcoin, ethereum, tether or other");
 
-        auto edtion_table = editions(get_self(),sym_code.raw());
-        edtion_table.emplace(get_self(),[&](auto &p) {
-            p.sym = sym;
-            p.edition = 2;
-        });
-
-        auto peg_table = pegs(get_self(),sym_code.raw());
-        peg_table.emplace(get_self(),[&](auto &p) {
-            p.sym = sym;
-            p.peg = peg;
-        });
+        create_v2(sym, issuer, address_style, peg);
     }
-
 
     void pegtoken::setissuer( symbol_code sym_code, name issuer )
     {
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            setissuer_v1(sym_code,issuer);
-            break;
-        case 2:
-            setissuer_v2(sym_code,issuer);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        setissuer_v2(sym_code, issuer);
     }
 
     void pegtoken::setedition( symbol_code sym_code ) {
@@ -273,9 +244,9 @@ namespace eosio {
         }
     }
 
-        void pegtoken::setvipminlim(name vip, asset minimum_limit ) {
+    void pegtoken::setvipminlim(name vip, asset minimum_limit) {
         auto sym_code = minimum_limit.symbol.code();
-        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2,   "Edition should be either 1 or 2");
+        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2, "Edition should be either 1 or 2");
         auto editionval = getedition(sym_code);
         switch (editionval)
         {
@@ -309,17 +280,42 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setvipfreqlm(symbol_code sym_code, name vip, uint64_t frequency_limit ) {
-    
+    void pegtoken::setvipfreqlm(symbol_code sym_code, name vip, uint64_t frequency_limit) {
+        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2, "Edition should be either 1 or 2");
+        auto editionval = getedition(sym_code);
+        switch (editionval)
+        {
+        case 1:
+            // setvipfreqlm_v1(sym_code, vip, frequency_limit);
+            break;
+        case 2:
+            setvipfreqlm_v2(sym_code, vip, frequency_limit);
+            break;
+        default:
+            eosio_assert(false, "edition should be either 1 or 2");
+            break;
+        }
     }
 
-    void pegtoken::setvipintvlm(symbol_code sym_code, name vip, uint64_t interval_limit ) {
-    
+    void pegtoken::setvipintvlm(symbol_code sym_code, name vip, uint64_t interval_limit) {
+        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2, "Edition should be either 1 or 2");
+        auto editionval = getedition(sym_code);
+        switch (editionval)
+        {
+        case 1:
+            // setvipintvlm_v1(sym_code, vip, interval_limit);
+            break;
+        case 2:
+            setvipintvlm_v2(sym_code, vip, interval_limit);
+            break;
+        default:
+            eosio_assert(false, "edition should be either 1 or 2");
+            break;
+        }
     }
 
- 
-
-    void pegtoken::setfee(symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee) {
+    void pegtoken::setfee(symbol_code sym_code, double service_fee_rate,
+        asset min_service_fee, asset miner_fee) {
         //判断所有的asset 是否与sym_code为同一种币，若不是，则报错 
         eosio_assert(is_sym_equal_asset(sym_code, min_service_fee), "sym_code is not same as min_service_fee symbol_code.");
         eosio_assert(is_sym_equal_asset(sym_code, miner_fee), "sym_code is not same as miner_fee symbol_code.");
@@ -328,10 +324,10 @@ namespace eosio {
         switch (editionval)
         {
         case 1:
-            setfee_v1(sym_code,service_fee_rate,min_service_fee,miner_fee);
+            setfee_v1(sym_code, service_fee_rate, min_service_fee, miner_fee);
             break;
         case 2:
-            setfee_v2(sym_code,service_fee_rate,min_service_fee,miner_fee);
+            setfee_v2(sym_code, service_fee_rate, min_service_fee, miner_fee);
             break;
         default:
             eosio_assert(false, "edition should be either 1 or 2");
@@ -667,15 +663,13 @@ namespace eosio {
     }
 
     // check 5 roles: deployer, teller, gatherer, manager, brakeman, issuer (check in different version)
-    void pegtoken::setauditor( symbol_code sym_code, string actn, name auditor){
+    void pegtoken::setauditor( symbol_code sym_code, string actn, name auditor ) {
         is_auth_issuer(sym_code);
-        is_auth_role(sym_code,auditor);
+        if (actn == "add") {
+            is_auth_role(sym_code, auditor);
+        }
         ACCOUNT_CHECK(auditor);
         setauditor_v2(sym_code, actn, auditor);
-        // issuer check in different version
-        // auto issuer_tb = (get_self(), sym_code.raw());
-        // auto iss_iter = issuer_tb.find(auditor.value);
-        // eosio_assert(iss_iter == issuer_tb.end(), "The account has been set to issuer");
     }
 
     void pegtoken::setgatherer( symbol_code sym_code,  name gatherer){

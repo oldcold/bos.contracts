@@ -17,6 +17,15 @@ using std::vector;
 using transaction_id_type = capi_checksum256;
 
 constexpr uint32_t ONE_DAY = 24 * 60 * 60;
+constexpr uint64_t PRECISION = 100000000;
+constexpr uint64_t MAXIMUM_LIMIT = 1 * PRECISION;
+constexpr uint64_t MINIMUM_LIMIT = 0.00005 * PRECISION;
+constexpr uint64_t TOTAL_LIMIT = 10 * PRECISION;
+constexpr uint64_t FREQUENCY_LIMIT = 3;
+constexpr uint64_t INTERVAL_LIMIT = 300;
+constexpr double SERVICE_FEE_RATE = 0.001;
+constexpr uint64_t MIN_SERVICE_FEE = 0.0005 * PRECISION;
+constexpr uint64_t MINER_FEE = 0.00004 * PRECISION;
 
 enum withdraw_state : uint64_t {
     INITIAL_STATE = 0,
@@ -37,7 +46,7 @@ public:
 
     [[eosio::action]] void create( symbol sym, name issuer, name address_style, uint64_t peg );
     void create_v1( symbol sym, name issuer, name acceptor, name address_style, string organization, string website );
-    void create_v2( symbol sym, name issuer, name address_style);
+    void create_v2( symbol sym, name issuer, name address_style, uint64_t peg );
 
     [[eosio::action]] void setissuer( symbol_code sym_code, name issuer );
     void setissuer_v1( symbol_code sym_code, name issuer );
@@ -99,9 +108,9 @@ public:
     void setvipintvlm_v1(symbol_code sym_code, name vip, uint64_t interval_limit );
     void setvipintvlm_v2(symbol_code sym_code, name vip, uint64_t interval_limit );
 
-    [[eosio::action]] void setfee(symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee );
-    void setfee_v1(symbol_code sym_code,  double service_fee_rate, asset min_service_fee, asset miner_fee );
-    void setfee_v2(symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee );
+    [[eosio::action]] void setfee(symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee);
+    void setfee_v1(symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee);
+    void setfee_v2(symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee);
 
     [[eosio::action]] void setservfeert(symbol_code sym_code, double service_fee_rate);
     void setservfeert_v1(symbol_code sym_code, double service_fee_rate);
@@ -287,7 +296,7 @@ public:
     [[eosio::action]] void rm( symbol_code sym_code, uint64_t id, uint64_t type);
     void rm_v2( symbol_code sym_code, uint64_t id, uint64_t type);
     
-    [[eosio::action]] void setauditor( symbol_code sym_code, string actn, name auditor);
+    [[eosio::action]] void setauditor( symbol_code sym_code, string actn, name auditor );
     void setauditor_v1( symbol_code sym_code, string action, name auditor);
     void setauditor_v2( symbol_code sym_code, string actn, name auditor);
 
@@ -773,11 +782,10 @@ private:
     };
     using acceptors = eosio::multi_index< "acceptors"_n, acceptor_ts >;
 
-    // TODO: auditors
     struct [[eosio::table]] auditor_ts {
         name auditor;
 
-        uint64_t primary_key() const { return auditor.value;}
+        uint64_t primary_key() const { return auditor.value; }
     };
     using auditors = eosio::multi_index<"auditors"_n, auditor_ts>;
 
@@ -880,12 +888,11 @@ private:
         auto balance = acct.find(sym_code.raw());
         return balance == acct.end() || balance->balance.amount == 0;
     }
-
+    
     bool pegtoken::addr_check(symbol_code sym_code, name user) {
         auto addresses = addrs(get_self(), sym_code.raw());
         return addresses.find(user.value) == addresses.end();
     }
-
 
     uint64_t pegtoken::getpeg(symbol_code sym_code){
         auto peg_table = pegs(get_self(),sym_code.raw());
@@ -922,27 +929,10 @@ private:
         return !(iter != vip_tb.end()); 
     }
 
-    void pegtoken::is_auth_issuer(symbol_code sym_code){
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-            case 1: {
-                auto stats_table = stats(get_self(),sym_code.raw());
-                auto stat_val = stats_table.get(sym_code.raw(),"the v1 token NOT in stats table");
-                require_auth(stat_val.issuer);
-                break;
-            }
-            case 2:{
-                auto info_table = infos(get_self(),sym_code.raw());
-                auto info_val = info_table.get(sym_code.raw(), "the v2 token NOT in infos table");
-                require_auth(info_val.issuer);
-                break;
-            }
-            default:{
-                eosio_assert(false, "edition should be 1 or 2");
-                break;
-            }
-        }
+    void pegtoken::is_auth_issuer(symbol_code sym_code) {
+        auto info_table = infos(get_self(), sym_code.raw());
+        auto info_val = info_table.get(sym_code.raw(), "the token not in infos table");
+        require_auth(info_val.issuer);
     }
 
     void pegtoken::is_auth_manager(symbol_code sym_code){
@@ -969,12 +959,12 @@ private:
         require_auth(brakeman_val.brakeman);
     }
 
-    void pegtoken::is_auth_role(symbol_code sym_code, name account){
+    void pegtoken::is_auth_role(symbol_code sym_code, name account) {
         auto brakeman_tb = brakemans(get_self(), sym_code.raw());
         auto braks = brakeman_tb.find(account.value);
         eosio_assert(braks == brakeman_tb.end(), "account has been assigned to role: brakeman");
 
-        auto auditor_tb = auditors(get_self(),sym_code.raw());
+        auto auditor_tb = auditors(get_self(), sym_code.raw());
         auto auds = auditor_tb.find(account.value);
         eosio_assert(auds == auditor_tb.end(), "account has been assigned to role: auditor");
 
@@ -990,29 +980,10 @@ private:
         auto gat = gatherer_tb.find(account.value);
         eosio_assert(gat == gatherer_tb.end(), "account has been assigned to role: gatherer");    
 
-        //不为issuer
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-            case 1: {
-                auto stats_table = stats(get_self(),sym_code.raw());
-                auto stat_iter = stats_table.find(sym_code.raw());
-                eosio_assert(stat_iter == stats_table.end(), "No such symbol");
-                eosio_assert(account == stat_iter->issuer , "The account has been assigned to issuer");
-                break;
-            }
-            case 2:{
-                auto info_table = infos(get_self(),sym_code.raw());
-                auto info_iter = info_table.find(sym_code.raw());
-                eosio_assert(info_iter == info_table.end(), "No such symbol");
-                eosio_assert(account == info_iter->issuer, "The account has been assigned to issuer");
-                break;
-            }
-            default:{
-                eosio_assert(false, "edition should be 1 or 2");
-                break;
-            }
-        }
+        auto info_table = infos(get_self(), sym_code.raw());
+        auto info_iter = info_table.find(sym_code.raw());
+        eosio_assert(info_iter != info_table.end(), "No such symbol");
+        eosio_assert(account != info_iter->issuer, "The account has been assigned to issuer");
     }
 
     bool pegtoken::is_locked(symbol_code sym_code){
