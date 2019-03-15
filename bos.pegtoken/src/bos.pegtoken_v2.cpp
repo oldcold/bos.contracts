@@ -806,45 +806,43 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setvip_v2(symbol sym, string actn, name vip){
-        auto vip_tb = vips(get_self(), sym.code().raw());
-        auto vip_iter = vip_tb.find(sym.code().raw());
-        if(vip_iter != vip_tb.end()){
-            vip_tb.emplace(get_self(), [&](auto& vp){
-                vp.vip = vip;
-            });
-        } else {
-            vip_tb.modify(vip_iter,same_payer,[&](auto &vp){
-                vp.vip = vip;
-            });
+    void pegtoken::setvip_v2(symbol_code sym_code, string actn, name vip) {
+        auto sym = symbol(sym_code, 8);
+        auto vip_tb = vips(get_self(), sym_code.raw());
+        auto viplimit_table = viplimits(get_self(), sym_code.raw());
+        auto vipfee_table = vipfees(get_self(), sym_code.raw());
+        auto vip_iter = vip_tb.find(vip.value);
+        if (actn == "add") {
+            if(vip_iter == vip_tb.end()) {
+                vip_tb.emplace(get_self(), [&](auto& p) {
+                    p.vip = vip;
+                    p.create_time = time_point_sec(now());
+                });
+                // Init viplimit and vipfee
+                viplimit_table.emplace(get_self(), [&](auto &p) {
+                    p.owner = vip;
+                    p.maximum_limit = eosio::asset(MAXIMUM_LIMIT, sym);
+                    p.minimum_limit = eosio::asset(MINIMUM_LIMIT, sym);
+                    p.total_limit = eosio::asset(TOTAL_LIMIT, sym);;
+                    p.frequency_limit = FREQUENCY_LIMIT;
+                    p.interval_limit = INTERVAL_LIMIT;
+                });
+                vipfee_table.emplace(get_self(), [&](auto &p) {
+                    p.owner = vip;
+                    p.service_fee_rate = SERVICE_FEE_RATE;
+                    p.min_service_fee = eosio::asset(MIN_SERVICE_FEE, sym);
+                    p.miner_fee = eosio::asset(MINER_FEE, sym);
+                });
+            } else {
+                vip_tb.modify(vip_iter, same_payer, [&](auto &vp) {
+                    vp.vip = vip;
+                });
+            }
+        } else if (actn == "remove") {
+            vip_tb.erase(vip_iter);
+            viplimit_table.erase(viplimit_table.find(vip.value));
+            vipfee_table.erase(vipfee_table.find(vip.value));
         }
-
-        //初始化viplimit和vipfee
-        auto vip_table = vips(get_self(),sym.code().raw());
-        auto viplimit_table = viplimits(get_self(),sym.code().raw());
-        auto vipfee_table = vipfees(get_self(),sym.code().raw());
-        
-        auto iter_vip = vip_table.find(vip.value);
-        if(iter_vip == vip_table.end()){
-            vip_table.emplace(get_self(),[&](auto &p){
-                p.vip = vip;
-                p.create_time = time_point_sec(now());
-            });
-            viplimit_table.emplace(get_self(),[&](auto &p){
-                p.owner = vip;
-                p.maximum_limit = eosio::asset(MAXIMUM_LIMIT, sym);
-                p.minimum_limit = eosio::asset(MINIMUM_LIMIT, sym);
-                p.total_limit = eosio::asset(TOTAL_LIMIT, sym);;
-                p.frequency_limit = 3;
-                p.interval_limit = 300;
-            });
-            vipfee_table.emplace(get_self(), [&](auto &p) {
-                p.owner = vip;
-                p.service_fee_rate = 0.001;
-                p.min_service_fee = eosio::asset(MIN_SERVICE_FEE, sym);
-                p.miner_fee = eosio::asset(MINER_FEE, sym);
-            });
-        } 
     }
 
     void pegtoken::resetaddress_v2(symbol_code sym_code, name to ){

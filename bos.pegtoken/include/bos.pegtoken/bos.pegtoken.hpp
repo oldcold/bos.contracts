@@ -316,10 +316,9 @@ public:
     void setbrakeman_v1( symbol_code sym_code, name brakeman );
     void setbrakeman_v2( symbol_code sym_code, name brakeman );
 
-    // TODO: 管理员为某个相应的币种的某个用户设置为VIP, action有add或remove
-    [[eosio::action]] void setvip( symbol sym,  string action, name vip);
-    void setvip_v1(symbol sym, string action, name vip);
-    void setvip_v2(symbol sym, string action, name vip);
+    [[eosio::action]] void setvip( symbol_code sym_code, string actn, name vip );
+    void setvip_v1( symbol_code sym_code, string actn, name vip );
+    void setvip_v2( symbol_code sym_code, string actn, name vip );
 
     [[eosio::action]] void pubminerfee( asset miner_fee );
 
@@ -635,7 +634,7 @@ private:
     using casts = eosio::multi_index< "casts"_n, cast_ts,
         indexed_by< "state"_n, const_mem_fun< cast_ts, uint64_t, &cast_ts::by_state > > >;
 
-    struct [[eosio::table]] vip_ts{
+    struct [[eosio::table]] vip_ts {
         name vip;
         time_point_sec create_time;
 
@@ -916,10 +915,10 @@ private:
         return asset_symcode == sym_code;
     }
 
-    bool pegtoken::is_vip(symbol_code sym_code,name name){
+    bool pegtoken::is_vip(symbol_code sym_code, name name) {
         auto vip_tb = vips(get_self(), sym_code.raw());
         auto iter = vip_tb.find(name.value);
-        return !(iter != vip_tb.end()); 
+        return iter != vip_tb.end();
     }
 
     void pegtoken::is_auth_issuer(symbol_code sym_code) {
