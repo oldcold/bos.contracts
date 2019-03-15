@@ -197,11 +197,9 @@ public:
     void applyaddr_v1( symbol_code sym_code, name to );
     void applyaddr_v2( symbol_code sym_code, name to );
 
-    // TODO: resetaddress
     [[eosio::action]] void resetaddress( symbol_code sym_code, name to );
     void resetaddress_v1( symbol_code sym_code, name to );
     void resetaddress_v2( symbol_code sym_code, name to );
-
 
     [[eosio::action]] void assignaddr( symbol_code sym_code, name to, string address );
     void assignaddr_v1( symbol_code sym_code, name to, string address );
@@ -365,6 +363,8 @@ private:
     void vip_withdraw_check(symbol_code sym_code, asset quantity, name account);
     bool balance_check( symbol_code sym_code, name user );
     bool addr_check( symbol_code sym_code, name user );
+
+    void peg_check( symbol_code sym_code );
 
 // roles:
 // deployer【usdt.bos, btc.bos】, issuer
@@ -885,6 +885,10 @@ private:
         auto addresses = addrs(get_self(), sym_code.raw());
         auto addr_iter = addresses.find(user.value);
         return addr_iter == addresses.end() || (addr_iter->state != 0 || addr_iter->address == "");
+    }
+
+    void pegtoken::peg_check( symbol_code sym_code ) {
+        eosio_assert(getpeg(sym_code) == peg_type::PRE_RELEASE || getpeg(sym_code) == peg_type::STRICT_ANCHOR, "The action require peg to be pre release or strict anchor");
     }
 
     uint64_t pegtoken::getpeg(symbol_code sym_code){

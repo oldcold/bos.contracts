@@ -831,31 +831,30 @@ namespace eosio {
         }
     }
 
-    void pegtoken::resetaddress_v2(symbol_code sym_code, name to ){
+    void pegtoken::resetaddress_v2( symbol_code sym_code, name to ) {
         auto addrs_tb = addrs(get_self(), sym_code.raw());
         auto addr_iter = addrs_tb.find(to.value);
         eosio_assert(addr_iter != addrs_tb.end(), "account does not exist in addrs table");
-        addrs_tb.modify(addr_iter,same_payer,[&](auto &add){
-                add.state = to.value;
-                add.address = "";
+        eosio_assert(addr_iter->address != "", "account address shoule be empty");
+        addrs_tb.modify(addr_iter, same_payer, [&](auto &p) {
+            p.state = to.value;
+            p.address = "";
         });
 
-        // 添加一条记录到record table中, emplace 或 modify
         auto records_tb = records(get_self(), sym_code.raw());
         auto record_iter = records_tb.find(to.value);
-        if(record_iter == records_tb.end()){
-             records_tb.emplace(get_self(),[&](auto &rd) {
-                rd.owner = to;
-                rd.address = "";
-                rd.reset_time = time_point_sec(now());
+        if(record_iter == records_tb.end()) {
+            records_tb.emplace(get_self(), [&](auto &p) {
+                p.owner = to;
+                p.address = "";
+                p.reset_time = time_point_sec(now());
             });
-        }else{
-             records_tb.modify(record_iter,same_payer,[&](auto &rd){
-                rd.address = "";
-                rd.reset_time = time_point_sec(now());
+        } else {
+             records_tb.modify(record_iter, same_payer, [&](auto &p) {
+                p.address = "";
+                p.reset_time = time_point_sec(now());
              });
         }
-        
     }
 
     void pegtoken::assignaddr_v2(symbol_code sym_code, name to, string address) {   

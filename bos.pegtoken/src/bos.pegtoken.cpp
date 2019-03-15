@@ -73,7 +73,7 @@ namespace eosio {
         eosio_assert(is_sym_equal_asset(sym_code, maximum_limit), "sym_code is not same as maximum_limit symbol_code.");
         eosio_assert(is_sym_equal_asset(sym_code, minimum_limit), "sym_code is not same as minimum_limit symbol_code.");
         eosio_assert(is_sym_equal_asset(sym_code, total_limit), "sym_code is not same as total_limit symbol_code.");
-        eosio_assert(getpeg(sym_code) == peg_type::PRE_RELEASE || getpeg(sym_code) == peg_type::STRICT_ANCHOR, "The action require peg to be pre release or strict anchor");
+        peg_check(sym_code);
         eosio_assert(minimum_limit.amount >= 0 && maximum_limit >= minimum_limit && total_limit >= maximum_limit, "constrict mismatch: total_limit >= maximum_limit >= minimum_limit >= 0");
         setlimit_v2(sym_code, maximum_limit, minimum_limit, total_limit, frequency_limit, interval_limit);
     }
@@ -277,7 +277,7 @@ namespace eosio {
         is_auth_manager(sym_code);
         eosio_assert(is_sym_equal_asset(sym_code, min_service_fee), "sym_code is not same as min_service_fee symbol_code.");
         eosio_assert(is_sym_equal_asset(sym_code, miner_fee), "sym_code is not same as miner_fee symbol_code.");
-        eosio_assert(getpeg(sym_code) == peg_type::PRE_RELEASE || getpeg(sym_code) == peg_type::STRICT_ANCHOR, "The action require peg to be pre release or strict anchor");
+        peg_check(sym_code);
         setvipfee_v2(vip, service_fee_rate, min_service_fee, miner_fee);
     }
 
@@ -353,7 +353,7 @@ namespace eosio {
 
     void pegtoken::setcheck( symbol_code sym_code, bool in_check, bool out_check ) {
         is_auth_manager(sym_code);
-        eosio_assert(getpeg(sym_code) == peg_type::PRE_RELEASE || getpeg(sym_code) == peg_type::STRICT_ANCHOR, "The action require peg to be pre release or strict anchor");
+        peg_check(sym_code);
         setcheck_v2(sym_code, in_check, out_check);
     }
 
@@ -553,7 +553,7 @@ namespace eosio {
         is_auth_issuer(sym_code);
         is_auth_role(sym_code, teller);
         ACCOUNT_CHECK(teller);
-        eosio_assert(getpeg(sym_code) == peg_type::PRE_RELEASE || getpeg(sym_code) == peg_type::STRICT_ANCHOR, "The action require peg to be pre release or strict anchor");
+        peg_check(sym_code);
         setteller_v2(sym_code, teller);
     }
 
@@ -561,7 +561,7 @@ namespace eosio {
         is_auth_issuer(sym_code);
         is_auth_role(sym_code, manager);
         ACCOUNT_CHECK(manager);
-        eosio_assert(getpeg(sym_code) == peg_type::PRE_RELEASE || getpeg(sym_code) == peg_type::STRICT_ANCHOR, "The action require peg to be pre release or strict anchor");
+        peg_check(sym_code);
         setmanager_v2(sym_code, manager);
     }
 
@@ -569,7 +569,7 @@ namespace eosio {
         is_auth_issuer(sym_code);
         is_auth_role(sym_code, brakeman);
         ACCOUNT_CHECK(brakeman);
-        eosio_assert(getpeg(sym_code) == peg_type::PRE_RELEASE || getpeg(sym_code) == peg_type::STRICT_ANCHOR, "The action require peg to be pre release or strict anchor");
+        peg_check(sym_code);
         setbrakeman_v2(sym_code, brakeman);
     }
 
@@ -577,7 +577,7 @@ namespace eosio {
         is_auth_manager(sym_code);
         is_auth_role(sym_code, vip);
         ACCOUNT_CHECK(vip);
-        eosio_assert(getpeg(sym_code) == peg_type::PRE_RELEASE || getpeg(sym_code) == peg_type::STRICT_ANCHOR, "The action require peg to be pre release or strict anchor");
+        peg_check(sym_code);
         if (actn == "add") {
             eosio_assert(!is_vip(sym_code, vip), "the account has been set to vip for the sym");
         }
@@ -603,32 +603,18 @@ namespace eosio {
                 break;
         }
     }
-    
 
-    void pegtoken::resetaddress( symbol_code sym_code, name to ){
+    void pegtoken::resetaddress( symbol_code sym_code, name to ) {
         is_auth_manager(sym_code);
-        eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
-        eosio_assert(getpeg(sym_code) == 1 || getpeg(sym_code) == 2, "The action require peg to be 1 or 2");
+        peg_check(sym_code);
         ACCOUNT_CHECK(to);
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            resetaddress_v1(sym_code,to);
-            break;
-        case 2: 
-            resetaddress_v2(sym_code,to);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        resetaddress_v2(sym_code, to);
     }
 
     void pegtoken::assignaddr(symbol_code sym_code, name to, string address) {
         is_auth_teller(sym_code);
         is_auth_role(sym_code, to);
-        eosio_assert(getpeg(sym_code) == peg_type::PRE_RELEASE || getpeg(sym_code) == peg_type::STRICT_ANCHOR, "The action require peg to be pre release or strict anchor");
+        peg_check(sym_code);
         ACCOUNT_CHECK(to);
         assignaddr_v2(sym_code, to, address);
     }
