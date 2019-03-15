@@ -108,7 +108,7 @@ namespace eosio {
     void pegtoken::setmaxlimit_v2( asset maximum_limit ) {
         auto sym_code = maximum_limit.symbol.code();
         auto limit_table = limits(get_self(), sym_code.raw());
-        auto val = limit_table.get(sym_code.raw(),"token with symbol not exists");
+        auto val = limit_table.get(sym_code.raw(), "token with symbol not exists");
         
         setlimit_v2(sym_code, maximum_limit, val.minimum_limit,
             val.total_limit, val.frequency_limit, val.interval_limit);

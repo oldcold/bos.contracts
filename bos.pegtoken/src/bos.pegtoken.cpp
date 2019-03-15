@@ -78,96 +78,27 @@ namespace eosio {
         setlimit_v2(sym_code, maximum_limit, minimum_limit, total_limit, frequency_limit, interval_limit);
     }
 
-    void pegtoken::setmaxlimit(symbol_code sym_code, asset maximum_limit ) {
-        // 判断所有的asset 是否与sym_code为同一种币，若不是，则报错
+    void pegtoken::setmaxlimit( symbol_code sym_code, asset maximum_limit ) {
         eosio_assert(is_sym_equal_asset(sym_code, maximum_limit), "sym_code is not same as asset symbol_code.");
-        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2,   "Edition should be either 1 or 2");
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            setmaxlimit_v1(maximum_limit);
-            break;
-        case 2:
-            setmaxlimit_v2(maximum_limit);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        setmaxlimit_v2(maximum_limit);
     }
 
-    void pegtoken::setminlimit(symbol_code sym_code, asset minimum_limit ) {
-        // 判断所有的asset 是否与sym_code为同一种币，若不是，则报错
+    void pegtoken::setminlimit( symbol_code sym_code, asset minimum_limit ) {
         eosio_assert(is_sym_equal_asset(sym_code, minimum_limit), "sym_code is not same as asset symbol_code.");
-        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2,   "Edition should be either 1 or 2");
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            setminlimit_v1(minimum_limit);
-            break;
-        case 2:
-            setminlimit_v2(minimum_limit);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        setminlimit_v2(minimum_limit);
     }
 
-    void pegtoken::settotalimit(symbol_code sym_code, asset total_limit )
-    {
-        // 判断所有的asset 是否与sym_code为同一种币，若不是，则报错
+    void pegtoken::settotalimit( symbol_code sym_code, asset total_limit ) {
         eosio_assert(is_sym_equal_asset(sym_code, total_limit), "sym_code is not same as asset symbol_code.");
-        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2, "Edition should be either 1 or 2");
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            settotalimit_v1(total_limit);
-            break;
-        case 2:
-            settotalimit_v2(total_limit);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        settotalimit_v2(total_limit);
     }
 
     void pegtoken::setfreqlimit( symbol_code sym_code, uint64_t frequency_limit) {
-        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2, "Edition should be either 1 or 2");
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            setfreqlimit_v1(sym_code, frequency_limit);
-            break;
-        case 2:
-            setfreqlimit_v2(sym_code, frequency_limit);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        setfreqlimit_v2(sym_code, frequency_limit);
     }
 
-    void pegtoken::setintvlimit( symbol_code sym_code, uint64_t interval_limit) {
-        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2, "Edition should be either 1 or 2");
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            setintvlimit_v1(sym_code, interval_limit);
-            break;
-        case 2:
-            setintvlimit_v2(sym_code, interval_limit);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+    void pegtoken::setintvlimit( symbol_code sym_code, uint64_t interval_limit ) {
+        setintvlimit_v2(sym_code, interval_limit);
     }
 
     // void pegtoken::setreslimit( symbol_code sym_code, uint64_t reset_limit) {

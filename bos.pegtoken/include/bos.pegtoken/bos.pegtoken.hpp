@@ -64,25 +64,25 @@ public:
     void setlimit_v1(symbol_code sym_code, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
     void setlimit_v2(symbol_code sym_code, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
 
-    [[eosio::action]] void setmaxlimit(symbol_code sym_code, asset maximum_limit );
+    [[eosio::action]] void setmaxlimit( symbol_code sym_code, asset maximum_limit );
     void setmaxlimit_v1( asset maximum_limit );
     void setmaxlimit_v2( asset maximum_limit );
 
-    [[eosio::action]] void setminlimit(symbol_code sym_code,  asset minimum_limit );
+    [[eosio::action]] void setminlimit( symbol_code sym_code,  asset minimum_limit );
     void setminlimit_v1( asset minimum_limit );
     void setminlimit_v2( asset minimum_limit );
 
-    [[eosio::action]] void settotalimit(symbol_code sym_code,  asset total_limit );
+    [[eosio::action]] void settotalimit( symbol_code sym_code,  asset total_limit );
     void settotalimit_v1( asset total_limit );
     void settotalimit_v2( asset total_limit );
 
-    [[eosio::action]] void setfreqlimit( symbol_code sym_code, uint64_t frequency_limit);
-    void setfreqlimit_v1( symbol_code sym_code, uint64_t frequency_limit);
-    void setfreqlimit_v2( symbol_code sym_code, uint64_t frequency_limit);
-    //setintervallimit
-    [[eosio::action]] void setintvlimit( symbol_code sym_code, uint64_t interval_limit);
-    void setintvlimit_v1( symbol_code sym_code, uint64_t interval_limit);
-    void setintvlimit_v2( symbol_code sym_code, uint64_t interval_limit);
+    [[eosio::action]] void setfreqlimit( symbol_code sym_code, uint64_t frequency_limit );
+    void setfreqlimit_v1( symbol_code sym_code, uint64_t frequency_limit );
+    void setfreqlimit_v2( symbol_code sym_code, uint64_t frequency_limit );
+
+    [[eosio::action]] void setintvlimit( symbol_code sym_code, uint64_t interval_limit );
+    void setintvlimit_v1( symbol_code sym_code, uint64_t interval_limit );
+    void setintvlimit_v2( symbol_code sym_code, uint64_t interval_limit );
 
     [[eosio::action]] void setviplimit(symbol_code sym_code, name vip, asset maximum_limit, asset minimum_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit);
     void setviplimit_v1(name vip, asset maximum_limit, asset minimum_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit);
