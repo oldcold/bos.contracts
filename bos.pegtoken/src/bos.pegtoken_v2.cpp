@@ -617,23 +617,43 @@ namespace eosio {
 
     void pegtoken::melt_v2( name from_account, string to_address, asset quantity, uint64_t index, string memo ) {
         auto sym_code = quantity.symbol.code();
-        ACCOUNT_CHECK(from_account);
-        if(is_vip(quantity.symbol.code(), from_account)) {
+        auto infos_table = infos(get_self(),sym_code.raw());
+        auto info_iter = infos_table.find(sym_code.raw());
+        eosio_assert(info_iter != infos_table.end(), "token not exist");
+        verify_address(info_iter->address_style, to_address);
+
+        eosio::asset userfee, minlimit;
+        double ratelimit;
+        if(is_vip(quantity.symbol.code(), from_account)){
             vip_withdraw_check(sym_code, quantity, from_account);
-        } else {
+             auto vfees_tb = vipfees(get_self(),sym_code.raw());
+             auto vfee_val = vfees_tb.get(from_account.value, "This account is not in vipfees table");
+             ratelimit = vfee_val.service_fee_rate;
+             minlimit = vfee_val.min_service_fee;
+        }else{
             withdraw_check(sym_code, quantity, from_account);
+             auto fees_tb = fees(get_self(),sym_code.raw());
+             auto fee_val = fees_tb.get(from_account.value, "This account is not in fees table");
+             ratelimit = fee_val.service_fee_rate;
+             minlimit = fee_val.min_service_fee;
         }   
+        userfee = ratelimit*quantity > minlimit ? ratelimit*quantity : minlimit;
+        action(
+            permission_level{get_self(),"active"_n},
+            get_self(),
+            "pay"_n,
+            std::make_tuple(userfee)
+        ).send();
 
         action(
             permission_level{get_self(),"active"_n},
             get_self(),
             "ruin"_n,
-            std::make_tuple(quantity)
+            std::make_tuple(quantity-userfee)
         ).send();
-        auto infos_table = infos(get_self(),sym_code.raw());
-        auto info_iter = infos_table.find(sym_code.raw());
-        eosio_assert(info_iter != infos_table.end(), "token not exist");
-        verify_address(info_iter->address_style, to_address);
+
+
+
 
         auto acct_tb = accounts(get_self(),sym_code.raw());
         auto acct_iter = acct_tb.find(from_account.value);
@@ -991,9 +1011,12 @@ namespace eosio {
         // TODO: remote_trx_id validation.
         for (auto melt_iter = melt_tb.begin(); melt_iter != melt_tb.end(); ++melt_iter) {
             // find the trx hash
+
+            //下面的检查条件是melt需要审核且审核通过或者melt无须审核的情况
             if( std::memcmp(trx_id.hash, melt_iter->trx_id.hash, 32) == 0 && melt_iter->index == index
-                && melt_iter->enable == true && melt_iter->state == 0) {
+                && ((melt_iter->enable == true && melt_iter->need_check == true) && melt_iter->enable == true) && melt_iter->state == 0) {
                 melt_tb.modify(melt_iter, same_payer, [&](auto &mit) {
+                    mit.remote_index = remote_index;
                     mit.remote_trx_id = remote_trx_id;
                     mit.state = melt_state::WITHDRAW_SUCCESS;
                     mit.msg = memo;

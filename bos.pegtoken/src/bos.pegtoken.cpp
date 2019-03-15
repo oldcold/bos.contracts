@@ -472,6 +472,7 @@ namespace eosio {
     
     void pegtoken::melt( name from_account, string to_address, asset quantity, uint64_t index, string memo ) {
         symbol_code sym_code = quantity.symbol.code();
+        ACCOUNT_CHECK(from_account);
         withdraw_check(sym_code, quantity, from_account);
         is_auth_role_exc_gatherer(sym_code, from_account);
         eosio_assert(is_locked(sym_code), "The token is locked");
@@ -769,6 +770,10 @@ namespace eosio {
        uint64_t index, string memo ) {
        eosio_assert(is_locked(sym_code), "The token is locked");
        is_auth_teller(sym_code);
+
+       is_locked(sym_code);
+       eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
+    //    eosio_assert(getpeg(sym_code) == 2, "The action require peg to be 2");
        eosio_assert(getpeg(sym_code) == peg_type::STRICT_ANCHOR, "The action require peg to be strict anchor");
        denyback_v2(sym_code, trx_id, index, memo);
     }
