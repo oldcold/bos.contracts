@@ -13,7 +13,7 @@ namespace eosio {
 ////////////////////////
 
     void pegtoken::create( symbol sym, name issuer, name address_style, uint64_t peg ) {
-        eosio_assert(peg == PRE_RELEASE || peg == STRICT_ANCHOR, "peg can only be 1 or 2");
+        eosio_assert(peg == peg_type::PRE_RELEASE || peg == peg_type::STRICT_ANCHOR, "peg can only be 1 or 2");
         require_auth(get_self());
         ACCOUNT_CHECK(issuer);
         eosio_assert(sym.is_valid(), "invalid symbol");
@@ -672,13 +672,11 @@ namespace eosio {
         setauditor_v2(sym_code, actn, auditor);
     }
 
-    void pegtoken::setgatherer( symbol_code sym_code,  name gatherer){
+    void pegtoken::setgatherer( symbol_code sym_code, name gatherer) {
         is_auth_issuer(sym_code);
         is_auth_role(sym_code, gatherer);
         ACCOUNT_CHECK(gatherer);
-        //收费员仅针对严格锚钉制和版本2
-        eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
-        eosio_assert(getpeg(sym_code) == 2, "The action require peg to be 2");
+        eosio_assert(getpeg(sym_code) == peg_type::STRICT_ANCHOR, "The action require peg to be strict anchor.");
         setgatherer_v2(sym_code, gatherer);
     }
 

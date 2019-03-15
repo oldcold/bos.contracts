@@ -300,9 +300,9 @@ public:
     void setauditor_v1( symbol_code sym_code, string action, name auditor);
     void setauditor_v2( symbol_code sym_code, string actn, name auditor);
 
-    [[eosio::action]] void setgatherer( symbol_code sym_code,  name gatherer);
-    void setgatherer_v1( symbol_code sym_code,  name gatherer);
-    void setgatherer_v2( symbol_code sym_code,  name gatherer);
+    [[eosio::action]] void setgatherer( symbol_code sym_code, name gatherer );
+    void setgatherer_v1( symbol_code sym_code, name gatherer );
+    void setgatherer_v2( symbol_code sym_code, name gatherer );
 
     [[eosio::action]] void setteller( symbol_code sym_code,  name teller);
     void setteller_v1( symbol_code sym_code,  name teller);
@@ -789,9 +789,6 @@ private:
     };
     using auditors = eosio::multi_index<"auditors"_n, auditor_ts>;
 
-    
-   
-    // TODO: 收费员 gatherers
     struct [[eosio::table]] gatherer_ts {
         name gatherer;
 
@@ -799,8 +796,6 @@ private:
     };
     using gatherers = eosio::multi_index< "gathers"_n, gatherer_ts >;
 
-
-   
     // TODO: 制动员 gatherers
     struct [[eosio::table]] brakeman_ts {
         name brakeman;
@@ -891,7 +886,8 @@ private:
     
     bool pegtoken::addr_check(symbol_code sym_code, name user) {
         auto addresses = addrs(get_self(), sym_code.raw());
-        return addresses.find(user.value) == addresses.end();
+        auto addr_iter = addresses.find(user.value);
+        return addr_iter == addresses.end() || (addr_iter->state != 0 || addr_iter->address == "");
     }
 
     uint64_t pegtoken::getpeg(symbol_code sym_code){

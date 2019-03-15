@@ -711,16 +711,13 @@ namespace eosio {
     }
     
     void pegtoken::setauditor_v2(symbol_code sym_code, string actn, name auditor) {
+        // Check if the address is already bound
+        eosio_assert(addr_check(sym_code, auditor), "this account has assigned to address already");
         // Balance check
         eosio_assert(balance_check(sym_code, auditor), "auditor`s balance should be 0");
+
         auto auditor_tb = auditors(get_self(), sym_code.raw());
         auto aud_iter = auditor_tb.find(auditor.value);
-        
-        // Check if the address is already bound
-        auto addr_tb = addrs(get_self(), sym_code.raw());
-        auto addr_iter = addr_tb.find(auditor.value);
-        eosio_assert(addr_iter->state != 0 || addr_iter->address == "", "this account has assigned to address already");
-
         if(actn == "add") {
             eosio_assert(aud_iter == auditor_tb.end(), "auditor has been assigned based on sym_code");
             auditor_tb.emplace(get_self(), [&](auto& aud) {
@@ -753,24 +750,27 @@ namespace eosio {
             });
         }
     }
-    //能够设置单个
-    void pegtoken::setgatherer_v2(symbol_code sym_code, name gatherer){
-        //检查该账户该币种余额
+
+    // There is only one gatherer
+    void pegtoken::setgatherer_v2(symbol_code sym_code, name gatherer) {
+        // Check if the address is already bound
+        eosio_assert(addr_check(sym_code, gatherer), "this account has assigned to address already");
+        // Balance check
         eosio_assert(balance_check(sym_code, gatherer), "gatherer`s balance should be 0");
-    
 
         auto gather_tb = gatherers(get_self(), sym_code.raw());
         auto gather_iter = gather_tb.find(sym_code.raw());
-        if(gather_iter == gather_tb.end()){
-            gather_tb.emplace(get_self(), [&](auto& gather){
-                gather.gatherer = gatherer;
+        if(gather_iter == gather_tb.end()) {
+            gather_tb.emplace(get_self(), [&]( auto& p) {
+                p.gatherer = gatherer;
             });
-        }else{
-            gather_tb.modify(gather_iter,same_payer,[&](auto &gather){
-                gather.gatherer = gatherer;
+        } else {
+            gather_tb.modify(gather_iter, same_payer, [&](auto &p) {
+                p.gatherer = gatherer;
             });
         }
     }
+
     //能够设置单个
     void pegtoken::setbrakeman_v2(symbol_code sym_code, name brakeman){
         //检查该账户该币种余额
