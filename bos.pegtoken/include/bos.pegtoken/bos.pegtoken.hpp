@@ -939,8 +939,8 @@ private:
         require_auth(mgr_iter->manager);
     }
 
-    void pegtoken::is_auth_teller(symbol_code sym_code){
-        auto teller_tb = tellers(get_self(),sym_code.raw());
+    void pegtoken::is_auth_teller(symbol_code sym_code) {
+        auto teller_tb = tellers(get_self(), sym_code.raw());
         auto teller_iter = teller_tb.begin();
         eosio_assert(teller_iter != teller_tb.end(), "the token not in tellers table");
         require_auth(teller_iter->teller);

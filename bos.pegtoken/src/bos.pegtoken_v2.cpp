@@ -857,9 +857,9 @@ namespace eosio {
         }
     }
 
-    void pegtoken::assignaddr_v2(symbol_code sym_code, name to, string address) {   
+    void pegtoken::assignaddr_v2( symbol_code sym_code, name to, string address) {   
         auto sym_raw = sym_code.raw();
-        auto infos_table = stats(get_self(), sym_raw);
+        auto infos_table = infos(get_self(), sym_raw);
         auto info_iter = infos_table.find(sym_raw);
         eosio_assert(info_iter != infos_table.end(), "token not exist");
         verify_address(info_iter->address_style, address);
