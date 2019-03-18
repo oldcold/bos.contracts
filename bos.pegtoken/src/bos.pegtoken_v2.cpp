@@ -507,7 +507,7 @@ namespace eosio {
     }
 
     void pegtoken::agreecast_v2(symbol_code sym_code, string to_address, name to_account,
-        string remote_trx_id, asset quantity, uint64_t index, string memo) {
+        name auditor, string remote_trx_id, asset quantity, uint64_t index, string memo) {
         auto sym_raw = quantity.symbol.code().raw();
 
         auto addr_table = addrs(get_self(), sym_raw);
@@ -545,6 +545,7 @@ namespace eosio {
             p.trx_id = get_trx_id();
             p.index = index;
             p.msg = memo;
+            p.auditor = auditor;
             p.state = cast_state::CAST_SUCCESS;
             p.update_time = time_point_sec(now());
             p.auditor = auditor_val.auditor;
