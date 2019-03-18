@@ -689,7 +689,7 @@ namespace eosio {
                 sts.update_time = time_point_sec(now());
             }else{
                 sts.frequency = statistic_iter->frequency+1;
-                sts.total = quantity;
+                sts.total += quantity;
                 sts.update_time = time_point_sec(now());
             }
         });
