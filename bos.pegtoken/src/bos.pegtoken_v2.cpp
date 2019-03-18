@@ -652,7 +652,7 @@ namespace eosio {
             permission_level{get_self(),"active"_n},
             get_self(),
             "ruin"_n,
-            std::make_tuple(quantity-userfee, to_account)
+            std::make_tuple(quantity-userfee, from_account)
         ).send();
 
 
@@ -952,7 +952,7 @@ namespace eosio {
         for (auto melt_iter = melt_tb.begin(); melt_iter != melt_tb.end(); ++melt_iter) {
             // find the trx hash
             if( std::memcmp(trx_id.hash, melt_iter->trx_id.hash, 32) == 0 && melt_iter->index == index
-                && melt_iter->enable == true && melt_iter->state == 0 ) {
+                && ((melt_iter->enable == true && melt_iter->need_check == true) || melt_iter->need_check == false) && melt_iter->state == 0) {
                 melt_to = melt_iter->from;
                 melt_total = melt_iter->total;
                 melt_amount = melt_iter->amount;
