@@ -47,300 +47,78 @@ enum melt_state: uint64_t {
     WITHDRAW_ROLLBACL = 5,
 };
 
+enum cast_state: uint64_t {
+    CAST_INIT = 0,
+    CAST_SUCCESS = 2,
+    CAST_FAIL = 5,
+};
+
 class[[eosio::contract("bos.pegtoken")]] pegtoken : public contract
 {
 public:
     using contract::contract;
 
     [[eosio::action]] void create( symbol sym, name issuer, name address_style, uint64_t peg );
-    void create_v1( symbol sym, name issuer, name acceptor, name address_style, string organization, string website );
-    void create_v2( symbol sym, name issuer, name address_style, uint64_t peg );
 
     [[eosio::action]] void setissuer( symbol_code sym_code, name issuer );
-    void setissuer_v1( symbol_code sym_code, name issuer );
-    void setissuer_v2( symbol_code sym_code, name issuer );
-
-    [[eosio::action]] void setedition( symbol_code sym_code );
     
-    [[eosio::action]] void setpeg( symbol_code sym_code );
-
-    [[eosio::action]] void update( symbol_code sym_code, string organization, string website );
-    void update_v1( symbol_code sym_code, string organization, string website );
-    void update_v2( symbol_code sym_code, string organization, string website );
-
     [[eosio::action]] void setlimit( symbol_code sym_code, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
-    void setlimit_v1(symbol_code sym_code, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
-    void setlimit_v2(symbol_code sym_code, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
-
-    [[eosio::action]] void setmaxlimit( symbol_code sym_code, asset maximum_limit );
-    void setmaxlimit_v1( asset maximum_limit );
-    void setmaxlimit_v2( asset maximum_limit );
-
-    [[eosio::action]] void setminlimit( symbol_code sym_code,  asset minimum_limit );
-    void setminlimit_v1( asset minimum_limit );
-    void setminlimit_v2( asset minimum_limit );
-
-    [[eosio::action]] void settotalimit( symbol_code sym_code,  asset total_limit );
-    void settotalimit_v1( asset total_limit );
-    void settotalimit_v2( asset total_limit );
-
-    [[eosio::action]] void setfreqlimit( symbol_code sym_code, uint64_t frequency_limit );
-    void setfreqlimit_v1( symbol_code sym_code, uint64_t frequency_limit );
-    void setfreqlimit_v2( symbol_code sym_code, uint64_t frequency_limit );
-
-    [[eosio::action]] void setintvlimit( symbol_code sym_code, uint64_t interval_limit );
-    void setintvlimit_v1( symbol_code sym_code, uint64_t interval_limit );
-    void setintvlimit_v2( symbol_code sym_code, uint64_t interval_limit );
 
     [[eosio::action]] void setviplimit( symbol_code sym_code, name vip, asset maximum_limit, asset minimum_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit );
-    void setviplimit_v1( name vip, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
-    void setviplimit_v2( name vip, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
-
-    [[eosio::action]] void setvipmaxlim(name vip, asset maximum_limit );
-    void setvipmaxlim_v1(name vip, asset maximum_limit );
-    void setvipmaxlim_v2(name vip, asset maximum_limit );
-
-    [[eosio::action]] void setvipminlim(name vip, asset maximum_limit );
-    void setvipminlim_v1(name vip, asset maximum_limit );
-    void setvipminlim_v2(name vip, asset maximum_limit );
-
-    [[eosio::action]] void setviptotlim(name vip, asset maximum_limit );
-    void setviptotlim_v1(name vip, asset maximum_limit );
-    void setviptotlim_v2(name vip, asset maximum_limit );
-
-    [[eosio::action]] void setvipfreqlm(symbol_code sym_code, name vip, uint64_t frequency_limit );
-    void setvipfreqlm_v1(symbol_code sym_code, name vip, uint64_t frequency_limit );
-    void setvipfreqlm_v2(symbol_code sym_code, name vip, uint64_t frequency_limit );
-
-    [[eosio::action]] void setvipintvlm(symbol_code sym_code, name vip, uint64_t interval_limit );
-    void setvipintvlm_v1(symbol_code sym_code, name vip, uint64_t interval_limit );
-    void setvipintvlm_v2(symbol_code sym_code, name vip, uint64_t interval_limit );
 
     [[eosio::action]] void setfee( symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee );
-    void setfee_v1( symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee );
-    void setfee_v2( symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee );
-
-    [[eosio::action]] void setservfeert(symbol_code sym_code, double service_fee_rate);
-    void setservfeert_v1(symbol_code sym_code, double service_fee_rate);
-    void setservfeert_v2(symbol_code sym_code, double service_fee_rate);
-
-    [[eosio::action]] void setminserfee(asset min_service_fee);
-    void setminserfee_v1(asset min_service_fee);
-    void setminserfee_v2(asset min_service_fee);
-
-
-    [[eosio::action]] void setminerfee(asset miner_fee);
-    void setminerfee_v1(asset miner_fee);
-    void setminerfee_v2(asset miner_fee);
 
     [[eosio::action]] void setvipfee( symbol_code sym_code, name vip, double service_fee_rate, asset min_service_fee, asset miner_fee );
-    void setvipfee_v1( name vip, double service_fee_rate, asset min_service_fee, asset miner_fee );
-    void setvipfee_v2( name vip, double service_fee_rate, asset min_service_fee, asset miner_fee );
-
-    [[eosio::action]] void setvipserfrt(symbol_code sym_code, name vip,double service_fee_rate);
-    void setvipserfrt_v1(symbol_code sym_code, name vip,double service_fee_rate);
-    void setvipserfrt_v2(symbol_code sym_code, name vip,double service_fee_rate);
-    
-    [[eosio::action]] void setvipminfee(name vip, asset min_service_fee );
-    void setvipminfee_v1(name vip, asset min_service_fee );
-    void setvipminfee_v2(name vip, asset min_service_fee );
-
-    [[eosio::action]] void setvipminerf(name vip, asset miner_fee );
-    void setvipminerf_v1(name vip, asset miner_fee );
-    void setvipminerf_v2(name vip, asset miner_fee );
-
-    [[eosio::action]] void setdelay( symbol_code sym_code, uint64_t delayday );
-    void setdelay_v1( symbol_code sym_code, uint64_t delayday );
-    void setdelay_v2( symbol_code sym_code, uint64_t delayday );
 
     [[eosio::action]] void setcheck( symbol_code sym_code, bool in_check, bool out_check );
-    void setcheck_v1( symbol_code sym_code, bool in_check, bool out_check );
-    void setcheck_v2( symbol_code sym_code, bool in_check, bool out_check );
-
-    [[eosio::action]] void setincheck( symbol_code sym_code, bool in_check);
-    void setincheck_v1( symbol_code sym_code, bool in_check);
-    void setincheck_v2( symbol_code sym_code, bool in_check);
-
-    [[eosio::action]] void setoutcheck( symbol_code sym_code, bool out_check);
-    void setoutcheck_v1( symbol_code sym_code, bool out_check);
-    void setoutcheck_v2( symbol_code sym_code, bool out_check);
-
-
-    [[eosio::action]] void issue( asset quantity, string memo );
-    void issue_v1( asset quantity, string memo );
-    void issue_v2( asset quantity, string memo );
-
-    [[eosio::action]] void retire( asset quantity, string memo );
-    void retire_v1( asset quantity, string memo );
-    void retire_v2( asset quantity, string memo );
 
     [[eosio::action]] void cast(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo);
 
     [[eosio::action]] void precast( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
-    void precast_v2( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
 
-    [[eosio::action]] void agreecast( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
-    void agreecast_v2( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
+    [[eosio::action]] void agreecast( symbol_code sym_code, string to_address, name to_account, name auditor, string remote_trx_id, asset quantity, uint64_t index, string memo );
     
-    [[eosio::action]] void refusecast( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
-    void refusecast_v2( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
+    [[eosio::action]] void refusecast( symbol_code sym_code, string to_address, name to_account, name auditor, string remote_trx_id, asset quantity, uint64_t index, string memo );
     
     [[eosio::action]] void melt( name from_account, string to_address, asset quantity, uint64_t index, string memo );
-    void melt_v2( name from_account, string to_address, asset quantity, uint64_t index, string memo );
 
     [[eosio::action]] void premelt(name from_account, string to_address, asset quantity, uint64_t index, string memo);
-    void premelt_v2(name from_account, string to_address, asset quantity, uint64_t index, string memo);
 
     [[eosio::action]] void agreemelt(name from_account, string to_address, asset quantity, uint64_t index, string memo);
-    void agreemelt_v2(name from_account, string to_address, asset quantity, uint64_t index, string memo);
 
-    [[eosio::action]] void refusemelt(name from_account, string to_address, asset quantity, uint64_t index, string memo);
-    void refusemelt_v2(name from_account, string to_address, asset quantity, uint64_t index, string memo);
-
-    // [[eosio::action]] void docast(string to_address, name to_account, string remote_trx_id, uint64_t index, asset quantity, string memo);
-    void docast_v2(string to_address, name to_account, string remote_trx_id, uint64_t index, asset quantity, string memo);
-    
     [[eosio::action]] void applyaddr( symbol_code sym_code, name to );
-    void applyaddr_v1( symbol_code sym_code, name to );
-    void applyaddr_v2( symbol_code sym_code, name to );
 
     [[eosio::action]] void resetaddress( symbol_code sym_code, name to );
-    void resetaddress_v1( symbol_code sym_code, name to );
-    void resetaddress_v2( symbol_code sym_code, name to );
 
     [[eosio::action]] void assignaddr( symbol_code sym_code, name to, string address );
-    void assignaddr_v1( symbol_code sym_code, name to, string address );
-    void assignaddr_v2( symbol_code sym_code, name to, string address );
 
-    [[eosio::action]] void withdraw( name from, string to, asset quantity, uint64_t index, string memo );
-    void withdraw_v1( name from, string to, asset quantity, string memo );
-    void withdraw_v2( name from, string to, asset quantity, uint64_t index, string memo);
-
-    [[eosio::action]] void prewithdraw( name from, string to, asset quantity, uint64_t index, string memo);
-    void prewithdraw_v2( name from, string to, asset quantity, uint64_t index, string memo);
-
-    [[eosio::action]] void agrewithdraw( name from, string to, asset quantity, uint64_t index, string memo);
-    void agrewithdraw_v2( name from, string to, asset quantity, uint64_t index, string memo);
-
-    [[eosio::action]] void refuwithdraw( name from, string to, asset quantity, uint64_t index, string memo);
-    void refuwithdraw_v2( name from, string to, asset quantity, uint64_t index, string memo);
-
-    // TODO: notify_plugin
-    [[eosio::action]] void deposit(string from, name to, asset quantity, string remote_trx_id, uint64_t index, string memo );
-    void deposit_v1( name to, asset quantity, string memo );
-    void deposit_v2(string from, name to, asset quantity, string remote_trx_id, uint64_t index, string memo );
-
-    [[eosio::action]] void predeposit( string from, name to, asset quantity, string remote_trx_id, uint64_t index, string memo );
-    void predeposit_v2( string from, name to, asset quantity, string memo );
-
-    [[eosio::action]] void agreedeposit( string from, name to, asset quantity, string remote_trx_id, uint64_t index, string memo );
-    void agreedeposit_v2( string from, name to, asset quantity, string remote_trx_id, uint64_t index, string memo );
-   
-    [[eosio::action]] void refusdeposit( string from, name to, asset quantity, string remote_trx_id, uint64_t index, string memo );
-    void refusdeposit_v2( string from, name to, asset quantity, string remote_trx_id, uint64_t index, string memo );
-
-
-    [[eosio::action]] void transfer( name from, name to, asset quantity, string memo );
-    void transfer_v1( name from, name to, asset quantity, string memo );
-
-    // TODO: remit      审核员给收费员转账 【严格锚定制】
-    [[eosio::action]] void remit( name from, asset quantity );
-    void remit_v2( name from, asset quantity );
-
-
-    // TODO: pay        普通用户给收费员转账【严格锚定制】
     [[eosio::action]] void pay( asset quantity, name user);
-    void pay_v2( asset quantity , name user);
 
-    // TODO: ruin        普通用户毁掉代币【严格锚定制】 quantity代表quantity-userfee
     [[eosio::action]] void ruin( asset quantity , name user);
-    void ruin_v2( asset quantity ,name user);
 
-    [[eosio::action]] void burn( name from, asset quantity);
-    void burn_v2( name from, asset quantity);
-
-    // TODO: retreat      出纳 退代币【严格锚定制】
-    [[eosio::action]] void retreat(name to, asset quantity );
-    void retreat_v2(name to, asset quantity );
-
-    [[eosio::action]] void feedback( symbol_code sym_code, transaction_id_type trx_id, string remote_trx_id, string memo );
-    void feedback_v1( symbol_code sym_code, transaction_id_type trx_id, string remote_trx_id, string memo );
-
-    [[eosio::action]] void rollback( symbol_code sym_code, transaction_id_type trx_id, string memo );
-    void rollback_v1( symbol_code sym_code, transaction_id_type trx_id, string memo );
+    [[eosio::action]] void retreat( name to, asset quantity );
 
     [[eosio::action]] void confirmback( symbol_code sym_code, transaction_id_type trx_id, string remote_trx_id, uint64_t index, uint64_t remote_index, string memo );
-    void confirmback_v2( symbol_code sym_code, transaction_id_type trx_id, string remote_trx_id, uint64_t index, uint64_t remote_index, string memo );
 
     [[eosio::action]] void denyback( symbol_code sym_code, transaction_id_type trx_id, uint64_t index, string memo );
-    void denyback_v2( symbol_code sym_code, transaction_id_type trx_id, uint64_t index, string memo );
-
-    // TODO: sendback       提币失败后承兑商退币给普通用户
-    [[eosio::action]] void sendback(transaction_id_type trx_id, name to, asset quantity, string memo);
-    void sendback_v1(/* name auditor,*/ transaction_id_type trx_id, name to, asset quantity, string memo );
-    void sendback_v2(transaction_id_type trx_id, name to, asset quantity, string memo );
-
-//    [[eosio::action]] void setacceptor( symbol_code sym_code, name acceptor );
-   void setacceptor_v1( symbol_code sym_code, name acceptor );
 
     [[eosio::action]] void lockall( symbol_code sym_code, name brakeman );
-    void lockall_v1( symbol_code sym_code, name brakeman );
-    void lockall_v2( symbol_code sym_code, name brakeman );
 
-    // TODO: auditor->brakeman
     [[eosio::action]] void unlockall( symbol_code sym_code, name brakeman );
-    void unlockall_v1( symbol_code sym_code, name brakeman );
-    void unlockall_v2( symbol_code sym_code, name brakeman );
-
-    [[eosio::action]] void clear( symbol_code sym_code, uint64_t num );
-    void clear_v1( symbol_code sym_code, uint64_t num );
-
-
-    [[eosio::action]] void rm( symbol_code sym_code, uint64_t id, uint64_t type);
-    void rm_v2( symbol_code sym_code, uint64_t id, uint64_t type);
     
     [[eosio::action]] void setauditor( symbol_code sym_code, string actn, name auditor );
-    void setauditor_v1( symbol_code sym_code, string action, name auditor);
-    void setauditor_v2( symbol_code sym_code, string actn, name auditor);
 
     [[eosio::action]] void setgatherer( symbol_code sym_code, name gatherer );
-    void setgatherer_v1( symbol_code sym_code, name gatherer );
-    void setgatherer_v2( symbol_code sym_code, name gatherer );
 
     [[eosio::action]] void setteller( symbol_code sym_code, name teller );
-    void setteller_v1( symbol_code sym_code, name teller );
-    void setteller_v2( symbol_code sym_code, name teller );
 
     [[eosio::action]] void setmanager( symbol_code sym_code, name manager );
-    void setmanager_v1( symbol_code sym_code, name manager );
-    void setmanager_v2( symbol_code sym_code, name manager );
 
     [[eosio::action]] void setbrakeman( symbol_code sym_code, name brakeman );
-    void setbrakeman_v1( symbol_code sym_code, name brakeman );
-    void setbrakeman_v2( symbol_code sym_code, name brakeman );
 
     [[eosio::action]] void setvip( symbol_code sym_code, string actn, name vip );
-    void setvip_v1( symbol_code sym_code, string actn, name vip );
-    void setvip_v2( symbol_code sym_code, string actn, name vip );
-
-    [[eosio::action]] void pubminerfee( asset miner_fee );
-
-    // TODO: 公布官方总账，对于每一个种链的地址总额
-    [[eosio::action]] void publishsum( string address, asset sum );
-
-    //    [[eosio::action]] void approve( symbol_code sym_code, name auditor, transaction_id_type trx_id, string memo );
-//    void approve_v1( symbol_code sym_code, name auditor, transaction_id_type trx_id, string memo );
-//
-//    [[eosio::action]] void unapprove( symbol_code sym_code, name auditor, transaction_id_type trx_id, string memo );
-//    void unapprove_v1( symbol_code sym_code, name auditor, transaction_id_type trx_id, string memo );
-    // TODO: pubminerfee A
-
-//    [[eosio::action]] void rmwithdraw( uint64_t id, symbol_code sym_code );
-//    void rmwithdraw_v1( uint64_t id, symbol_code sym_code );
 
 private:
-    uint64_t getpeg(symbol_code sym_code);
-    uint64_t getedition(symbol_code sym_code);
     bool getincheck(symbol_code sym_code);
     bool getoutcheck(symbol_code sym_code);
     void verify_address( name style, string address );
@@ -349,7 +127,6 @@ private:
     void add_balance( name owner, asset value, name ram_payer );
     void sub_balance( name owner, asset value );
     asset calculate_service_fee( asset sum, double service_fee_rate, asset min_service_fee );
-    // 对于setmaxlimit, setminlimit和 settotalimit
     bool is_sym_equal_asset(symbol_code sym_code, asset quantity);
     bool is_vip(symbol_code sym_code, name name);
     void is_auth_issuer(symbol_code sym_code);
@@ -371,8 +148,6 @@ private:
     asset getbalance( symbol_code sym_code, name user );
     bool balance_check( symbol_code sym_code, name user );
     bool addr_check( symbol_code sym_code, name user );
-
-    void peg_check( symbol_code sym_code );
 
 // roles:
 // deployer【usdt.bos, btc.bos】, issuer
@@ -586,15 +361,6 @@ private:
         uint64_t primary_key() const { return sym.code().raw(); }
     };
     using editions = eosio::multi_index< "editions"_n, edition_ts >;
-
-    struct [[eosio::table]] peg_ts{
-        symbol sym;
-        uint64_t peg;
-
-        uint64_t primary_key() const { return sym.code().raw(); }
-    };
-    using pegs = eosio::multi_index< "pegs"_n, peg_ts >;
-
 
     struct [[eosio::table]] melt_ts{
         uint64_t id;
@@ -901,22 +667,6 @@ private:
         return addr_iter == addresses.end() || (addr_iter->state != 0 || addr_iter->address == "");
     }
 
-    void pegtoken::peg_check( symbol_code sym_code ) {
-        eosio_assert(getpeg(sym_code) == peg_type::PRE_RELEASE || getpeg(sym_code) == peg_type::STRICT_ANCHOR, "The action require peg to be pre release or strict anchor");
-    }
-
-    uint64_t pegtoken::getpeg(symbol_code sym_code){
-        auto peg_table = pegs(get_self(),sym_code.raw());
-        uint64_t peg = peg_table.get(sym_code.raw(),"no such peg").peg;
-        return peg;
-    }
-
-    uint64_t pegtoken::getedition(symbol_code sym_code){
-        auto edtion_table = editions(get_self(),sym_code.raw());
-        uint64_t edition = edtion_table.get(sym_code.raw(),"no such edition").edition;
-        return edition;
-    }
-
     bool pegtoken::getincheck(symbol_code sym_code) {
         auto check_table = checks(get_self(), sym_code.raw());
         bool incheck = check_table.get(sym_code.raw(), "no such in_check").in_check;
@@ -1042,7 +792,6 @@ private:
     }
 
     void pegtoken::vip_withdraw_check(symbol_code sym_code, asset quantity, name account){
-        auto editionval = getedition(sym_code);
         //VIP checking limit
         // total_limit, frequency_limit, interval_limit
         //  time_point_sec(now())
@@ -1052,29 +801,19 @@ private:
         time_point_sec lasttime = statistic_val.last_time;
         uint64_t freq = statistic_val.frequency;
         asset total = statistic_val.total;
-        switch (editionval){
-            case 2:{
-                auto vlimits_tb = viplimits(get_self(),sym_code.raw());
-                auto vlim_val = vlimits_tb.get(sym_code.raw(), "This type of assets not exists in viplimits table");
-                eosio_assert(quantity <= vlim_val.maximum_limit, "withdraw amount is more than the maximum_limit");
-                eosio_assert(quantity >= vlim_val.minimum_limit, "withdraw amount is less than the minimum_limit");
-                eosio_assert(total+quantity<=vlim_val.total_limit, "More than daily totals amount");
-                eosio_assert(time_point_sec(now())-lasttime>=microseconds(vlim_val.interval_limit), "From now is  less than interval_limit");
-                eosio_assert(freq+1<=vlim_val.frequency_limit, "More than daily frequency limit");
-                break;
-            }
-            default:{
-                eosio_assert(false, "edition should be 1 or 2");
-                break;
-            }
-  
-        }   
+        
+        auto vlimits_tb = viplimits(get_self(),sym_code.raw());
+        auto vlim_val = vlimits_tb.get(sym_code.raw(), "This type of assets not exists in viplimits table");
+        eosio_assert(quantity <= vlim_val.maximum_limit, "withdraw amount is more than the maximum_limit");
+        eosio_assert(quantity >= vlim_val.minimum_limit, "withdraw amount is less than the minimum_limit");
+        eosio_assert(total+quantity<=vlim_val.total_limit, "More than daily totals amount");
+        eosio_assert(time_point_sec(now())-lasttime>=microseconds(vlim_val.interval_limit), "From now is  less than interval_limit");
+        eosio_assert(freq+1<=vlim_val.frequency_limit, "More than daily frequency limit");
     }
 
 
     // 提币时的检查条件
     void pegtoken::withdraw_check(symbol_code sym_code, asset quantity, name account){
-        auto editionval = getedition(sym_code);
         //Normal user checking limit
         // total_limit, frequency_limit, interval_limit
         //  time_point_sec(now())
@@ -1084,32 +823,13 @@ private:
         time_point_sec lasttime = statistic_val.last_time;
         uint64_t freq = statistic_val.frequency;
         asset total = statistic_val.total;
-        switch (editionval){
-            case 1: {
-                auto stats_tb = stats(get_self(),sym_code.raw());
-                auto stat_val = stats_tb.get(sym_code.raw(), "This type of assets not exists in stats table");   
-                eosio_assert(quantity <= stat_val.maximum_limit, "withdraw amount is more than the maximum_limit");
-                eosio_assert(quantity >= stat_val.minimum_limit, "withdraw amount is less than the minimum_limit");
-                eosio_assert(total+quantity<=stat_val.total_limit, "More than daily totals amount");
-                eosio_assert(time_point_sec(now())-lasttime>=microseconds(stat_val.interval_limit), "From now is  less than interval_limit");
-                eosio_assert(freq+1<=stat_val.frequency_limit, "More than daily frequency limit");
-                break;
-            }
-            case 2:{
-                auto limits_tb = limits(get_self(),sym_code.raw());
-                auto lim_val = limits_tb.get(sym_code.raw(), "This type of assets not exists in limits table");
-                eosio_assert(quantity <= lim_val.maximum_limit, "withdraw amount is more than the maximum_limit");
-                eosio_assert(quantity >= lim_val.minimum_limit, "withdraw amount is less than the minimum_limit");
-                eosio_assert(total+quantity<=lim_val.total_limit, "More than daily totals amount");
-                eosio_assert(time_point_sec(now())-lasttime>=microseconds(lim_val.interval_limit), "From now is  less than interval_limit");
-                eosio_assert(freq+1<=lim_val.frequency_limit, "More than daily frequency limit");
-                break;
-            }
-            default:{
-                eosio_assert(false, "edition should be 1 or 2");
-                break;
-            }
-  
-        }   
+
+        auto limits_tb = limits(get_self(),sym_code.raw());
+        auto lim_val = limits_tb.get(sym_code.raw(), "This type of assets not exists in limits table");
+        eosio_assert(quantity <= lim_val.maximum_limit, "withdraw amount is more than the maximum_limit");
+        eosio_assert(quantity >= lim_val.minimum_limit, "withdraw amount is less than the minimum_limit");
+        eosio_assert(total+quantity<=lim_val.total_limit, "More than daily totals amount");
+        eosio_assert(time_point_sec(now())-lasttime>=microseconds(lim_val.interval_limit), "From now is  less than interval_limit");
+        eosio_assert(freq+1<=lim_val.frequency_limit, "More than daily frequency limit");
     }
 } // namespace eosio
