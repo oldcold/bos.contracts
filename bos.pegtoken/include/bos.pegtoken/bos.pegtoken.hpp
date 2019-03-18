@@ -1027,6 +1027,12 @@ private:
         return gat_val.gatherer;
     }
 
+    // for melt
+    name pegtoken::get_auditor(symbol_code sym_code){
+        auto aud_table = auditors(get_self(), sym_code.raw());
+        auto aud_val = aud_table.get(sym_code.raw(), "No such symbol in auditors table");
+        return aud_val.auditor;
+    }
     bool pegtoken::is_locked(symbol_code sym_code) {
         auto info_table = infos(get_self(), sym_code.raw());
         auto info_val = info_table.get(sym_code.raw(), "No such symbol in infos table");

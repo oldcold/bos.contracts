@@ -682,11 +682,12 @@ namespace eosio {
             mt.amount = quantity - userfee;
             mt.fee = userfee;
             // mt.state = ;
-            // mt.need_check =;
-            // mt.auditor = ;
-            // mt.remote_trx_id;
-            // mt.remote_index;
-            // mt.msg;
+            mt.need_check = false;
+            mt.enable = false;
+            mt.remote_trx_id = remote_trx_id;
+            mt.remote_index = remote_index;
+            mt.auditor = get_auditor(sym_code);
+            mt.msg = memo;
             // mt.create_time;
             // mt.update_time;
         });
