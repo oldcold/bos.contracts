@@ -552,7 +552,7 @@ namespace eosio {
     }
 
     void pegtoken::refusecast_v2( symbol_code sym_code, string to_address, name to_account,
-        string remote_trx_id, asset quantity, uint64_t index, string memo ) {
+        name auditor, string remote_trx_id, asset quantity, uint64_t index, string memo ) {
         auto sym_raw = quantity.symbol.code().raw();
         auto infos_tb = infos(get_self(), sym_raw);
         auto iter_info = infos_tb.find(sym_raw);
@@ -581,6 +581,7 @@ namespace eosio {
             p.index = index;
             p.state = cast_state::CAST_FAIL;
             p.msg = memo;
+            p.auditor = auditor;
             p.update_time = time_point_sec(now());
         });
     }

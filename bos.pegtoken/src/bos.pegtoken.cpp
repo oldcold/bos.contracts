@@ -443,7 +443,7 @@ namespace eosio {
     }
 
     void pegtoken::refusecast( symbol_code sym_code, string to_address, name to_account,
-        string remote_trx_id, asset quantity, uint64_t index, string memo ) {
+        name auditor, string remote_trx_id, asset quantity, uint64_t index, string memo ) {
         is_auth_auditor(sym_code);
         is_auth_role(sym_code, to_account);
         eosio_assert(is_sym_equal_asset(sym_code, quantity), "sym_code is not same as quantity's symbol_code.");
@@ -453,7 +453,7 @@ namespace eosio {
         ACCOUNT_CHECK(to_account);
         STRING_LEN_CHECK(memo, 256);
         eosio_assert(quantity.amount > 0, "non-positive quantity");
-        refusecast_v2(sym_code, to_address, to_account, remote_trx_id, quantity, index, memo);
+        refusecast_v2(sym_code, to_address, to_account, auditor, remote_trx_id, quantity, index, memo);
     }
 
     void pegtoken::cast(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity,  uint64_t index, string memo){
