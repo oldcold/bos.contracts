@@ -46,6 +46,12 @@ enum melt_state: uint64_t {
     WITHDRAW_ROLLBACL = 5,
 };
 
+enum cast_state: uint64_t {
+    CAST_INIT = 0,
+    CAST_SUCCESS = 2,
+    CAST_FAIL = 5,
+};
+
 class[[eosio::contract("bos.pegtoken")]] pegtoken : public contract
 {
 public:

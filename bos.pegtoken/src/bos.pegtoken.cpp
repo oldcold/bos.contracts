@@ -458,9 +458,7 @@ namespace eosio {
 
     void pegtoken::cast(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity,  uint64_t index, string memo){
         is_auth_role(sym_code,to_account);
-        // 判断是否已经锁定
         eosio_assert(is_locked(sym_code),"The token has been locked");
-        // 判断资金流入是否需要审核
         eosio_assert(!getincheck(sym_code), "This action require in_check to be false");
         eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
         eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
