@@ -251,7 +251,7 @@ public:
     [[eosio::action]] void pay( asset quantity, name user);
     void pay_v2( asset quantity , name user);
 
-    // TODO: ruin        普通用户毁掉代币【严格锚定制】
+    // TODO: ruin        普通用户毁掉代币【严格锚定制】 quantity代表quantity-userfee
     [[eosio::action]] void ruin( asset quantity , name user);
     void ruin_v2( asset quantity ,name user);
 

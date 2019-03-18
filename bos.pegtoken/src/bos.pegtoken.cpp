@@ -700,8 +700,8 @@ namespace eosio {
         pay_v2(quantity, user);
      }
     
-    // TODO: finish ruin_v2
-     void pegtoken::ruin( asset quantity, name user ){
+    // TODO: finish ruin_v2,     quantity代表quantity-userfee
+     void pegtoken::ruin( asset quantity, name user){
         require_auth(user);
         auto sym_code = quantity.symbol.code();
         eosio_assert(is_locked(sym_code),"The token has been locked");

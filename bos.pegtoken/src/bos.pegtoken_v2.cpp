@@ -657,9 +657,6 @@ namespace eosio {
             "ruin"_n,
             std::make_tuple(quantity-userfee, from_account)
         ).send();
-
-        auto info_iter2 = info_tb.get(sym_code.raw(), "sym_code do not exist in infos table");
-        info_tb.modify(info_iter2, same_payer, [&](auto &p) { p.supply -= (quantity-userfee); });
         
         // limits.find()
         // compare the quantity with minimum_limit and maximum_limit
@@ -671,17 +668,27 @@ namespace eosio {
         // 减小infos表中supply的值，数值为总额减去费用。
 
         // 在melts添加一条记录，need_check置为false，enable字段置为false。
+
+
+
         auto melt_tb = melts(get_self(),  sym_code.raw());
         // melts meltss(_self, _self.value); //到底应当事先哪一种呢
         melt_tb.emplace(same_payer, [&](auto& mt){
             mt.id = melt_tb.available_primary_key();
-            // mt.trx_id;
+            mt.trx_id = get_trx_id();
             mt.from = from_account;
             mt.to = to_address;
-            mt.amount = quantity;
-            // mt.amount = ;
-            // mt.fee = ;
-            // mt.state = 
+            mt.total = quantity;
+            mt.amount = quantity - userfee;
+            mt.fee = userfee;
+            // mt.state = ;
+            // mt.need_check =;
+            // mt.auditor = ;
+            // mt.remote_trx_id;
+            // mt.remote_index;
+            // mt.msg;
+            // mt.create_time;
+            // mt.update_time;
         });
         // need_check
     }
@@ -929,12 +936,16 @@ namespace eosio {
         // 增加收费员的balance值
         add_balance(gatherer, quantity, same_payer);
     }
-    // 普通用户毁掉代币
+    // 普通用户毁掉代币,         quantity代表quantity-userfee
     void pegtoken::ruin_v2( asset quantity , name user){
         // auto acct_tb = accounts(get_self(), user.value);
         // auto acct_iter = acct_tb.find(user.value);
         // eosio_assert(acct_iter != acct_tb.end(), "account doesnot exist");
         sub_balance(user, quantity);
+        symbol_code sym_code = quantity.symbol.code();
+        auto info_tb = infos(get_self(), sym_code.raw());
+        auto info_iter2 = info_tb.get(sym_code.raw(), "sym_code do not exist in infos table");
+        info_tb.modify(info_iter2, same_payer, [&](auto &p) { p.supply -= quantity; });
     }
     
 
@@ -968,7 +979,7 @@ namespace eosio {
         }
         auto info_tb = infos(get_self(), sym_code.raw());
         auto info_iter = info_tb.get(sym_code.raw(), "sym_code do not exist in infos table");
-        info_tb.modify(info_iter, same_payer, [&](auto &p) { p.supply += melt_total ; });
+        info_tb.modify(info_iter, same_payer, [&](auto &p) { p.supply += melt_amount ; });
 
         // TODO: ADD FEE.
         action(
