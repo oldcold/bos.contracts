@@ -46,6 +46,12 @@ enum melt_state: uint64_t {
     WITHDRAW_ROLLBACL = 5,
 };
 
+enum cast_state: uint64_t {
+    CAST_INIT = 0,
+    CAST_SUCCESS = 2,
+    CAST_FAIL = 5,
+};
+
 class[[eosio::contract("bos.pegtoken")]] pegtoken : public contract
 {
 public:
@@ -178,11 +184,11 @@ public:
     [[eosio::action]] void precast( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
     void precast_v2( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
 
-    [[eosio::action]] void agreecast( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
-    void agreecast_v2( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
+    [[eosio::action]] void agreecast( symbol_code sym_code, string to_address, name to_account, name auditor, string remote_trx_id, asset quantity, uint64_t index, string memo );
+    void agreecast_v2( symbol_code sym_code, string to_address, name to_account, name auditor, string remote_trx_id, asset quantity, uint64_t index, string memo );
     
-    [[eosio::action]] void refusecast( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
-    void refusecast_v2( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
+    [[eosio::action]] void refusecast( symbol_code sym_code, string to_address, name to_account, name auditor, string remote_trx_id, asset quantity, uint64_t index, string memo );
+    void refusecast_v2( symbol_code sym_code, string to_address, name to_account, name auditor, string remote_trx_id, asset quantity, uint64_t index, string memo );
     
     [[eosio::action]] void melt( name from_account, string to_address, asset quantity, uint64_t index, string memo );
     void melt_v2( name from_account, string to_address, asset quantity, uint64_t index, string memo );
@@ -960,7 +966,7 @@ private:
 
     void pegtoken::is_auth_auditor(symbol_code sym_code){
         auto auditor_tb = auditors(get_self(),sym_code.raw());
-        auto auditor_val = auditor_tb.get(sym_code.raw(), "the v2 token NOT in auditors table");
+        auto auditor_val = auditor_tb.get(sym_code.raw(), "the token not in auditors table");
         require_auth(auditor_val.auditor);
     }
 
