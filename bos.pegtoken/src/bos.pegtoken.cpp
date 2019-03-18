@@ -39,7 +39,6 @@ namespace eosio {
         });
     }
 
-    // 没有版本名称，通过函数补充设置
     void pegtoken::setpeg( symbol_code sym_code ) {
         require_auth(get_self());
         auto peg_table = pegs(get_self(),sym_code.raw());
@@ -51,20 +50,7 @@ namespace eosio {
     }
 
     void pegtoken::update(symbol_code sym_code, string organization, string website) {
-        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2,  "Wrong Edition");
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            update_v1(sym_code,organization,website);
-            break;
-        case 2:
-            update_v2(sym_code,organization,website);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        update_v2(sym_code,organization,website);
     }
 
     void pegtoken::setlimit( symbol_code sym_code, asset maximum_limit, asset minimum_limit,
@@ -129,90 +115,25 @@ namespace eosio {
 
     void pegtoken::setvipmaxlim(name vip, asset maximum_limit ) {
         auto sym_code = maximum_limit.symbol.code();
-        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2,   "Edition should be either 1 or 2");
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            setvipmaxlim_v1(vip,maximum_limit );
-            break;
-        case 2:
-            setvipmaxlim_v2(vip,maximum_limit );
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        setvipmaxlim_v2(vip, maximum_limit);
     }
 
     void pegtoken::setvipminlim(name vip, asset minimum_limit) {
         auto sym_code = minimum_limit.symbol.code();
-        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2, "Edition should be either 1 or 2");
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            setvipminlim_v1(vip,minimum_limit );
-            break;
-        case 2:
-            setvipminlim_v2(vip,minimum_limit );
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        setvipminlim_v2(vip, minimum_limit);
     }
 
     void pegtoken::setviptotlim(name vip, asset totimum_limit ) {
         auto sym_code = totimum_limit.symbol.code();
-        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2,   "Edition should be either 1 or 2");
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            setviptotlim_v1(vip,totimum_limit );
-            break;
-        case 2:
-            setviptotlim_v2(vip,totimum_limit );
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        setviptotlim_v2(vip, totimum_limit);
     }
 
     void pegtoken::setvipfreqlm(symbol_code sym_code, name vip, uint64_t frequency_limit) {
-        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2, "Edition should be either 1 or 2");
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            // setvipfreqlm_v1(sym_code, vip, frequency_limit);
-            break;
-        case 2:
-            setvipfreqlm_v2(sym_code, vip, frequency_limit);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        setvipfreqlm_v2(sym_code, vip, frequency_limit);
     }
 
     void pegtoken::setvipintvlm(symbol_code sym_code, name vip, uint64_t interval_limit) {
-        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2, "Edition should be either 1 or 2");
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            // setvipintvlm_v1(sym_code, vip, interval_limit);
-            break;
-        case 2:
-            setvipintvlm_v2(sym_code, vip, interval_limit);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        setvipintvlm_v2(sym_code, vip, interval_limit);
     }
 
     void pegtoken::setfee( symbol_code sym_code, double service_fee_rate,
@@ -224,53 +145,15 @@ namespace eosio {
     }
 
     void pegtoken::setservfeert(symbol_code sym_code, double service_fee_rate) {
-        eosio_assert(getedition(sym_code) != 1 && getedition(sym_code) != 2,   "Edition should be either 1 or 2");
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            setservfeert_v1(sym_code,service_fee_rate);
-            break;
-        case 2:
-            setservfeert_v2(sym_code,service_fee_rate);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        setservfeert_v2(sym_code, service_fee_rate);
     }
 
     void pegtoken::setminserfee(asset min_service_fee) {
-        auto sym_code = min_service_fee.symbol.code();
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            setminserfee_v1(min_service_fee);
-            break;
-        case 2:
-            setminserfee_v2(min_service_fee);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        setminserfee_v2(min_service_fee);
     }
 
     void pegtoken::setminerfee(asset miner_fee) {
-        auto sym_code = miner_fee.symbol.code();
-        auto editionval = getedition(sym_code);
-        switch (editionval){
-            case 1:
-                setminerfee_v1(miner_fee);
-                break;
-            case 2:
-                setminerfee_v2(miner_fee);
-                break;
-            default:
-                eosio_assert(false, "edition should be either 1 or 2");
-                break;
-        }
+        setminerfee_v2(miner_fee);
     }
 
     void pegtoken::setvipfee( symbol_code sym_code, name vip, double service_fee_rate, asset min_service_fee, asset miner_fee ) {
@@ -282,73 +165,20 @@ namespace eosio {
     }
 
     void pegtoken::setvipserfrt(symbol_code sym_code, name vip,double service_fee_rate){
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            setvipserfrt_v1(sym_code,vip,service_fee_rate);
-            break;
-        case 2:
-            setvipserfrt_v2(sym_code,vip,service_fee_rate);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        setvipserfrt_v2(sym_code, vip, service_fee_rate);
     }
 
     void pegtoken::setvipminfee(name vip, asset min_service_fee ) {
-        auto sym_code = min_service_fee.symbol.code();
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            setvipminfee_v1(vip,min_service_fee);
-            break;
-        case 2:
-            setvipminfee_v2(vip,min_service_fee);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        setvipminfee_v2(vip, min_service_fee);
     }
 
     void pegtoken::setvipminerf(name vip, asset miner_fee ) {
-        auto sym_code = miner_fee.symbol.code();
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            setvipminerf_v1(vip,miner_fee);
-            break;
-        case 2:
-            setvipminerf(vip,miner_fee);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        setvipminerf_v2(vip, miner_fee);
     }
 
     void pegtoken::setdelay(symbol_code sym_code, uint64_t delayday) {
-        // 根据sym_code，查询editions表，校验币的版本，版本不对则报错。
-        // 根据sym_code，查询pegs表，校验币的机制，机制不对则报错。
-        eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
-        eosio_assert(getpeg(sym_code) == 1 || getpeg(sym_code) == 2, "The action require peg to be 1 or 2");
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            setdelay_v1(sym_code,delayday);
-            break;
-        case 2:
-            setdelay_v2(sym_code,delayday);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        peg_check(sym_code);
+        setdelay_v2(sym_code, delayday);
     }
 
     void pegtoken::setcheck( symbol_code sym_code, bool in_check, bool out_check ) {
@@ -357,61 +187,31 @@ namespace eosio {
         setcheck_v2(sym_code, in_check, out_check);
     }
 
-
     void pegtoken::setincheck( symbol_code sym_code, bool in_check){
             // setincheck_v1( sym_code, in_check);
             // setincheck_v2( symbol_code sym_code, in_check);
     }
 
-
     void pegtoken::setoutcheck( symbol_code sym_code, bool out_check){
     //     setoutcheck_v1(  sym_code,  out_check);
     //     setoutcheck_v2(  sym_code,  out_check);
-
     }
-
-
-
 
     void pegtoken::issue(asset quantity, string memo) {
         auto sym_code = quantity.symbol.code();
         is_auth_issuer(sym_code);
-        eosio_assert(getpeg(sym_code) == 1, "This action require peg version to be 1.");
-        STRING_LEN_CHECK(memo, 256)
+        eosio_assert(getpeg(sym_code) == peg_type::PRE_RELEASE, "This action require peg version to be pre-release.");
+        STRING_LEN_CHECK(memo, 256);
         eosio_assert(quantity.is_valid() && quantity.amount > 0, "invalid quantity");
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            issue_v1(quantity,memo);
-            break;
-        case 2:
-            issue_v2(quantity,memo);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        issue_v2(quantity, memo);
     }
 
     void pegtoken::retire(asset quantity, string memo) {
         eosio_assert(quantity.is_valid() && quantity.amount > 0, "invalid quantity");
-        STRING_LEN_CHECK(memo, 256)
+        STRING_LEN_CHECK(memo, 256);
         auto sym_code = quantity.symbol.code();
-        eosio_assert(getpeg(sym_code) == 1, "This action require peg version to be 1.");
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            retire_v1(quantity,memo);
-            break;
-        case 2:
-            retire_v2(quantity,memo);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        eosio_assert(getpeg(sym_code) == peg_type::PRE_RELEASE, "This action require peg version to be pre-release.");
+        retire_v2(quantity, memo);
     }
 
     void pegtoken::precast(symbol_code sym_code, string to_address, name to_account, 
@@ -425,7 +225,7 @@ namespace eosio {
         ACCOUNT_CHECK(to_account);
         STRING_LEN_CHECK(memo, 256);
         eosio_assert(quantity.amount > 0, "non-positive quantity");
-        precast_v2(sym_code, to_address, to_account, remote_trx_id, quantity, index,memo);
+        precast_v2(sym_code, to_address, to_account, remote_trx_id, quantity, index, memo);
     }
 
     void pegtoken::agreecast( symbol_code sym_code, string to_address, name to_account,
@@ -462,12 +262,11 @@ namespace eosio {
         eosio_assert(is_locked(sym_code),"The token has been locked");
         // 判断资金流入是否需要审核
         eosio_assert(!getincheck(sym_code), "This action require in_check to be false");
-        eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
-        eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
-        ACCOUNT_CHECK(to_account)
-        STRING_LEN_CHECK(memo,256)
+        eosio_assert(getpeg(sym_code) == peg_type::STRICT_ANCHOR, "This action require peg version to be 2.");
+        ACCOUNT_CHECK(to_account);
+        STRING_LEN_CHECK(memo, 256);
         eosio_assert(quantity.amount > 0, "non-positive quantity");
-        docast_v2(to_address,to_account,remote_trx_id,index,quantity,memo);
+        docast_v2(to_address, to_account, remote_trx_id, index, quantity, memo);
     }
     
     void pegtoken::melt( name from_account, string to_address, asset quantity, uint64_t index, string memo ) {
@@ -481,39 +280,31 @@ namespace eosio {
         melt_v2(from_account, to_address, quantity, index, memo);
     }
 
-    void pegtoken::premelt(name from_account, string to_address, asset quantity, uint64_t index, string memo){
+    void pegtoken::premelt(name from_account, string to_address, asset quantity, uint64_t index, string memo) {
         symbol_code sym_code = quantity.symbol.code();
         withdraw_check(sym_code, quantity, from_account);
         eosio_assert(is_locked(sym_code),"The token has been locked");
-        // eosio_assert(getoutcheck(sym_code), "This action require out_check to be true");
         eosio_assert(!getoutcheck(sym_code), "This action require out_check to be false");
-        eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
-        eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
+        eosio_assert(getpeg(sym_code) == peg_type::STRICT_ANCHOR, "This action require peg version to be strict anchor.");
     }
 
     void pegtoken::agreemelt(name from_account, string to_address, asset quantity, uint64_t index, string memo){
         symbol_code sym_code = quantity.symbol.code();
         eosio_assert(is_locked(sym_code),"The token has been locked");
         eosio_assert(getoutcheck(sym_code), "This action require out_check to be true");
-        eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
-        eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
-        // eosio_assert(!getpeg());
+        eosio_assert(getpeg(sym_code) == peg_type::STRICT_ANCHOR, "This action require peg version to be strict anchor.");
     }
 
     void pegtoken::refusemelt(name from_account, string to_address, asset quantity, uint64_t index, string memo){
         symbol_code sym_code = quantity.symbol.code();
         eosio_assert(is_locked(sym_code),"The token has been locked");
         eosio_assert(getoutcheck(sym_code), "This action require out_check to be true");
-        eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
-        eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
+        eosio_assert(getpeg(sym_code) == peg_type::STRICT_ANCHOR, "This action require peg version to be strict anchor.");
         refusemelt_v2(from_account, to_address, quantity, index, memo);
-        // eosio_assert(!getpeg());
     }
 
-    //TODO:
     void pegtoken::rm( symbol_code sym_code, uint64_t id, uint64_t type){ 
-        eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
-        eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");     
+        eosio_assert(getpeg(sym_code) == peg_type::STRICT_ANCHOR, "This action require peg version to be strict anchor.");
     }
 
     // check 5 roles: deployer, teller, gatherer, manager, brakeman, issuer (check in different version)
@@ -598,18 +389,7 @@ namespace eosio {
         eosio_assert(is_locked(sym_code),"The token has been locked");
         eosio_assert(getpeg(sym_code) == 1, "This action require peg version to be 1.");
         eosio_assert(!getoutcheck(sym_code), "This action require out_check to be false");
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            withdraw_v1(from,to,quantity,memo);
-            break;
-        case 2:
-            withdraw_v2(from,to,quantity, index, memo);
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        withdraw_v2(from,to,quantity, index, memo);
     }
 
     void pegtoken::prewithdraw( name from, string to, asset quantity, uint64_t index, string memo){
@@ -618,7 +398,6 @@ namespace eosio {
         eosio_assert(is_locked(sym_code),"The token has been locked");
         eosio_assert(getpeg(sym_code) == 1, "This action require peg version to be 1.");
         eosio_assert(!getoutcheck(sym_code), "out_check is true for this symbol");
-        eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
     }
 
     void pegtoken::agrewithdraw( name from, string to, asset quantity, uint64_t index, string memo){
@@ -650,52 +429,40 @@ namespace eosio {
         eosio_assert(is_locked(sym_code),"The token has been locked");
         eosio_assert(getincheck(sym_code), "This action require in_check to be true");
         eosio_assert(getpeg(sym_code) == 1, "This action require peg version to be 1.");
-        eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
     }
 
 
-    void pegtoken::agreedeposit( string from, name to, asset quantity, string remote_trx_id, uint64_t index, string memo ){
+    void pegtoken::agreedeposit( string from, name to, asset quantity, string remote_trx_id, uint64_t index, string memo ) {
         auto sym_code = quantity.symbol.code();
         eosio_assert(is_locked(sym_code),"The token has been locked");
         eosio_assert(getincheck(sym_code), "This action require in_check to be true");
         eosio_assert(getpeg(sym_code) == 1, "This action require peg version to be 1.");
-        eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
     }
 
-    void pegtoken::refusdeposit( string from, name to, asset quantity, string remote_trx_id, uint64_t index, string memo ){
+    void pegtoken::refusdeposit( string from, name to, asset quantity, string remote_trx_id, uint64_t index, string memo ) {
         auto sym_code = quantity.symbol.code();
         eosio_assert(is_locked(sym_code),"The token has been locked");
         eosio_assert(getincheck(sym_code), "This action require in_check to be true");
         eosio_assert(getpeg(sym_code) == 1, "This action require peg version to be 1.");
-        eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
     }
 
     void pegtoken::transfer(name from, name to, asset quantity, string memo) {
         auto sym_code = quantity.symbol.code();
         eosio_assert(is_locked(sym_code),"The token has been locked");
-        auto editionval = getedition(sym_code);
-        switch (editionval)
-        {
-        case 1:
-            transfer_v1(from,to,quantity,memo);
-            break;
-        default:
-            eosio_assert(false, "edition should be either 1 or 2");
-            break;
-        }
+        transfer_v1(from, to, quantity, memo);
     }
+
     void pegtoken::remit( name from, asset quantity ){
         auto sym_code = quantity.symbol.code();
         eosio_assert(is_locked(sym_code),"The token has been locked");
-        eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
-        eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
+        eosio_assert(getpeg(sym_code) == peg_type::STRICT_ANCHOR, "This action require peg version to be strict anchor.");
     }
 
      void pegtoken::pay( asset quantity , name user){
         auto sym_code = quantity.symbol.code();
         eosio_assert(is_locked(sym_code),"The token has been locked");
         eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
-        eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
+        eosio_assert(getpeg(sym_code) == peg_type::STRICT_ANCHOR, "This action require peg version to be strict anchor.");
         eosio_assert(quantity.amount > 0, "quantity should be more than zero for pay");
         pay_v2(quantity, user);
      }
@@ -704,29 +471,26 @@ namespace eosio {
      void pegtoken::ruin( asset quantity, name user){
         require_auth(user);
         auto sym_code = quantity.symbol.code();
-        eosio_assert(is_locked(sym_code),"The token has been locked");
-        eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
-        eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
-        eosio_assert(quantity.amount > 0, "quantity should be more than zero for ruin");       
-        eosio_assert(quantity>asset{0,quantity.symbol}, "The quantity to ruin is less or equal to 0");
+
+        eosio_assert(is_locked(sym_code), "The token has been locked");
+        eosio_assert(getpeg(sym_code) == peg_type::STRICT_ANCHOR, "This action require peg version to be strict anchor.");
+        eosio_assert(quantity.amount > 0, "The quantity to ruin is less or equal to 0");
+        
         //如何导入账户
         // is_auth_role(sym_code);
         ruin_v2(quantity, user);
     }
 
-    void pegtoken::burn( name from, asset quantity){
+    void pegtoken::burn( name from, asset quantity) {
         auto sym_code = quantity.symbol.code();
         eosio_assert(is_locked(sym_code),"The token has been locked");
-        eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
-        eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
-
+        eosio_assert(getpeg(sym_code) == peg_type::STRICT_ANCHOR, "This action require peg version to be strict anchor.");
     }
 
     void pegtoken::retreat(name to, asset quantity) {
         auto sym_code = quantity.symbol.code();
         eosio_assert(is_locked(sym_code), "The token is locked");
-        eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
-        eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
+        eosio_assert(getpeg(sym_code) == peg_type::STRICT_ANCHOR, "This action require peg version to be strict anchor.");
         eosio_assert(quantity.amount > 0, "The quantity to ruin is less or equal to 0");
         is_auth_teller(sym_code);
         retreat_v2(to, quantity);
@@ -757,8 +521,7 @@ namespace eosio {
     void pegtoken::rollback(symbol_code sym_code, transaction_id_type trx_id, string memo) {
         eosio_assert(is_locked(sym_code),"The token has been locked");
         eosio_assert(getpeg(sym_code) == 1, "This action require peg version to be 1.");
-        eosio_assert(getedition(sym_code) == 1 || getedition(sym_code) == 2, "The action require edition to be 1 or 2");
-        rollback_v1(sym_code,trx_id,memo);
+        rollback_v1(sym_code, trx_id, memo);
     }
 
     void pegtoken::confirmback( symbol_code sym_code, transaction_id_type trx_id,
@@ -775,8 +538,6 @@ namespace eosio {
        is_auth_teller(sym_code);
 
        is_locked(sym_code);
-       eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
-    //    eosio_assert(getpeg(sym_code) == 2, "The action require peg to be 2");
        eosio_assert(getpeg(sym_code) == peg_type::STRICT_ANCHOR, "The action require peg to be strict anchor");
        denyback_v2(sym_code, trx_id, index, memo);
     }
