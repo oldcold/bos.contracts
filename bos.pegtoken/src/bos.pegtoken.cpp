@@ -539,7 +539,6 @@ namespace eosio {
        uint64_t index, string memo ) {
        eosio_assert(is_locked(sym_code), "The token is locked");
        is_auth_teller(sym_code);
-
        is_locked(sym_code);
        eosio_assert(getpeg(sym_code) == peg_type::STRICT_ANCHOR, "The action require peg to be strict anchor");
        denyback_v2(sym_code, trx_id, index, memo);

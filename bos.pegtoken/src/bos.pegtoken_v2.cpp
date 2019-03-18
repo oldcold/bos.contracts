@@ -657,22 +657,9 @@ namespace eosio {
             "ruin"_n,
             std::make_tuple(quantity-userfee, from_account)
         ).send();
-        
-        // limits.find()
-        // compare the quantity with minimum_limit and maximum_limit
-
-        // 当前时间，对比上次提币时间需要大于最小间隔数
-        // 距离上个自然日零点到申请提币时，累计金额和次数分别需要小于相关设定：total_limit和frequency_limit
-
-        // 以内联action的方式调用ruin, 减少from_account里面的余额
-        // 减小infos表中supply的值，数值为总额减去费用。
-
-        // 在melts添加一条记录，need_check置为false，enable字段置为false。
-
-
+    
 
         auto melt_tb = melts(get_self(),  sym_code.raw());
-        // melts meltss(_self, _self.value); //到底应当事先哪一种呢
         melt_tb.emplace(same_payer, [&](auto& mt){
             mt.id = melt_tb.available_primary_key();
             mt.trx_id = get_trx_id();
@@ -684,14 +671,29 @@ namespace eosio {
             // mt.state = ;
             mt.need_check = false;
             mt.enable = false;
-            mt.remote_trx_id = remote_trx_id;
-            mt.remote_index = remote_index;
+            // mt.remote_trx_id = remote_trx_id;
+            // mt.remote_index = remote_index;
             mt.auditor = get_auditor(sym_code);
             mt.msg = memo;
-            // mt.create_time;
+            mt.create_time = time_point_sec(now());
             // mt.update_time;
         });
-        // need_check
+
+        auto statistics_tb = statistics(get_self(), sym_code.raw());
+        auto statistic_iter = statistics_tb.find(sym_code.raw());
+        eosio_assert(statistic_iter != statistics_tb.end(), "cannot find statistic in statistics able");
+        statistics_tb.modify(statistic_iter, same_payer, [&](auto &sts) {
+            if(time_point_sec(now()) - statistic_iter->last_time > microseconds(86400000000)){
+                sts.frequency = 1;
+                sts.total = quantity;
+                sts.update_time = time_point_sec(now());
+            }else{
+                sts.frequency = statistic_iter->frequency+1;
+                sts.total = quantity;
+                sts.update_time = time_point_sec(now());
+            }
+        });
+       
     }
     void pegtoken::premelt_v2(name from_account, string to_address, asset quantity, uint64_t index, string memo){
             is_vip(quantity.symbol.code(), from_account);

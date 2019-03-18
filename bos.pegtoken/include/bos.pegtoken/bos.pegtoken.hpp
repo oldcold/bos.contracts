@@ -362,6 +362,7 @@ private:
     // 检查是否被锁住,stats和infos的active字段
 
     name get_gatherer(symbol_code sym_code);
+    name get_auditor(symbol_code sym_code);
     bool is_locked(symbol_code sym_code);
 
     void withdraw_check(symbol_code sym_code, asset quantity, name account);
