@@ -507,7 +507,7 @@ namespace eosio {
     }
 
     void pegtoken::agreecast_v2(symbol_code sym_code, string to_address, name to_account,
-        string remote_trx_id, asset quantity, uint64_t index, string memo) {
+        name auditor, string remote_trx_id, asset quantity, uint64_t index, string memo) {
         auto sym_raw = quantity.symbol.code().raw();
 
         auto addr_table = addrs(get_self(), sym_raw);
@@ -522,11 +522,10 @@ namespace eosio {
             && iter_cast -> to_address == to_address
             && iter_cast -> remote_trx_id == remote_trx_id
             && iter_cast -> index == index
-            && iter_cast -> state != 0
+            && iter_cast -> state != cast_state::CAST_INIT
             && iter_cast -> quantity == quantity
             , "invalid cast");
 
-    
         auto info_table = infos(get_self(), sym_raw);
         auto iter_info = info_table.find(sym_raw);
         eosio_assert(iter_info != info_table.end(), "token not exist in infos table");
@@ -538,7 +537,7 @@ namespace eosio {
             p.supply += quantity;
         });
         auto auditor_tb = auditors(get_self(), sym_code.raw());
-        auto auditor_val = auditor_tb.get(sym_code.raw(), "the v2 token NOT in auditors table");
+        auto auditor_val = auditor_tb.get(sym_code.raw(), "the token not in auditors table");
         cast_table.modify(iter_cast, same_payer, [&] (auto &p) {
             if (p.need_check && !p.enable) {
                 p.enable = true;
@@ -546,13 +545,15 @@ namespace eosio {
             p.trx_id = get_trx_id();
             p.index = index;
             p.msg = memo;
+            p.auditor = auditor;
+            p.state = cast_state::CAST_SUCCESS;
             p.update_time = time_point_sec(now());
             p.auditor = auditor_val.auditor;
         });
     }
 
     void pegtoken::refusecast_v2( symbol_code sym_code, string to_address, name to_account,
-        string remote_trx_id, asset quantity, uint64_t index, string memo ) {
+        name auditor, string remote_trx_id, asset quantity, uint64_t index, string memo ) {
         auto sym_raw = quantity.symbol.code().raw();
         auto infos_tb = infos(get_self(), sym_raw);
         auto iter_info = infos_tb.find(sym_raw);
@@ -570,15 +571,18 @@ namespace eosio {
             && iter_cast -> remote_trx_id == remote_trx_id
             && iter_cast -> index == index
             && iter_cast -> quantity == quantity
-            && iter_cast -> state != 0
+            && iter_cast -> state != cast_state::CAST_INIT
             , "invalid cast");
 
         cast_table.modify(iter_cast, same_payer, [&](auto &p) {
-            if (p.need_check && p.enable) {
+            if (p.need_check) {
                 p.enable = false;
-                p.state = 5;
             }
+            p.trx_id = get_trx_id();
+            p.index = index;
+            p.state = cast_state::CAST_FAIL;
             p.msg = memo;
+            p.auditor = auditor;
             p.update_time = time_point_sec(now());
         });
     }
