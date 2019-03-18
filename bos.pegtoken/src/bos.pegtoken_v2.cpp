@@ -620,9 +620,9 @@ namespace eosio {
 
     void pegtoken::melt_v2( name from_account, string to_address, asset quantity, uint64_t index, string memo ) {
         auto sym_code = quantity.symbol.code();
-        auto infos_table = infos(get_self(),sym_code.raw());
-        auto info_iter = infos_table.find(sym_code.raw());
-        eosio_assert(info_iter != infos_table.end(), "token not exist");
+        auto info_tb = infos(get_self(),sym_code.raw());
+        auto info_iter = info_tb.find(sym_code.raw());
+        eosio_assert(info_iter != info_tb.end(), "token not exist");
         // from_account账户余额必须大于quantity
         eosio_assert(getbalance(sym_code, from_account) > quantity, "the remaining balance of from_account should be more than quantity");
         verify_address(info_iter->address_style, to_address);
@@ -658,14 +658,8 @@ namespace eosio {
             std::make_tuple(quantity-userfee, from_account)
         ).send();
 
-
-
-
-        auto acct_tb = accounts(get_self(),sym_code.raw());
-        auto acct_iter = acct_tb.find(from_account.value);
-        acct_tb.modify(acct_iter, same_payer, [&](auto &p) {
-            p.balance -= quantity;
-        });
+        auto info_iter2 = info_tb.get(sym_code.raw(), "sym_code do not exist in infos table");
+        info_tb.modify(info_iter2, same_payer, [&](auto &p) { p.supply -= (quantity-userfee); });
         
         // limits.find()
         // compare the quantity with minimum_limit and maximum_limit
