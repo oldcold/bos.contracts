@@ -673,7 +673,7 @@ namespace eosio {
             mt.enable = false;
             // mt.remote_trx_id = remote_trx_id;
             // mt.remote_index = remote_index;
-            mt.auditor = get_auditor(sym_code);
+            // mt.auditor = get_auditor(sym_code);
             mt.msg = memo;
             mt.create_time = time_point_sec(now());
             // mt.update_time;
