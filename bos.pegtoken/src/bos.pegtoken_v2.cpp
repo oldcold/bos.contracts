@@ -683,7 +683,7 @@ namespace eosio {
         auto statistic_iter = statistics_tb.find(sym_code.raw());
         eosio_assert(statistic_iter != statistics_tb.end(), "cannot find statistic in statistics able");
         statistics_tb.modify(statistic_iter, same_payer, [&](auto &sts) {
-            if(time_point_sec(now()) - statistic_iter->last_time > microseconds(86400000000)){
+            if(time_point_sec(now()) - statistic_iter->last_time > DAY_IN_MICROSECOND){
                 sts.frequency = 1;
                 sts.total = quantity;
                 sts.update_time = time_point_sec(now());

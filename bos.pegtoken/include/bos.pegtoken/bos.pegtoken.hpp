@@ -27,6 +27,7 @@ constexpr uint64_t INTERVAL_LIMIT = 300;
 constexpr double SERVICE_FEE_RATE = 0.001;
 constexpr uint64_t MIN_SERVICE_FEE = 0.0005 * PRECISION;
 constexpr uint64_t MINER_FEE = 0.00004 * PRECISION;
+const microseconds DAY_IN_MICROSECOND = microseconds(86400000000);
 
 enum withdraw_state : uint64_t {
     INITIAL_STATE = 0,
