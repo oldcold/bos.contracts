@@ -46,12 +46,6 @@ enum melt_state: uint64_t {
     WITHDRAW_ROLLBACL = 5,
 };
 
-enum cast_state: uint64_t {
-    CAST_INIT = 0,
-    CAST_SUCCESS = 2,
-    CAST_FAIL = 5,
-};
-
 class[[eosio::contract("bos.pegtoken")]] pegtoken : public contract
 {
 public:
@@ -184,11 +178,11 @@ public:
     [[eosio::action]] void precast( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
     void precast_v2( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
 
-    [[eosio::action]] void agreecast( symbol_code sym_code, string to_address, name to_account, name auditor, string remote_trx_id, asset quantity, uint64_t index, string memo );
-    void agreecast_v2( symbol_code sym_code, string to_address, name to_account, name auditor, string remote_trx_id, asset quantity, uint64_t index, string memo );
+    [[eosio::action]] void agreecast( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
+    void agreecast_v2( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
     
-    [[eosio::action]] void refusecast( symbol_code sym_code, string to_address, name to_account, name auditor, string remote_trx_id, asset quantity, uint64_t index, string memo );
-    void refusecast_v2( symbol_code sym_code, string to_address, name to_account, name auditor, string remote_trx_id, asset quantity, uint64_t index, string memo );
+    [[eosio::action]] void refusecast( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
+    void refusecast_v2( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
     
     [[eosio::action]] void melt( name from_account, string to_address, asset quantity, uint64_t index, string memo );
     void melt_v2( name from_account, string to_address, asset quantity, uint64_t index, string memo );
@@ -254,8 +248,8 @@ public:
 
 
     // TODO: pay        普通用户给收费员转账【严格锚定制】
-    [[eosio::action]] void pay( asset quantity );
-    void pay_v2( asset quantity );
+    [[eosio::action]] void pay( asset quantity, name user);
+    void pay_v2( asset quantity , name user);
 
     // TODO: ruin        普通用户毁掉代币【严格锚定制】
     [[eosio::action]] void ruin( asset quantity , name user);
@@ -366,10 +360,13 @@ private:
     void is_auth_role(symbol_code sym_code, name account);
     void is_auth_role_exc_gatherer(symbol_code sym_code, name account);
     // 检查是否被锁住,stats和infos的active字段
+
+    name get_gatherer(symbol_code sym_code);
     bool is_locked(symbol_code sym_code);
 
     void withdraw_check(symbol_code sym_code, asset quantity, name account);
     void vip_withdraw_check(symbol_code sym_code, asset quantity, name account);
+    asset getbalance( symbol_code sym_code, name user );
     bool balance_check( symbol_code sym_code, name user );
     bool addr_check( symbol_code sym_code, name user );
 
@@ -884,6 +881,12 @@ private:
         }
     }
 
+    asset pegtoken::getbalance(symbol_code sym_code, name user) {
+        auto acct = accounts(get_self(), user.value);
+        auto balance_val = acct.get(sym_code.raw(), "Cannot getbalance for user");
+        return balance_val.balance;
+    }
+
     bool pegtoken::balance_check(symbol_code sym_code, name user) {
         auto acct = accounts(get_self(), user.value);
         auto balance = acct.find(sym_code.raw());
@@ -957,7 +960,7 @@ private:
 
     void pegtoken::is_auth_auditor(symbol_code sym_code){
         auto auditor_tb = auditors(get_self(),sym_code.raw());
-        auto auditor_val = auditor_tb.get(sym_code.raw(), "the token not in auditors table");
+        auto auditor_val = auditor_tb.get(sym_code.raw(), "the v2 token NOT in auditors table");
         require_auth(auditor_val.auditor);
     }
 
@@ -1016,6 +1019,12 @@ private:
         auto info_iter = info_table.find(sym_code.raw());
         eosio_assert(info_iter != info_table.end(), "No such symbol");
         eosio_assert(account != info_iter->issuer, "The account has been assigned to issuer");
+    }
+
+    name pegtoken::get_gatherer(symbol_code sym_code){
+        auto gat_table = gatherers(get_self(), sym_code.raw());
+        auto gat_val = gat_table.get(sym_code.raw(), "No such symbol in gatherers table");
+        return gat_val.gatherer;
     }
 
     bool pegtoken::is_locked(symbol_code sym_code) {

@@ -507,7 +507,7 @@ namespace eosio {
     }
 
     void pegtoken::agreecast_v2(symbol_code sym_code, string to_address, name to_account,
-        name auditor, string remote_trx_id, asset quantity, uint64_t index, string memo) {
+        string remote_trx_id, asset quantity, uint64_t index, string memo) {
         auto sym_raw = quantity.symbol.code().raw();
 
         auto addr_table = addrs(get_self(), sym_raw);
@@ -522,10 +522,11 @@ namespace eosio {
             && iter_cast -> to_address == to_address
             && iter_cast -> remote_trx_id == remote_trx_id
             && iter_cast -> index == index
-            && iter_cast -> state != cast_state::CAST_INIT
+            && iter_cast -> state != 0
             && iter_cast -> quantity == quantity
             , "invalid cast");
 
+    
         auto info_table = infos(get_self(), sym_raw);
         auto iter_info = info_table.find(sym_raw);
         eosio_assert(iter_info != info_table.end(), "token not exist in infos table");
@@ -537,7 +538,7 @@ namespace eosio {
             p.supply += quantity;
         });
         auto auditor_tb = auditors(get_self(), sym_code.raw());
-        auto auditor_val = auditor_tb.get(sym_code.raw(), "the token not in auditors table");
+        auto auditor_val = auditor_tb.get(sym_code.raw(), "the v2 token NOT in auditors table");
         cast_table.modify(iter_cast, same_payer, [&] (auto &p) {
             if (p.need_check && !p.enable) {
                 p.enable = true;
@@ -545,15 +546,13 @@ namespace eosio {
             p.trx_id = get_trx_id();
             p.index = index;
             p.msg = memo;
-            p.auditor = auditor;
-            p.state = cast_state::CAST_SUCCESS;
             p.update_time = time_point_sec(now());
             p.auditor = auditor_val.auditor;
         });
     }
 
     void pegtoken::refusecast_v2( symbol_code sym_code, string to_address, name to_account,
-        name auditor, string remote_trx_id, asset quantity, uint64_t index, string memo ) {
+        string remote_trx_id, asset quantity, uint64_t index, string memo ) {
         auto sym_raw = quantity.symbol.code().raw();
         auto infos_tb = infos(get_self(), sym_raw);
         auto iter_info = infos_tb.find(sym_raw);
@@ -571,18 +570,15 @@ namespace eosio {
             && iter_cast -> remote_trx_id == remote_trx_id
             && iter_cast -> index == index
             && iter_cast -> quantity == quantity
-            && iter_cast -> state != cast_state::CAST_INIT
+            && iter_cast -> state != 0
             , "invalid cast");
 
         cast_table.modify(iter_cast, same_payer, [&](auto &p) {
-            if (p.need_check) {
+            if (p.need_check && p.enable) {
                 p.enable = false;
+                p.state = 5;
             }
-            p.trx_id = get_trx_id();
-            p.index = index;
-            p.state = cast_state::CAST_FAIL;
             p.msg = memo;
-            p.auditor = auditor;
             p.update_time = time_point_sec(now());
         });
     }
@@ -624,11 +620,13 @@ namespace eosio {
 
     void pegtoken::melt_v2( name from_account, string to_address, asset quantity, uint64_t index, string memo ) {
         auto sym_code = quantity.symbol.code();
-        auto infos_table = infos(get_self(),sym_code.raw());
-        auto info_iter = infos_table.find(sym_code.raw());
-        eosio_assert(info_iter != infos_table.end(), "token not exist");
+        auto info_tb = infos(get_self(),sym_code.raw());
+        auto info_iter = info_tb.find(sym_code.raw());
+        eosio_assert(info_iter != info_tb.end(), "token not exist");
+        // from_account账户余额必须大于quantity
+        eosio_assert(getbalance(sym_code, from_account) > quantity, "the remaining balance of from_account should be more than quantity");
         verify_address(info_iter->address_style, to_address);
-
+        
         eosio::asset userfee, minlimit;
         double ratelimit;
         if(is_vip(quantity.symbol.code(), from_account)){
@@ -645,11 +643,12 @@ namespace eosio {
              minlimit = fee_val.min_service_fee;
         }   
         userfee = ratelimit*quantity > minlimit ? ratelimit*quantity : minlimit;
+       
         action(
             permission_level{get_self(),"active"_n},
             get_self(),
             "pay"_n,
-            std::make_tuple(userfee)
+            std::make_tuple(userfee, from_account)
         ).send();
 
         action(
@@ -659,14 +658,8 @@ namespace eosio {
             std::make_tuple(quantity-userfee, from_account)
         ).send();
 
-
-
-
-        auto acct_tb = accounts(get_self(),sym_code.raw());
-        auto acct_iter = acct_tb.find(from_account.value);
-        acct_tb.modify(acct_iter, same_payer, [&](auto &p) {
-            p.balance -= quantity;
-        });
+        auto info_iter2 = info_tb.get(sym_code.raw(), "sym_code do not exist in infos table");
+        info_tb.modify(info_iter2, same_payer, [&](auto &p) { p.supply -= (quantity-userfee); });
         
         // limits.find()
         // compare the quantity with minimum_limit and maximum_limit
@@ -928,14 +921,20 @@ namespace eosio {
     
     }
 
-    void pegtoken::pay_v2( asset quantity ){
-    
+    void pegtoken::pay_v2( asset quantity, name user){
+        symbol_code sym_code = quantity.symbol.code();
+        name gatherer = get_gatherer(sym_code);
+        // 查找accounts表，减小普通用户的balance值
+        sub_balance(user, quantity);
+        // 增加收费员的balance值
+        add_balance(gatherer, quantity, same_payer);
     }
     // 普通用户毁掉代币
     void pegtoken::ruin_v2( asset quantity , name user){
-        auto acct_tb = accounts(get_self(), user.value);
-        auto acct_iter = acct_tb.find(user.value);
-        eosio_assert(acct_iter != acct_tb.end(), "account doesnot exist");
+        // auto acct_tb = accounts(get_self(), user.value);
+        // auto acct_iter = acct_tb.find(user.value);
+        // eosio_assert(acct_iter != acct_tb.end(), "account doesnot exist");
+        sub_balance(user, quantity);
     }
     
 
@@ -969,7 +968,7 @@ namespace eosio {
         }
         auto info_tb = infos(get_self(), sym_code.raw());
         auto info_iter = info_tb.get(sym_code.raw(), "sym_code do not exist in infos table");
-        info_tb.modify(info_iter, same_payer, [&](auto &p) { p.supply -= melt_total ; });
+        info_tb.modify(info_iter, same_payer, [&](auto &p) { p.supply += melt_total ; });
 
         // TODO: ADD FEE.
         action(
@@ -1018,7 +1017,6 @@ namespace eosio {
         // TODO: remote_trx_id validation.
         for (auto melt_iter = melt_tb.begin(); melt_iter != melt_tb.end(); ++melt_iter) {
             // find the trx hash
-
             //下面的检查条件是melt需要审核且审核通过或者melt无须审核的情况
             if( std::memcmp(trx_id.hash, melt_iter->trx_id.hash, 32) == 0 && melt_iter->index == index
                 && ((melt_iter->enable == true && melt_iter->need_check == true) || melt_iter->need_check == false) && melt_iter->state == 0) {
