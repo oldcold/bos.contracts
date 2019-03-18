@@ -623,8 +623,10 @@ namespace eosio {
         auto infos_table = infos(get_self(),sym_code.raw());
         auto info_iter = infos_table.find(sym_code.raw());
         eosio_assert(info_iter != infos_table.end(), "token not exist");
+        // from_account账户余额必须大于quantity
+        eosio_assert(getbalance(sym_code, from_account) > quantity, "the remaining balance of from_account should be more than quantity");
         verify_address(info_iter->address_style, to_address);
-
+        
         eosio::asset userfee, minlimit;
         double ratelimit;
         if(is_vip(quantity.symbol.code(), from_account)){
@@ -965,7 +967,7 @@ namespace eosio {
         }
         auto info_tb = infos(get_self(), sym_code.raw());
         auto info_iter = info_tb.get(sym_code.raw(), "sym_code do not exist in infos table");
-        info_tb.modify(info_iter, same_payer, [&](auto &p) { p.supply -= melt_total ; });
+        info_tb.modify(info_iter, same_payer, [&](auto &p) { p.supply += melt_total ; });
 
         // TODO: ADD FEE.
         action(
@@ -1014,7 +1016,6 @@ namespace eosio {
         // TODO: remote_trx_id validation.
         for (auto melt_iter = melt_tb.begin(); melt_iter != melt_tb.end(); ++melt_iter) {
             // find the trx hash
-
             //下面的检查条件是melt需要审核且审核通过或者melt无须审核的情况
             if( std::memcmp(trx_id.hash, melt_iter->trx_id.hash, 32) == 0 && melt_iter->index == index
                 && ((melt_iter->enable == true && melt_iter->need_check == true) || melt_iter->need_check == false) && melt_iter->state == 0) {

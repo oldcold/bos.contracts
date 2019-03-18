@@ -364,6 +364,7 @@ private:
 
     void withdraw_check(symbol_code sym_code, asset quantity, name account);
     void vip_withdraw_check(symbol_code sym_code, asset quantity, name account);
+    asset getbalance( symbol_code sym_code, name user );
     bool balance_check( symbol_code sym_code, name user );
     bool addr_check( symbol_code sym_code, name user );
 
@@ -876,6 +877,12 @@ private:
         } else {
             return actual_service_fee;
         }
+    }
+
+    asset pegtoken::getbalance(symbol_code sym_code, name user) {
+        auto acct = accounts(get_self(), user.value);
+        auto balance_val = acct.get(sym_code.raw(), "Cannot getbalance for user");
+        return balance_val.balance;
     }
 
     bool pegtoken::balance_check(symbol_code sym_code, name user) {
