@@ -691,11 +691,13 @@ namespace eosio {
         eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
     }
 
-     void pegtoken::pay( asset quantity ){
+     void pegtoken::pay( asset quantity , name user){
         auto sym_code = quantity.symbol.code();
         eosio_assert(is_locked(sym_code),"The token has been locked");
         eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
         eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
+        eosio_assert(quantity.amount > 0, "quantity should be more than zero for pay");
+        pay_v2(quantity, user);
      }
     
     // TODO: finish ruin_v2
@@ -705,6 +707,7 @@ namespace eosio {
         eosio_assert(is_locked(sym_code),"The token has been locked");
         eosio_assert(getedition(sym_code) == 2, "The action require edition to be 2");
         eosio_assert(getpeg(sym_code) == 2, "This action require peg version to be 2.");
+        eosio_assert(quantity.amount > 0, "quantity should be more than zero for ruin");       
         eosio_assert(quantity>asset{0,quantity.symbol}, "The quantity to ruin is less or equal to 0");
         //如何导入账户
         // is_auth_role(sym_code);

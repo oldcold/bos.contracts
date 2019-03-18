@@ -643,11 +643,12 @@ namespace eosio {
              minlimit = fee_val.min_service_fee;
         }   
         userfee = ratelimit*quantity > minlimit ? ratelimit*quantity : minlimit;
+       
         action(
             permission_level{get_self(),"active"_n},
             get_self(),
             "pay"_n,
-            std::make_tuple(userfee)
+            std::make_tuple(userfee, from_account)
         ).send();
 
         action(
@@ -926,8 +927,13 @@ namespace eosio {
     
     }
 
-    void pegtoken::pay_v2( asset quantity ){
-    
+    void pegtoken::pay_v2( asset quantity, name user){
+        symbol_code sym_code = quantity.symbol.code();
+        name gatherer = get_gatherer(sym_code);
+        // 查找accounts表，减小普通用户的balance值
+        sub_balance(user, quantity);
+        // 增加收费员的balance值
+        add_balance(gatherer, quantity, same_payer);
     }
     // 普通用户毁掉代币
     void pegtoken::ruin_v2( asset quantity , name user){
