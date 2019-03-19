@@ -799,8 +799,15 @@ private:
         auto statistics_tb = statistics(get_self(), sym_code.raw());
         auto statistic_val = statistics_tb.get(account.value, "No such account in viplimits table");
         time_point_sec lasttime = statistic_val.last_time;
-        uint64_t freq = statistic_val.frequency;
-        asset total = statistic_val.total;
+	uint64_t freq;
+	asset total;
+        if(time_point_sec(now()) - lasttime > DAY_IN_MICROSECOND){
+                freq = 0;
+                total = eosio::asset(0,quantity.symbol);
+        }else{
+                freq = statistic_val.frequency;
+                total = statistic_val.total;
+        }
         
         auto vlimits_tb = viplimits(get_self(),sym_code.raw());
         auto vlim_val = vlimits_tb.get(sym_code.raw(), "This type of assets not exists in viplimits table");
@@ -821,9 +828,15 @@ private:
         auto statistics_tb = statistics(get_self(), sym_code.raw());
         auto statistic_val = statistics_tb.get(account.value, "No such account in statistics table");
         time_point_sec lasttime = statistic_val.last_time;
-        uint64_t freq = statistic_val.frequency;
-        asset total = statistic_val.total;
-
+        uint64_t freq;
+        asset total;
+        if(time_point_sec(now()) - lasttime > DAY_IN_MICROSECOND){
+		freq = 0;
+       		total = eosio::asset(0,quantity.symbol);		
+	}else{
+		freq = statistic_val.frequency;
+		total = statistic_val.total;
+	}
         auto limits_tb = limits(get_self(),sym_code.raw());
         auto lim_val = limits_tb.get(sym_code.raw(), "This type of assets not exists in limits table");
         eosio_assert(quantity <= lim_val.maximum_limit, "withdraw amount is more than the maximum_limit");
