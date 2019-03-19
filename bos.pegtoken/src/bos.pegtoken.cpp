@@ -401,7 +401,6 @@ namespace eosio {
     void pegtoken::melt( name from_account, string to_address, asset quantity, uint64_t index, string memo ) {
         symbol_code sym_code = quantity.symbol.code();
         ACCOUNT_CHECK(from_account);
-        withdraw_check(sym_code, quantity, from_account);
         is_auth_role_exc_gatherer(sym_code, from_account);
         eosio_assert(is_locked(sym_code), "The token is locked");
         eosio_assert(!getoutcheck(sym_code), "This action require out_check to be false");
@@ -656,7 +655,7 @@ namespace eosio {
     void pegtoken::applyaddr( symbol_code sym_code, name to ) {
         ACCOUNT_CHECK(to);
         require_auth(to);
-        is_auth_role(sym_code, to);
+        is_auth_role_exc_gatherer(sym_code, to);
         // 根据sym_code，在addrs表中增加一条记录。
         // 此时owner字段置为to，address字段为空， state字段为owner.value
         // create_time为当前时间，assign_time为空
@@ -702,7 +701,7 @@ namespace eosio {
 
     void pegtoken::assignaddr(symbol_code sym_code, name to, string address) {
         is_auth_teller(sym_code);
-        is_auth_role(sym_code, to);
+        is_auth_role_exc_gatherer(sym_code, to);
         
         ACCOUNT_CHECK(to);
         auto sym_raw = sym_code.raw();
@@ -810,7 +809,7 @@ namespace eosio {
         }
         auto info_tb = infos(get_self(), sym_code.raw());
         auto info_iter = info_tb.get(sym_code.raw(), "sym_code do not exist in infos table");
-        info_tb.modify(info_iter, same_payer, [&](auto &p) { p.supply += melt_total ; });
+        info_tb.modify(info_iter, same_payer, [&](auto &p) { p.supply += melt_amount ; });
 
         action(
             permission_level{get_self(), "active"_n},
