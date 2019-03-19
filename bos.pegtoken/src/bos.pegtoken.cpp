@@ -416,9 +416,6 @@ namespace eosio {
             "ruin"_n,
             std::make_tuple(quantity - userfee, from_account)
         ).send();
-
-        auto info_iter2 = info_tb.get(sym_code.raw(), "sym_code do not exist in infos table");
-        info_tb.modify(info_iter2, same_payer, [&](auto &p) { p.supply -= (quantity-userfee); });
         
         // 当前时间，对比上次提币时间需要大于最小间隔数
         // 距离上个自然日零点到申请提币时，累计金额和次数分别需要小于相关设定：total_limit和frequency_limit
@@ -436,16 +433,10 @@ namespace eosio {
             mt.total = quantity;
             mt.amount = quantity - userfee;
             mt.fee = userfee;
-            // mt.state = ;
             mt.need_check = false;
             mt.enable = false;
-            // mt.remote_trx_id = remote_trx_id;
-            // mt.remote_index = remote_index;
-            // mt.auditor = get_auditor(sym_code);
-            mt.auditor = get_auditor(sym_code);
             mt.msg = memo;
             mt.create_time = time_point_sec(now());
-            // mt.update_time;
         });
         
         auto statistics_tb = statistics(get_self(), sym_code.raw());
@@ -647,7 +638,7 @@ namespace eosio {
     void pegtoken::resetaddress( symbol_code sym_code, name to ) {
         is_auth_manager(sym_code);
         ACCOUNT_CHECK(to);
-        eosio_assert(to == get_gatherer(sym_code), "not gatherer.");
+        is_auth_role_exc_gatherer(sym_code, to);
 
         auto addrs_tb = addrs(get_self(), sym_code.raw());
         auto addr_iter = addrs_tb.find(to.value);
