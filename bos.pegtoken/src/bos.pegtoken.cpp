@@ -262,7 +262,7 @@ namespace eosio {
         eosio_assert(iter_info != info_table.end(), "token not exist in infos table");
 
         // Add balance of to_account
-        add_balance(to_account, quantity, iter_info->issuer);
+        add_balance(to_account, quantity, get_self());
         // Add supply of infos
         info_table.modify(iter_info, same_payer, [&] (auto &p) {
             p.supply += quantity;
@@ -363,7 +363,7 @@ namespace eosio {
             p.update_time = time_point_sec(now());
         });
 
-        add_balance(to_account, quantity, iter_info->issuer);
+        add_balance(to_account, quantity, get_self());
         info_table.modify(iter_info,same_payer,[&](auto &p){
             p.supply += quantity;
             eosio_assert(p.supply.amount >0, "supply overflow");
