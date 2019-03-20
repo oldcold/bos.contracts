@@ -206,7 +206,7 @@ namespace eosio {
         eosio_assert(iter_addr != addr_table.end() && iter_addr->address == to_address, "invalid to_address");
 
         auto cast_table = casts(get_self(), sym_raw);
-        auto index_str = to_address + to_account.to_string() + remote_trx_id + std::to_string(index) + quantity.to_string();
+        auto index_str = remote_trx_id + std::to_string(index);
         auto id = hash64(index_str);
         eosio_assert(cast_table.find(id) == cast_table.end(), "Already have the same precast hash.");
 
@@ -246,7 +246,7 @@ namespace eosio {
         eosio_assert(iter_addr != addr_table.end() && iter_addr->address == to_address, "invalid to_address");
 
         auto cast_table = casts(get_self(), sym_raw);
-        auto index_str = to_address + to_account.to_string() + remote_trx_id + std::to_string(index) + quantity.to_string();
+        auto index_str = remote_trx_id + std::to_string(index);
         auto iter_cast = cast_table.find(hash64(index_str));
         eosio_assert(iter_cast != cast_table.end()
             && iter_cast -> to_account == to_account
@@ -302,7 +302,7 @@ namespace eosio {
         eosio_assert(iter_addr != addr_table.end() && iter_addr->address == to_address, "invalid to_address");
 
         auto cast_table = casts(get_self(), sym_raw);
-        auto index_str = to_address + to_account.to_string() + remote_trx_id + std::to_string(index) + quantity.to_string();
+        auto index_str = remote_trx_id + std::to_string(index);
         auto iter_cast = cast_table.find(hash64(index_str));
         eosio_assert(iter_cast != cast_table.end()
             && iter_cast -> to_account == to_account
@@ -345,7 +345,7 @@ namespace eosio {
         eosio_assert(iter_addr != addr_table.end() && iter_addr->address == to_address, "invalid to_address");
 
         auto cast_table = casts(get_self(), sym_raw);
-        auto index_str = to_address + to_account.to_string() + remote_trx_id + std::to_string(index) + quantity.to_string();
+        auto index_str = remote_trx_id + std::to_string(index);
         auto iter_cast = cast_table.find(hash64(index_str));
         eosio_assert(iter_cast != cast_table.end()
         && iter_cast -> to_account == to_account
