@@ -267,8 +267,7 @@ namespace eosio {
         info_table.modify(iter_info, same_payer, [&] (auto &p) {
             p.supply += quantity;
         });
-        auto auditor_tb = auditors(get_self(), sym_code.raw());
-        auto auditor_val = auditor_tb.get(sym_code.raw(), "the v2 token NOT in auditors table");
+
         cast_table.modify(iter_cast, same_payer, [&] (auto &p) {
             if (p.need_check && !p.enable) {
                 p.enable = true;
@@ -279,7 +278,6 @@ namespace eosio {
             p.auditor = auditor;
             p.state = cast_state::CAST_SUCCESS;
             p.update_time = time_point_sec(now());
-            p.auditor = auditor_val.auditor;
         });
     }
 
