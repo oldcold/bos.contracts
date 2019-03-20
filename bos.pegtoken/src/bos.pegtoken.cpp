@@ -229,7 +229,7 @@ namespace eosio {
 
     void pegtoken::agreecast( symbol_code sym_code, string to_address, name to_account,
         name auditor, string remote_trx_id, asset quantity, uint64_t index, string memo ) {
-        is_auth_auditor(sym_code);
+        is_auth_auditor(sym_code, auditor);
         is_auth_role(sym_code, to_account);
         eosio_assert(is_sym_equal_asset(sym_code, quantity), "sym_code is not same as quantity's symbol_code.");
         eosio_assert(is_locked(sym_code), "The token is locked");
@@ -283,7 +283,7 @@ namespace eosio {
 
     void pegtoken::refusecast( symbol_code sym_code, string to_address, name to_account,
         name auditor, string remote_trx_id, asset quantity, uint64_t index, string memo ) {
-        is_auth_auditor(sym_code);
+        is_auth_auditor(sym_code, auditor);
         is_auth_role(sym_code, to_account);
         eosio_assert(is_sym_equal_asset(sym_code, quantity), "sym_code is not same as quantity's symbol_code.");
         eosio_assert(is_locked(sym_code), "The token is locked");

@@ -132,7 +132,7 @@ private:
     void is_auth_issuer(symbol_code sym_code);
     void is_auth_manager(symbol_code sym_code);
     void is_auth_teller(symbol_code sym_code);
-    void is_auth_auditor(symbol_code sym_code);
+    void is_auth_auditor(symbol_code sym_code, name auditor);
     void is_auth_brakeman(symbol_code sym_code);
     void is_auth_gatherer(symbol_code sym_code);
     void is_auth_role(symbol_code sym_code, name account);
@@ -709,10 +709,11 @@ private:
         require_auth(teller_iter->teller);
     }
 
-    void pegtoken::is_auth_auditor(symbol_code sym_code){
-        auto auditor_tb = auditors(get_self(),sym_code.raw());
-        auto auditor_val = auditor_tb.get(sym_code.raw(), "the token NOT in auditors table");
-        require_auth(auditor_val.auditor);
+    void pegtoken::is_auth_auditor(symbol_code sym_code, name auditor) {
+        auto auditor_tb = auditors(get_self(), sym_code.raw());
+        auto auditor_iter = auditor_tb.find(auditor.value);
+        eosio_assert(auditor_iter != auditor_tb.end(), "auditor not in auditors table.");
+        require_auth(auditor_iter->auditor);
     }
 
     void pegtoken::is_auth_brakeman(symbol_code sym_code) {
