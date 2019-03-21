@@ -755,7 +755,6 @@ namespace eosio {
     }
 } // namespace eosio
 
-// FIXME: setauditor is removed
 EOSIO_DISPATCH( eosio::pegtoken, 
         (create)
         (melt)
