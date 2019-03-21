@@ -318,48 +318,6 @@ namespace eosio {
             p.update_time = time_point_sec(now());
         });
     }
-
-    void pegtoken::cast(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity,  uint64_t index, string memo){
-        is_auth_role(sym_code,to_account);
-        eosio_assert(is_locked(sym_code),"The token has been locked");
-        eosio_assert(!getincheck(sym_code), "This action require in_check to be false");
-        ACCOUNT_CHECK(to_account);
-        STRING_LEN_CHECK(memo, 256);
-        eosio_assert(quantity.amount > 0, "non-positive quantity");
-        
-        auto sym_raw = quantity.symbol.code().raw();
-        auto info_table = infos(get_self(),sym_raw);
-        auto iter_info = info_table.find(sym_raw);
-        eosio_assert(iter_info != info_table.end(), "token not exist");
-        require_auth(iter_info->issuer);
-
-        auto addr_table = addrs(get_self(), sym_raw);
-        auto iter_addr = addr_table.find(to_account.value);
-        eosio_assert(iter_addr != addr_table.end() && iter_addr->address == to_address, "invalid to_address");
-
-        auto cast_table = casts(get_self(), sym_raw);
-        auto index_str = remote_trx_id + std::to_string(index);
-        auto iter_cast = cast_table.find(hash64(index_str));
-        eosio_assert(iter_cast != cast_table.end()
-        && iter_cast -> to_account == to_account
-        && iter_cast -> to_address == to_address
-        && iter_cast -> remote_trx_id == remote_trx_id
-        && iter_cast -> index == index
-        && iter_cast -> quantity == quantity
-         , "invalid cast");
-
-        cast_table.modify(iter_cast,same_payer,[&](auto &p){
-            p.trx_id = get_trx_id();
-            p.msg = memo;
-            p.update_time = time_point_sec(now());
-        });
-
-        add_balance(to_account, quantity, get_self());
-        info_table.modify(iter_info,same_payer,[&](auto &p){
-            p.supply += quantity;
-            eosio_assert(p.supply.amount >0, "supply overflow");
-        });
-    }
     
     void pegtoken::melt( name from_account, string to_address, asset quantity, uint64_t index, string memo ) {
         symbol_code sym_code = quantity.symbol.code();
@@ -798,17 +756,14 @@ namespace eosio {
 } // namespace eosio
 
 // FIXME: setauditor is removed
-EOSIO_DISPATCH( eosio::pegtoken, (create)(setissuer)
-        (setlimit)
-        (setviplimit)
-        (setfee)
-        (setvipfee)
-        (setcheck)
-        (cast)(precast)(agreecast)(refusecast)
+EOSIO_DISPATCH( eosio::pegtoken, 
+        (create)
         (melt)
+        (precast)(agreecast)(refusecast)
         (applyaddr)(resetaddress)(assignaddr)
         (pay)(ruin)(retreat)
         (confirmback)(denyback)
         (lockall)(unlockall)
-        (setauditor)(setgatherer)(setteller)(setmanager)(setbrakeman)(setvip)
+        (setlimit)(setvip)(setviplimit)(setfee)(setvipfee)(setcheck)
+        (setissuer)(setauditor)(setgatherer)(setteller)(setmanager)(setbrakeman)
         );

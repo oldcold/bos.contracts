@@ -67,8 +67,6 @@ public:
 
     [[eosio::action]] void setcheck( symbol_code sym_code, bool in_check, bool out_check );
 
-    [[eosio::action]] void cast(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo);
-
     [[eosio::action]] void precast( symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity, uint64_t index, string memo );
 
     [[eosio::action]] void agreecast( symbol_code sym_code, string to_address, name to_account, name auditor, string remote_trx_id, asset quantity, uint64_t index, string memo );
