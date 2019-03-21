@@ -206,7 +206,7 @@ namespace eosio {
         eosio_assert(iter_addr != addr_table.end() && iter_addr->address == to_address, "invalid to_address");
 
         auto cast_table = casts(get_self(), sym_raw);
-        auto index_str = to_address + to_account.to_string() + remote_trx_id + std::to_string(index) + quantity.to_string();
+        auto index_str = remote_trx_id + std::to_string(index);
         auto id = hash64(index_str);
         eosio_assert(cast_table.find(id) == cast_table.end(), "Already have the same precast hash.");
 
@@ -246,7 +246,7 @@ namespace eosio {
         eosio_assert(iter_addr != addr_table.end() && iter_addr->address == to_address, "invalid to_address");
 
         auto cast_table = casts(get_self(), sym_raw);
-        auto index_str = to_address + to_account.to_string() + remote_trx_id + std::to_string(index) + quantity.to_string();
+        auto index_str = remote_trx_id + std::to_string(index);
         auto iter_cast = cast_table.find(hash64(index_str));
         eosio_assert(iter_cast != cast_table.end()
             && iter_cast -> to_account == to_account
@@ -262,7 +262,7 @@ namespace eosio {
         eosio_assert(iter_info != info_table.end(), "token not exist in infos table");
 
         // Add balance of to_account
-        add_balance(to_account, quantity, iter_info->issuer);
+        add_balance(to_account, quantity, get_self());
         // Add supply of infos
         info_table.modify(iter_info, same_payer, [&] (auto &p) {
             p.supply += quantity;
@@ -302,7 +302,7 @@ namespace eosio {
         eosio_assert(iter_addr != addr_table.end() && iter_addr->address == to_address, "invalid to_address");
 
         auto cast_table = casts(get_self(), sym_raw);
-        auto index_str = to_address + to_account.to_string() + remote_trx_id + std::to_string(index) + quantity.to_string();
+        auto index_str = remote_trx_id + std::to_string(index);
         auto iter_cast = cast_table.find(hash64(index_str));
         eosio_assert(iter_cast != cast_table.end()
             && iter_cast -> to_account == to_account
@@ -328,9 +328,7 @@ namespace eosio {
 
     void pegtoken::cast(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity,  uint64_t index, string memo){
         is_auth_role(sym_code,to_account);
-        // 判断是否已经锁定
         eosio_assert(is_locked(sym_code),"The token has been locked");
-        // 判断资金流入是否需要审核
         eosio_assert(!getincheck(sym_code), "This action require in_check to be false");
         ACCOUNT_CHECK(to_account);
         STRING_LEN_CHECK(memo, 256);
@@ -347,7 +345,7 @@ namespace eosio {
         eosio_assert(iter_addr != addr_table.end() && iter_addr->address == to_address, "invalid to_address");
 
         auto cast_table = casts(get_self(), sym_raw);
-        auto index_str = to_address + to_account.to_string() + remote_trx_id + std::to_string(index) + quantity.to_string();
+        auto index_str = remote_trx_id + std::to_string(index);
         auto iter_cast = cast_table.find(hash64(index_str));
         eosio_assert(iter_cast != cast_table.end()
         && iter_cast -> to_account == to_account
@@ -363,7 +361,7 @@ namespace eosio {
             p.update_time = time_point_sec(now());
         });
 
-        add_balance(to_account, quantity, iter_info->issuer);
+        add_balance(to_account, quantity, get_self());
         info_table.modify(iter_info,same_payer,[&](auto &p){
             p.supply += quantity;
             eosio_assert(p.supply.amount >0, "supply overflow");
@@ -380,7 +378,6 @@ namespace eosio {
         auto info_tb = infos(get_self(),sym_code.raw());
         auto info_iter = info_tb.find(sym_code.raw());
         eosio_assert(info_iter != info_tb.end(), "token not exist");
-        // from_account账户余额必须大于quantity
         eosio_assert(getbalance(sym_code, from_account) > quantity, "the remaining balance of from_account should be more than quantity");
         verify_address(info_iter->address_style, to_address);
         
@@ -619,17 +616,12 @@ namespace eosio {
         ACCOUNT_CHECK(to);
         require_auth(to);
         is_auth_role_exc_gatherer(sym_code, to);
-        // 根据sym_code，在addrs表中增加一条记录。
-        // 此时owner字段置为to，address字段为空， state字段为owner.value
-        // create_time为当前时间，assign_time为空
         auto addresses = addrs(get_self(), sym_code.raw());
         eosio_assert(addresses.find(to.value) == addresses.end(), "to account has applied for address already");
         addresses.emplace(get_self(), [&](auto &p) {
             p.owner = to;
             p.state = to.value;
-            p.create_time = time_point_sec(now());  
-            // assign_time为空
-            // address字段为空
+            p.create_time = time_point_sec(now());
         });
     }
 
@@ -710,8 +702,6 @@ namespace eosio {
         eosio_assert(quantity>asset{0,quantity.symbol}, "The quantity to ruin is less or equal to 0");
         eosio_assert(is_locked(sym_code), "The token has been locked");
         eosio_assert(quantity.amount > 0, "The quantity to ruin is less or equal to 0");
-        //如何导入账户
-        // is_auth_role(sym_code);
         sub_balance(user, quantity);
         auto info_tb = infos(get_self(), sym_code.raw());
         auto info_iter2 = info_tb.get(sym_code.raw(), "sym_code do not exist in infos table");
@@ -733,8 +723,8 @@ namespace eosio {
 
         auto melt_tb = melts(get_self(), sym_code.raw());
         for (auto melt_iter = melt_tb.begin(); melt_iter != melt_tb.end(); ++melt_iter) {
-            // find the trx hash
-            //下面的检查条件是melt需要审核且审核通过或者melt无须审核的情况
+            // Find the trx hash
+            // The following check conditions are for the melt to be reviewed and approved or the melt need not be reviewed.
             if( std::memcmp(trx_id.hash, melt_iter->trx_id.hash, 32) == 0 && melt_iter->index == index
                 && ((melt_iter->enable == true && melt_iter->need_check == true) || melt_iter->need_check == false) && melt_iter->state == 0) {
                 melt_tb.modify(melt_iter, same_payer, [&](auto &mit) {
@@ -758,7 +748,7 @@ namespace eosio {
         asset melt_total;
         asset melt_amount;
         for (auto melt_iter = melt_tb.begin(); melt_iter != melt_tb.end(); ++melt_iter) {
-            // find the trx hash
+            // Find the trx hash
             if( std::memcmp(trx_id.hash, melt_iter->trx_id.hash, 32) == 0 && melt_iter->index == index
                 && ((melt_iter->enable == true && melt_iter->need_check == true) || melt_iter->need_check == false) && melt_iter->state == 0) {
                 melt_to = melt_iter->from;
