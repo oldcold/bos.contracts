@@ -10,8 +10,7 @@ namespace eosio {
 // actions
 ////////////////////////
 
-    void pegtoken::create( symbol sym, name issuer, name address_style, uint64_t peg ) {
-        eosio_assert(peg == peg_type::PRE_RELEASE || peg == peg_type::STRICT_ANCHOR, "peg can only be 1 or 2");
+    void pegtoken::create( symbol sym, name issuer, name address_style ) {
         require_auth(get_self());
         ACCOUNT_CHECK(issuer);
         eosio_assert(sym.is_valid(), "invalid symbol");
@@ -35,12 +34,6 @@ namespace eosio {
             p.issuer = issuer;
             p.address_style = address_style;
             p.active = true; 
-        });
-
-        auto summary_table = summaries(get_self(), sym_raw);
-        eosio_assert(summary_table.find(sym_raw) == summary_table.end(), "token with symbol already exists (summary)");
-        summary_table.emplace(get_self(), [&](auto &p) {
-            /* do nothing */
         });
 
         // Init limits.
