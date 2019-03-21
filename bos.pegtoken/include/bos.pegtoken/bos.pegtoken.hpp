@@ -77,8 +77,6 @@ public:
 
     [[eosio::action]] void premelt(name from_account, string to_address, asset quantity, uint64_t index, string memo);
 
-    [[eosio::action]] void agreemelt(name from_account, string to_address, asset quantity, uint64_t index, string memo);
-
     [[eosio::action]] void applyaddr( symbol_code sym_code, name to );
 
     [[eosio::action]] void resetaddress( symbol_code sym_code, name to );
@@ -131,7 +129,6 @@ private:
     void is_auth_role_exc_gatherer( symbol_code sym_code, name account );
 
     name get_gatherer( symbol_code sym_code );
-    name get_auditor( symbol_code sym_code );
 
     void withdraw_check( symbol_code sym_code, asset quantity, name account );
     void vip_withdraw_check( symbol_code sym_code, asset quantity, name account );
@@ -539,16 +536,11 @@ private:
         eosio_assert(account != info_iter->issuer, "The account has been assigned to issuer");
     }
 
-    name pegtoken::get_gatherer(symbol_code sym_code){
+    name pegtoken::get_gatherer(symbol_code sym_code) {
         auto gat_table = gatherers(get_self(), sym_code.raw());
-        auto gat_val = gat_table.get(sym_code.raw(), "No such symbol in gatherers table");
-        return gat_val.gatherer;
-    }
-
-    name pegtoken::get_auditor(symbol_code sym_code){
-        auto aud_table = auditors(get_self(), sym_code.raw());
-        auto aud_val = aud_table.get(sym_code.raw(), "No such symbol in auditors table");
-        return aud_val.auditor;
+        auto gat_iter = gat_table.begin();
+        eosio_assert(gat_iter != gat_table.end(), "No such symbol in gatherers table");
+        return gat_iter->gatherer;
     }
     
     bool pegtoken::is_locked(symbol_code sym_code) {
@@ -557,82 +549,77 @@ private:
         return info_val.active;
     }
 
-    void pegtoken::vip_withdraw_check(symbol_code sym_code, asset quantity, name account){
-        //VIP checking limit
-        // total_limit, frequency_limit, interval_limit
-        //  time_point_sec(now())
-        //获取上一次的提币时间
+    void pegtoken::vip_withdraw_check(symbol_code sym_code, asset quantity, name account) {
+        auto vlimits_tb = viplimits(get_self(), sym_code.raw());
+        auto vlim_val = vlimits_tb.get(account.value, "This type of assets not exists in limits table");
 
-        auto vlimits_tb = viplimits(get_self(),sym_code.raw());
-        auto vlim_val = vlimits_tb.get(sym_code.raw(), "This type of assets not exists in limits table");
-       
         auto statistics_tb = statistics(get_self(), sym_code.raw());
         auto statistic_iter = statistics_tb.find(account.value);
-        if(statistic_iter == statistics_tb.end()){
-             statistics_tb.emplace(same_payer, [&](auto &p) {
+        auto now_time = time_point_sec(now());
+        auto zero_asset = eosio::asset(0, quantity.symbol);
+        if(statistic_iter == statistics_tb.end()) {
+             statistics_tb.emplace(get_self(), [&](auto &p) {
                 p.owner = account;
-                p.last_time = time_point_sec(now());
+                p.last_time = now_time;
                 p.frequency = 0;
-                p.total = eosio::asset(0, quantity.symbol);
-                p.update_time = time_point_sec(now());
+                p.total = zero_asset;
+                p.update_time = now_time;
             });
-        }else{
-             eosio_assert(time_point_sec(now())-statistic_iter->last_time>=microseconds(vlim_val.interval_limit), "From now is less than interval_limit");
+        } else {
+             eosio_assert(now_time - statistic_iter->last_time >= microseconds(vlim_val.interval_limit), 
+                "From now is less than interval_limit");
         }
         auto statistic_val = statistics_tb.get(account.value, "No such account in statistics table");
         time_point_sec lasttime = statistic_val.last_time;
 	    uint64_t freq;
 	    asset total;
-        if(time_point_sec(now()) - lasttime > DAY_IN_MICROSECOND){
-                freq = 0;
-                total = eosio::asset(0,quantity.symbol);
-        }else{
-                freq = statistic_val.frequency;
-                total = statistic_val.total;
+        if(now_time - lasttime > DAY_IN_MICROSECOND) {
+            freq = 0;
+            total = zero_asset;
+        } else {
+            freq = statistic_val.frequency;
+            total = statistic_val.total;
         }
         eosio_assert(quantity <= vlim_val.maximum_limit, "withdraw amount is more than the maximum_limit");
         eosio_assert(quantity >= vlim_val.minimum_limit, "withdraw amount is less than the minimum_limit");
-        eosio_assert(total+quantity<=vlim_val.total_limit, "More than daily totals amount");
-        eosio_assert(freq+1<=vlim_val.frequency_limit, "More than daily frequency limit");
+        eosio_assert(total + quantity <= vlim_val.total_limit, "More than daily totals amount");
+        eosio_assert(freq + 1 <= vlim_val.frequency_limit, "More than daily frequency limit");
     }
 
-
-    // 提币时的检查条件
-    void pegtoken::withdraw_check(symbol_code sym_code, asset quantity, name account){
-        //Normal user checking limit
-        // total_limit, frequency_limit, interval_limit
-        //  time_point_sec(now())
-        //获取上一次的提币时间
-        auto limits_tb = limits(get_self(),sym_code.raw());
+    void pegtoken::withdraw_check(symbol_code sym_code, asset quantity, name account) {
+        auto limits_tb = limits(get_self(), sym_code.raw());
         auto lim_val = limits_tb.get(sym_code.raw(), "This type of assets not exists in limits table");
        
         auto statistics_tb = statistics(get_self(), sym_code.raw());
         auto statistic_iter = statistics_tb.find(account.value);
-        if(statistic_iter == statistics_tb.end()){
-             statistics_tb.emplace(same_payer, [&](auto &p) {
+        auto now_time = time_point_sec(now());
+        auto zero_asset = eosio::asset(0, quantity.symbol);
+        if(statistic_iter == statistics_tb.end()) {
+            statistics_tb.emplace(same_payer, [&](auto &p) {
                 p.owner = account;
-                p.last_time = time_point_sec(now());
+                p.last_time = now_time;
                 p.frequency = 0;
-                p.total = eosio::asset(0, quantity.symbol);
-                p.update_time = time_point_sec(now());
+                p.total = zero_asset;
+                p.update_time = now_time;
             });
-        }else{
-             eosio_assert(time_point_sec(now())-statistic_iter->last_time>=microseconds(lim_val.interval_limit), "From now is less than interval_limit");
+        } else {
+            eosio_assert(now_time - statistic_iter->last_time >= microseconds(lim_val.interval_limit),
+                "From now is less than interval_limit");
         }
         auto statistic_val = statistics_tb.get(account.value, "No such account in statistics table");
         time_point_sec lasttime = statistic_val.last_time;
         uint64_t freq;
         asset total;
-        if(time_point_sec(now()) - lasttime > DAY_IN_MICROSECOND){
+        if(now_time - lasttime > DAY_IN_MICROSECOND) {
 		    freq = 0;
-       		total = eosio::asset(0,quantity.symbol);		
-        }else{
+       		total = zero_asset;
+        } else {
             freq = statistic_val.frequency;
             total = statistic_val.total;
-        }  
+        }
         eosio_assert(quantity <= lim_val.maximum_limit, "withdraw amount is more than the maximum_limit");
         eosio_assert(quantity >= lim_val.minimum_limit, "withdraw amount is less than the minimum_limit");
-        eosio_assert(total+quantity<=lim_val.total_limit, "More than daily totals amount");
-        eosio_assert(freq+1<=lim_val.frequency_limit, "More than daily frequency limit");
+        eosio_assert(total + quantity <= lim_val.total_limit, "More than daily totals amount");
+        eosio_assert(freq + 1 <= lim_val.frequency_limit, "More than daily frequency limit");
     }
 } // namespace eosio
