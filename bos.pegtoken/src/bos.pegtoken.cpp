@@ -208,7 +208,7 @@ namespace eosio {
             p.to_account = to_account;
             p.to_address = to_address;
             p.quantity = quantity;
-            p.state = 0;
+            p.state = cast_state::CAST_INIT;
             p.need_check = true;
             p.enable = false;
             p.auditor = NIL_ACCOUNT;
@@ -698,7 +698,7 @@ namespace eosio {
                 melt_total = melt_iter->total;
                 melt_amount = melt_iter->amount;
                 melt_tb.modify(melt_iter, same_payer, [&](auto &mit) {
-                    mit.state = 5;
+                    mit.state = melt_state::WITHDRAW_ROLLBACL;
                     mit.msg = memo;
                 });
                 break;
