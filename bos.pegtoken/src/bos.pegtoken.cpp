@@ -348,7 +348,7 @@ namespace eosio {
             minlimit = fee_val.min_service_fee;
         }   
         userfee = ratelimit * quantity > minlimit ? ratelimit * quantity : minlimit;
-
+        eosio_assert(false, ratelimit * quantity);
         action(
             permission_level{from_account, "active"_n},
             get_self(),
