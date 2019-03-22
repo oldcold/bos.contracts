@@ -343,7 +343,7 @@ namespace eosio {
         } else {
             withdraw_check(sym_code, quantity, from_account);
             auto fees_tb = fees(get_self(), sym_code.raw());
-            auto fee_val = fees_tb.get(from_account.value, "This account is not in fees table");
+            auto fee_val = fees_tb.get(sym_code.raw(), "This account is not in fees table");
             ratelimit = fee_val.service_fee_rate;
             minlimit = fee_val.min_service_fee;
         }   
