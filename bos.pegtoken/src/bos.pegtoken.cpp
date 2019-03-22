@@ -710,7 +710,7 @@ namespace eosio {
         info_tb.modify(info_iter, same_payer, [&](auto &p) { p.supply += melt_amount ; });
 
         action(
-            permission_level{get_self(), "active"_n},
+            permission_level{get_teller(sym_code), "active"_n},
             get_self(),
             "retreat"_n,
             std::make_tuple(melt_to, melt_amount)

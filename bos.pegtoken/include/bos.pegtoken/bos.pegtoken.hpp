@@ -129,6 +129,7 @@ private:
     void is_auth_role_exc_gatherer( symbol_code sym_code, name account );
 
     name get_gatherer( symbol_code sym_code );
+    name get_teller( symbol_code sym_code );
 
     void withdraw_check( symbol_code sym_code, asset quantity, name account );
     void vip_withdraw_check( symbol_code sym_code, asset quantity, name account );
@@ -541,6 +542,13 @@ private:
         auto gat_iter = gat_table.begin();
         eosio_assert(gat_iter != gat_table.end(), "No such symbol in gatherers table");
         return gat_iter->gatherer;
+    }
+
+    name pegtoken::get_teller(symbol_code sym_code) {
+        auto teller_tb = tellers(get_self(), sym_code.raw());
+        auto teller_iter = teller_tb.begin();
+        eosio_assert(teller_iter != teller_tb.end(), "the token not in tellers table");
+        return teller_iter->teller;
     }
     
     bool pegtoken::is_locked(symbol_code sym_code) {
