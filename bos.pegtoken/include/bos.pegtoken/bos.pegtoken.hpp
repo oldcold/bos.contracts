@@ -37,6 +37,7 @@ enum withdraw_state : uint64_t {
 };
 
 enum melt_state: uint64_t {
+    WITHDRAW_INIT = 0,
     WITHDRAW_SUCCESS = 2,
     WITHDRAW_BACK = 3,
     WITHDRAW_ROLLBACL = 5,

@@ -375,6 +375,7 @@ namespace eosio {
             mt.fee = userfee;
             mt.need_check = false;
             mt.enable = false;
+            mt.state = melt_state::WITHDRAW_INIT;
             mt.msg = memo;
             mt.create_time = now_time;
         });
@@ -665,35 +666,44 @@ namespace eosio {
         eosio_assert(is_locked(sym_code), "The token is locked");
 
         auto melt_tb = melts(get_self(), sym_code.raw());
+        bool found = false;
         for (auto melt_iter = melt_tb.begin(); melt_iter != melt_tb.end(); ++melt_iter) {
             // Find the trx hash
             // The following check conditions are for the melt to be reviewed and approved or the melt need not be reviewed.
-            if( std::memcmp(trx_id.hash, melt_iter->trx_id.hash, 32) == 0 && melt_iter->index == index
-                && ((melt_iter->enable == true && melt_iter->need_check == true) || melt_iter->need_check == false) && melt_iter->state == 0) {
+            if( std::memcmp(trx_id.hash, melt_iter->trx_id.hash, 32) == 0
+                && melt_iter->index == index
+                && ((melt_iter->enable == true && melt_iter->need_check == true) || melt_iter->need_check == false)
+                && melt_iter->state == melt_state::WITHDRAW_INIT) {
                 melt_tb.modify(melt_iter, same_payer, [&](auto &mit) {
                     mit.remote_index = remote_index;
                     mit.remote_trx_id = remote_trx_id;
                     mit.state = melt_state::WITHDRAW_SUCCESS;
                     mit.msg = memo;
                 });
+                found = true;
+                break;
             }
         }
+        eosio_assert(found, "Can not find the transaction.");
     }
 
     void pegtoken::denyback( symbol_code sym_code, transaction_id_type trx_id,
-       uint64_t index, string memo ) {
-       eosio_assert(is_locked(sym_code), "The token is locked");
-       is_auth_teller(sym_code);
-       is_locked(sym_code);
-       
+        uint64_t index, string memo ) {
+        eosio_assert(is_locked(sym_code), "The token is locked");
+        is_auth_teller(sym_code);
+        is_locked(sym_code);
+
         auto melt_tb = melts(get_self(), sym_code.raw());
         name melt_to;
         asset melt_total;
         asset melt_amount;
+        bool found = false;
         for (auto melt_iter = melt_tb.begin(); melt_iter != melt_tb.end(); ++melt_iter) {
             // Find the trx hash
-            if( std::memcmp(trx_id.hash, melt_iter->trx_id.hash, 32) == 0 && melt_iter->index == index
-                && ((melt_iter->enable == true && melt_iter->need_check == true) || melt_iter->need_check == false) && melt_iter->state == 0) {
+            if( std::memcmp(trx_id.hash, melt_iter->trx_id.hash, 32) == 0
+                && melt_iter->index == index
+                && ((melt_iter->enable == true && melt_iter->need_check == true) || melt_iter->need_check == false)
+                && melt_iter->state == melt_state::WITHDRAW_INIT) {
                 melt_to = melt_iter->from;
                 melt_total = melt_iter->total;
                 melt_amount = melt_iter->amount;
@@ -701,19 +711,22 @@ namespace eosio {
                     mit.state = melt_state::WITHDRAW_ROLLBACL;
                     mit.msg = memo;
                 });
+
+                auto info_tb = infos(get_self(), sym_code.raw());
+                auto info_iter = info_tb.get(sym_code.raw(), "sym_code do not exist in infos table");
+                info_tb.modify(info_iter, same_payer, [&](auto &p) { p.supply += melt_amount ; });
+
+                action(
+                    permission_level{get_teller(sym_code), "active"_n},
+                    get_self(),
+                    "retreat"_n,
+                    std::make_tuple(melt_to, melt_amount)
+                ).send();
+                found = true;
                 break;
             }
         }
-        auto info_tb = infos(get_self(), sym_code.raw());
-        auto info_iter = info_tb.get(sym_code.raw(), "sym_code do not exist in infos table");
-        info_tb.modify(info_iter, same_payer, [&](auto &p) { p.supply += melt_amount ; });
-
-        action(
-            permission_level{get_teller(sym_code), "active"_n},
-            get_self(),
-            "retreat"_n,
-            std::make_tuple(melt_to, melt_amount)
-        ).send();
+        eosio_assert(found, "Can not find the transaction.");
     }
 
     void pegtoken::lockall( symbol_code sym_code, name brakeman ) {
