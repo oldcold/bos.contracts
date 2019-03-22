@@ -566,7 +566,7 @@ private:
                 p.update_time = now_time;
             });
         } else {
-             eosio_assert(now_time - statistic_iter->last_time >= microseconds(vlim_val.interval_limit*1000000), 
+             eosio_assert(now_time - statistic_iter->last_time >= seconds(vlim_val.interval_limit), 
                 "From now is less than interval_limit");
         }
         auto statistic_val = statistics_tb.get(account.value, "No such account in statistics table");
@@ -603,7 +603,7 @@ private:
                 p.update_time = now_time;
             });
         } else {
-            eosio_assert(now_time - statistic_iter->last_time >= microseconds(lim_val.interval_limit*1000000),
+            eosio_assert(now_time - statistic_iter->last_time >= seconds(lim_val.interval_limit),
                 "From now is less than interval_limit");
         }
         auto statistic_val = statistics_tb.get(account.value, "No such account in statistics table");

@@ -387,12 +387,12 @@ namespace eosio {
             if(now_time - statistic_iter->last_time > DAY_IN_MICROSECOND) {
                 sts.frequency = 1;
                 sts.total = quantity;
-                sts.update_time = now_time;
             } else {
                 sts.frequency = statistic_iter->frequency + 1;
                 sts.total += quantity;
-                sts.update_time = now_time;
             }
+            sts.update_time = now_time;
+            sts.last_time = now_time;
         });
     }
 
