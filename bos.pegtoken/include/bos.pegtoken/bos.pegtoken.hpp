@@ -595,7 +595,7 @@ private:
         auto now_time = time_point_sec(now());
         auto zero_asset = eosio::asset(0, quantity.symbol);
         if(statistic_iter == statistics_tb.end()) {
-            statistics_tb.emplace(same_payer, [&](auto &p) {
+            statistics_tb.emplace(get_self(), [&](auto &p) {
                 p.owner = account;
                 p.last_time = now_time;
                 p.frequency = 0;
