@@ -347,8 +347,10 @@ namespace eosio {
             ratelimit = fee_val.service_fee_rate;
             minlimit = fee_val.min_service_fee;
         }   
-         asset ratefee = asset(ratelimit*quantity.amount, quantity.symbol);
+        
+        asset ratefee = asset(ratelimit*quantity.amount, quantity.symbol);
         userfee = ratefee > minlimit ? ratefee: minlimit;
+        
         action(
             permission_level{from_account, "active"_n},
             get_self(),
