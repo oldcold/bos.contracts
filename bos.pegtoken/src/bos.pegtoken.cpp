@@ -1,5 +1,4 @@
 #include <bos.pegtoken/bos.pegtoken.hpp>
-#include <eosio.token/eosio.token.hpp>
 #include <eosiolib/transaction.hpp>
 #include <eosiolib/action.hpp>
 #include "def.cpp"
