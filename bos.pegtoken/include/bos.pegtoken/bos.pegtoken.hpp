@@ -23,7 +23,7 @@ constexpr uint64_t MAXIMUM_LIMIT = 1 * PRECISION;
 constexpr uint64_t MINIMUM_LIMIT = 0.00005 * PRECISION;
 constexpr uint64_t TOTAL_LIMIT = 10 * PRECISION;
 constexpr uint64_t FREQUENCY_LIMIT = 3;
-constexpr uint64_t INTERVAL_LIMIT = 300000000;
+constexpr uint64_t INTERVAL_LIMIT = 300;
 constexpr double SERVICE_FEE_RATE = 0.001;
 constexpr uint64_t MIN_SERVICE_FEE = 0.0005 * PRECISION;
 constexpr uint64_t MINER_FEE = 0.00004 * PRECISION;
@@ -566,7 +566,7 @@ private:
                 p.update_time = now_time;
             });
         } else {
-             eosio_assert(now_time - statistic_iter->last_time >= microseconds(vlim_val.interval_limit), 
+             eosio_assert(now_time - statistic_iter->last_time >= microseconds(vlim_val.interval_limit*1000000), 
                 "From now is less than interval_limit");
         }
         auto statistic_val = statistics_tb.get(account.value, "No such account in statistics table");
@@ -603,7 +603,7 @@ private:
                 p.update_time = now_time;
             });
         } else {
-            eosio_assert(now_time - statistic_iter->last_time >= microseconds(lim_val.interval_limit),
+            eosio_assert(now_time - statistic_iter->last_time >= microseconds(lim_val.interval_limit*1000000),
                 "From now is less than interval_limit");
         }
         auto statistic_val = statistics_tb.get(account.value, "No such account in statistics table");
