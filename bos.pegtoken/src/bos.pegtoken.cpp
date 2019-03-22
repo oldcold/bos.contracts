@@ -12,7 +12,7 @@ namespace eosio {
     void pegtoken::create( symbol sym, name issuer, name address_style ) {
         require_auth(get_self());
         ACCOUNT_CHECK(issuer);
-        eosio_assert(sym.is_valid(), "invalid symbol");
+        eosio_assert(sym.is_valid(), "invalid symbol.");
         eosio_assert(address_style == "bitcoin"_n || address_style == "ethereum"_n || 
                      address_style == "tether"_n || address_style == "other"_n,
                      "address_style must be one of bitcoin, ethereum, tether or other");
