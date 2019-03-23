@@ -89,7 +89,9 @@ void token::transfer( name    from,
                       asset   quantity,
                       string  memo )
 {
-    eosio_assert( !is_on_blacklist(from), "account is on the blacklist" );///bos 
+   blacklist blacklisttable(_self, from.value);
+   eosio_assert(  blacklisttable.find(from.value) == blacklisttable.end(), "account is on the blacklist" );///bos 
+   //  eosio_assert( !is_on_blacklist(from), "account is on the blacklist" );///bos 
     eosio_assert( from != to, "cannot transfer to self" );
     require_auth( from );
     eosio_assert( is_account( to ), "to account does not exist");
@@ -167,44 +169,45 @@ void token::close( name owner, const symbol& symbol )
 }
 
 ///bos begin
-bool token::is_on_blacklist(name account)
-{
-   tokenblacklist blklst(_self, account.value);
-   auto ac = blklst.find(account.value);
-
-   return ac != blklst.end();
-}
-
 void token::addblacklist(const std::vector<name>& accounts)
 {
    require_auth("eosio"_n);
 
+   eosio_assert( blacklist_limit_size>=accounts.size(), "accounts' size must be less than 20." );
    static const std::string msg = std::string("account does not exist");
-
+   bool is_executed = false;
    for (auto acc : accounts){
       std::string m = acc.to_string() + msg;
       eosio_assert(is_account(acc), m.c_str());
-      tokenblacklist blklst(_self, acc.value);
-      auto it = blklst.find(acc.value);
-      if (it == blklst.end()){
-      blklst.emplace(_self, [&](auto &a) {
+      blacklist blacklisttable(_self, acc.value);
+      auto it = blacklisttable.find(acc.value);
+      if (it == blacklisttable.end()){
+      blacklisttable.emplace(_self, [&](auto &a) {
          a.account = acc;
+         is_executed = true;
       });
       }
    }
+
+   eosio_assert( is_executed, "all accounts were on blacklist." );
 }
 
 void token::rmblacklist(const std::vector<name>& accounts)
 {
    require_auth("eosio"_n);
 
+   eosio_assert( blacklist_limit_size>=accounts.size(), "accounts' size must be less than 20." );
+   bool is_executed = false;
    for (auto acc : accounts){
-      tokenblacklist blklst(_self, acc.value);
-      auto it = blklst.find(acc.value);
-      if (it != blklst.end()){
-         blklst.erase(it);
+      blacklist blacklisttable(_self, acc.value);
+      auto it = blacklisttable.find(acc.value);
+      if (it != blacklisttable.end()){
+         blacklisttable.erase(it);
+         is_executed = true;
       }
    }
+
+   eosio_assert( is_executed, "all accounts were not on blacklist." );
 }
 ///bos end
 

@@ -121,7 +121,7 @@ public:
    fc::variant get_blacklist( account_name acc)
    {
       vector<char> data = get_row_by_account( N(eosio.token), acc, N(blacklist), acc );
-      return data.empty() ? fc::variant() : abi_ser.binary_to_variant( "blacklist", data, abi_serializer_max_time );
+      return data.empty() ? fc::variant() : abi_ser.binary_to_variant( "account_blacklist", data, abi_serializer_max_time );
    }
 
    action_result addblacklist(const vector<name>& list) {
@@ -394,32 +394,24 @@ BOOST_FIXTURE_TEST_CASE( transfer_blacklist_tests, eosio_token_tester ) try {
    auto blklst = get_blacklist(N(boblacklist));
    REQUIRE_MATCHING_OBJECT(blklst, mvo()("account", "boblacklist"));
 
-   // BOOST_REQUIRE_EQUAL( wasm_assert_msg( "account is on the blacklist" ),
-   //    transfer( N(boblacklist), N(bob), asset::from_string("100 CERO"), "hola" )
-   // );
-
-   // BOOST_CHECK_EXCEPTION( transfer( N(boblacklist), N(bob), asset::from_string("100 CERO"), "hola" ) , asset_type_exception, [](const asset_type_exception& e) {
-   //    return expect_assert_message(e, "account is on the blacklist");
-   // });
+   BOOST_REQUIRE_EQUAL( wasm_assert_msg( "account is on the blacklist" ),
+      transfer( N(boblacklist), N(bob), asset::from_string("100 CERO"), "hola" )
+   );
 
    rmblacklist(list);
    produce_blocks(250);
    transfer(N(boblacklist), N(bob), asset::from_string("100 CERO"), "hola");
 
+   produce_blocks(250);
    auto boblklst_balance = get_account(N(boblacklist), "0,CERO");
    REQUIRE_MATCHING_OBJECT( boblklst_balance, mvo()
       ("balance", "200 CERO")
-      ("frozen", 0)
-      ("whitelist", 1)
    );
 
    auto bob_balance = get_account(N(bob), "0,CERO");
    REQUIRE_MATCHING_OBJECT( bob_balance, mvo()
       ("balance", "100 CERO")
-      ("frozen", 0)
-      ("whitelist", 1)
    );
-
 
 } FC_LOG_AND_RETHROW()
 ///add blaklist end
