@@ -96,6 +96,6 @@ namespace eosio {
 
          void sub_balance( name owner, asset value );
          void add_balance( name owner, asset value, name ram_payer );
-      };
+   };
 
 } /// namespace eosio
