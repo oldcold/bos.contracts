@@ -173,7 +173,7 @@ void token::addblacklist(const std::vector<name>& accounts)
    require_auth("eosio"_n);
 
    eosio_assert(blacklist_limit_size >= accounts.size(), "accounts' size must be less than 20.");
-   static const std::string msg = std::string("account does not exist");
+   static const std::string msg = std::string(" account does not exist");
    bool is_executed = false;
    for (auto acc : accounts){
       std::string m = acc.to_string() + msg;
