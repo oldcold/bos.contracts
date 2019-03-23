@@ -378,6 +378,7 @@ namespace eosio {
             mt.state = melt_state::WITHDRAW_INIT;
             mt.msg = memo;
             mt.create_time = now_time;
+            mt.update_time = now_time;
         });
 
         auto statistics_tb = statistics(get_self(), sym_code.raw());
@@ -679,6 +680,7 @@ namespace eosio {
                     mit.remote_trx_id = remote_trx_id;
                     mit.state = melt_state::WITHDRAW_SUCCESS;
                     mit.msg = memo;
+                    mit.update_time = time_point_sec(now());
                 });
                 found = true;
                 break;
@@ -691,8 +693,7 @@ namespace eosio {
         uint64_t index, string memo ) {
         eosio_assert(is_locked(sym_code), "The token is locked");
         is_auth_teller(sym_code);
-        is_locked(sym_code);
-
+        
         auto melt_tb = melts(get_self(), sym_code.raw());
         name melt_to;
         asset melt_total;
@@ -710,10 +711,12 @@ namespace eosio {
                 melt_tb.modify(melt_iter, same_payer, [&](auto &mit) {
                     mit.state = melt_state::WITHDRAW_ROLLBACL;
                     mit.msg = memo;
+                    mit.update_time = time_point_sec(now());
                 });
 
                 auto info_tb = infos(get_self(), sym_code.raw());
-                auto info_iter = info_tb.get(sym_code.raw(), "sym_code do not exist in infos table");
+                auto info_iter = info_tb.begin();
+                eosio_assert(info_iter != info_tb.end(), "sym_code do not exist in infos table");
                 info_tb.modify(info_iter, same_payer, [&](auto &p) { p.supply += melt_amount ; });
 
                 action(
