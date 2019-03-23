@@ -6,11 +6,8 @@
 
 #include <eosiolib/asset.hpp>
 #include <eosiolib/eosio.hpp>
-#include <eosiolib/system.h>
-#include <eosiolib/time.hpp>
-#include <string>
 
-using eosio::microseconds;
+#include <string>
 
 namespace eosiosystem {
    class system_contract;
