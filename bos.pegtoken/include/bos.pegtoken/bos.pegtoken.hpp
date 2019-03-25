@@ -84,15 +84,17 @@ public:
 
     [[eosio::action]] void assignaddr( symbol_code sym_code, name to, string address );
 
+    [[eosio::action]] void notifymelt( uint64_t id );
+
     [[eosio::action]] void pay( asset quantity, name user );
 
     [[eosio::action]] void ruin( asset quantity , name user );
 
     [[eosio::action]] void retreat( name to, asset quantity );
 
-    [[eosio::action]] void confirmback( symbol_code sym_code, transaction_id_type trx_id, string remote_trx_id, uint64_t index, uint64_t remote_index, string memo );
+    [[eosio::action]] void confirmback( symbol_code sym_code, string remote_trx_id, uint64_t id, uint64_t remote_index, string memo );
 
-    [[eosio::action]] void denyback( symbol_code sym_code, transaction_id_type trx_id, uint64_t index, string memo );
+    [[eosio::action]] void denyback( symbol_code sym_code, uint64_t id, string memo );
 
     [[eosio::action]] void lockall( symbol_code sym_code, name brakeman );
 
@@ -194,7 +196,6 @@ private:
 
     struct [[eosio::table]] melt_ts {
         uint64_t id;
-        transaction_id_type trx_id;
         name from;
         string to;
         asset total;
@@ -204,7 +205,6 @@ private:
         bool need_check;
         bool enable;
         name auditor;
-        uint64_t index;
         string remote_trx_id;
         uint64_t remote_index;
         string msg;
