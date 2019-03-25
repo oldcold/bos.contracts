@@ -54,13 +54,13 @@ class[[eosio::contract("bos.pegtoken")]] pegtoken : public contract
 public:
     using contract::contract;
 
-    [[eosio::action]] void create( symbol sym, name issuer, name address_style);
+    [[eosio::action]] void create( symbol sym, name issuer, name address_style );
 
     [[eosio::action]] void setissuer( symbol_code sym_code, name issuer );
     
     [[eosio::action]] void setlimit( symbol_code sym_code, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
 
-    [[eosio::action]] void setviplimit( symbol_code sym_code, name vip, asset maximum_limit, asset minimum_limit ,asset total_limit,uint64_t frequency_limit, uint64_t interval_limit );
+    [[eosio::action]] void setviplimit( symbol_code sym_code, name vip, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
 
     [[eosio::action]] void setfee( symbol_code sym_code, double service_fee_rate, asset min_service_fee, asset miner_fee );
 
@@ -76,7 +76,7 @@ public:
     
     [[eosio::action]] void melt( name from_account, string to_address, asset quantity, uint64_t index, string memo );
 
-    [[eosio::action]] void premelt(name from_account, string to_address, asset quantity, uint64_t index, string memo);
+    [[eosio::action]] void premelt( name from_account, string to_address, asset quantity, uint64_t index, string memo );
 
     [[eosio::action]] void applyaddr( symbol_code sym_code, name to );
 
@@ -84,9 +84,9 @@ public:
 
     [[eosio::action]] void assignaddr( symbol_code sym_code, name to, string address );
 
-    [[eosio::action]] void pay( asset quantity, name user);
+    [[eosio::action]] void pay( asset quantity, name user );
 
-    [[eosio::action]] void ruin( asset quantity , name user);
+    [[eosio::action]] void ruin( asset quantity , name user );
 
     [[eosio::action]] void retreat( name to, asset quantity );
 
@@ -351,7 +351,7 @@ private:
 ////////////////////////
 // private funcs
 ////////////////////////
-    void pegtoken::verify_address(name style, string addr) {
+    void pegtoken::verify_address( name style, string addr ) {
         if (style == "bitcoin"_n) {
             eosio_assert(valid_bitcoin_addr(addr), "invalid bitcoin addr");
         } else if (style == "ethereum"_n) {
@@ -369,7 +369,7 @@ private:
         }
     }
 
-    void pegtoken::sub_balance(name owner, asset value) {
+    void pegtoken::sub_balance( name owner, asset value ) {
         auto acct = accounts( get_self(), owner.value );
         auto from = acct.find( value.symbol.code().raw() );
         eosio_assert( from != acct.end(), "no balance object found" );
@@ -383,7 +383,7 @@ private:
         }
     }
 
-    void pegtoken::add_balance(name owner, asset value, name ram_payer) {
+    void pegtoken::add_balance( name owner, asset value, name ram_payer ) {
         auto acct = accounts(get_self(), owner.value);
         auto to = acct.find(value.symbol.code().raw());
         if (to == acct.end()) {
@@ -397,7 +397,7 @@ private:
         }
     }
 
-    asset pegtoken::calculate_service_fee(asset sum, double service_fee_rate, asset min_service_fee) {
+    asset pegtoken::calculate_service_fee( asset sum, double service_fee_rate, asset min_service_fee ) {
         asset actual_service_fee = sum * service_fee_rate;
 
         if (actual_service_fee.amount < min_service_fee.amount) {
@@ -407,88 +407,88 @@ private:
         }
     }
 
-    asset pegtoken::getbalance(symbol_code sym_code, name user) {
+    asset pegtoken::getbalance( symbol_code sym_code, name user ) {
         auto acct = accounts(get_self(), user.value);
         auto balance_val = acct.get(sym_code.raw(), "Cannot getbalance for user");
         return balance_val.balance;
     }
 
-    bool pegtoken::balance_check(symbol_code sym_code, name user) {
+    bool pegtoken::balance_check( symbol_code sym_code, name user ) {
         auto acct = accounts(get_self(), user.value);
         auto balance = acct.find(sym_code.raw());
         return balance == acct.end() || balance->balance.amount == 0;
     }
     
-    bool pegtoken::addr_check(symbol_code sym_code, name user) {
+    bool pegtoken::addr_check( symbol_code sym_code, name user ) {
         auto addresses = addrs(get_self(), sym_code.raw());
         auto addr_iter = addresses.find(user.value);
         return addr_iter == addresses.end() || (addr_iter->state != 0 || addr_iter->address == "");
     }
 
-    bool pegtoken::getincheck(symbol_code sym_code) {
+    bool pegtoken::getincheck( symbol_code sym_code ) {
         auto check_table = checks(get_self(), sym_code.raw());
         bool incheck = check_table.get(sym_code.raw(), "no such in_check").in_check;
         return incheck;
     }
 
-    bool pegtoken::getoutcheck(symbol_code sym_code){
+    bool pegtoken::getoutcheck( symbol_code sym_code ) {
         auto check_table = checks(get_self(),sym_code.raw());
         bool outcheck = check_table.get(sym_code.raw(),"no such out_check").out_check;
         return outcheck;
     }
 
-    bool pegtoken::is_sym_equal_asset(symbol_code sym_code, asset quantity){
+    bool pegtoken::is_sym_equal_asset( symbol_code sym_code, asset quantity ) {
         symbol_code asset_symcode = quantity.symbol.code();
         return asset_symcode == sym_code;
     }
 
-    bool pegtoken::is_vip(symbol_code sym_code, name name) {
+    bool pegtoken::is_vip( symbol_code sym_code, name name ) {
         auto vip_tb = vips(get_self(), sym_code.raw());
         auto iter = vip_tb.find(name.value);
         return iter != vip_tb.end();
     }
 
-    void pegtoken::is_auth_issuer(symbol_code sym_code) {
+    void pegtoken::is_auth_issuer( symbol_code sym_code ) {
         auto info_table = infos(get_self(), sym_code.raw());
         auto info_val = info_table.get(sym_code.raw(), "the token not in infos table");
         require_auth(info_val.issuer);
     }
 
-    void pegtoken::is_auth_manager(symbol_code sym_code) {
+    void pegtoken::is_auth_manager( symbol_code sym_code ) {
         auto manager_tb = managers(get_self(), sym_code.raw());
         auto mgr_iter = manager_tb.begin();
         eosio_assert(mgr_iter != manager_tb.end(), "the token not in managers table");
         require_auth(mgr_iter->manager);
     }
 
-    void pegtoken::is_auth_teller(symbol_code sym_code) {
+    void pegtoken::is_auth_teller( symbol_code sym_code ) {
         auto teller_tb = tellers(get_self(), sym_code.raw());
         auto teller_iter = teller_tb.begin();
         eosio_assert(teller_iter != teller_tb.end(), "the token not in tellers table");
         require_auth(teller_iter->teller);
     }
 
-    void pegtoken::is_auth_auditor(symbol_code sym_code, name auditor) {
+    void pegtoken::is_auth_auditor( symbol_code sym_code, name auditor ) {
         auto auditor_tb = auditors(get_self(), sym_code.raw());
         auto auditor_iter = auditor_tb.find(auditor.value);
         eosio_assert(auditor_iter != auditor_tb.end(), "auditor not in auditors table.");
         require_auth(auditor_iter->auditor);
     }
 
-    void pegtoken::is_auth_brakeman(symbol_code sym_code) {
+    void pegtoken::is_auth_brakeman( symbol_code sym_code ) {
         auto brakeman_tb = brakemans(get_self(), sym_code.raw());
         auto brake_iter = brakeman_tb.begin();
         eosio_assert(brake_iter != brakeman_tb.end(), "the token not in brakemans table");
         require_auth(brake_iter->brakeman);
     }
 
-    void pegtoken::is_auth_gatherer(symbol_code sym_code) {
+    void pegtoken::is_auth_gatherer( symbol_code sym_code ) {
         auto gatherer_tb = gatherers(get_self(),sym_code.raw());
         auto gatherer_val = gatherer_tb.get(sym_code.raw(), "the token not in gatherers table");
         require_auth(gatherer_val.gatherer);
     }
 
-    void pegtoken::is_auth_role(symbol_code sym_code, name account) {
+    void pegtoken::is_auth_role( symbol_code sym_code, name account ) {
         auto brakeman_tb = brakemans(get_self(), sym_code.raw());
         auto braks = brakeman_tb.find(account.value);
         eosio_assert(braks == brakeman_tb.end(), "account has been assigned to role: brakeman");
@@ -515,7 +515,7 @@ private:
         eosio_assert(account != info_iter->issuer, "The account has been assigned to issuer");
     }
 
-     void pegtoken::is_auth_role_exc_gatherer(symbol_code sym_code, name account) {
+     void pegtoken::is_auth_role_exc_gatherer( symbol_code sym_code, name account ) {
         auto brakeman_tb = brakemans(get_self(), sym_code.raw());
         auto braks = brakeman_tb.find(account.value);
         eosio_assert(braks == brakeman_tb.end(), "account has been assigned to role: brakeman");
@@ -538,27 +538,27 @@ private:
         eosio_assert(account != info_iter->issuer, "The account has been assigned to issuer");
     }
 
-    name pegtoken::get_gatherer(symbol_code sym_code) {
+    name pegtoken::get_gatherer( symbol_code sym_code ) {
         auto gat_table = gatherers(get_self(), sym_code.raw());
         auto gat_iter = gat_table.begin();
         eosio_assert(gat_iter != gat_table.end(), "No such symbol in gatherers table");
         return gat_iter->gatherer;
     }
 
-    name pegtoken::get_teller(symbol_code sym_code) {
+    name pegtoken::get_teller( symbol_code sym_code ) {
         auto teller_tb = tellers(get_self(), sym_code.raw());
         auto teller_iter = teller_tb.begin();
         eosio_assert(teller_iter != teller_tb.end(), "the token not in tellers table");
         return teller_iter->teller;
     }
     
-    bool pegtoken::is_locked(symbol_code sym_code) {
+    bool pegtoken::is_locked( symbol_code sym_code ) {
         auto info_table = infos(get_self(), sym_code.raw());
         auto info_val = info_table.get(sym_code.raw(), "No such symbol in infos table");
         return info_val.active;
     }
 
-    void pegtoken::vip_withdraw_check(symbol_code sym_code, asset quantity, name account) {
+    void pegtoken::vip_withdraw_check( symbol_code sym_code, asset quantity, name account ) {
         auto vlimits_tb = viplimits(get_self(), sym_code.raw());
         auto vlim_val = vlimits_tb.get(account.value, "This type of assets not exists in limits table");
 
@@ -595,7 +595,7 @@ private:
         eosio_assert(freq + 1 <= vlim_val.frequency_limit, "More than daily frequency limit");
     }
 
-    void pegtoken::withdraw_check(symbol_code sym_code, asset quantity, name account) {
+    void pegtoken::withdraw_check( symbol_code sym_code, asset quantity, name account ) {
         auto limits_tb = limits(get_self(), sym_code.raw());
         auto lim_val = limits_tb.get(sym_code.raw(), "This type of assets not exists in limits table");
        

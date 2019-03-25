@@ -58,8 +58,7 @@ namespace eosio {
         });
     }
 
-    void pegtoken::setissuer( symbol_code sym_code, name issuer )
-    {
+    void pegtoken::setissuer( symbol_code sym_code, name issuer ) {
         require_auth(get_self());
         ACCOUNT_CHECK(issuer);
 
@@ -180,8 +179,8 @@ namespace eosio {
         }
     }
 
-    void pegtoken::precast(symbol_code sym_code, string to_address, name to_account, 
-        string remote_trx_id, asset quantity, uint64_t index, string memo) {
+    void pegtoken::precast( symbol_code sym_code, string to_address, name to_account, 
+        string remote_trx_id, asset quantity, uint64_t index, string memo ) {
         is_auth_teller(sym_code);
         is_auth_role(sym_code, to_account);
         eosio_assert(is_sym_equal_asset(sym_code, quantity), "sym_code is not same as quantity's symbol_code.");
@@ -421,7 +420,7 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setgatherer( symbol_code sym_code, name gatherer) {
+    void pegtoken::setgatherer( symbol_code sym_code, name gatherer ) {
         is_auth_issuer(sym_code);
         is_auth_role(sym_code, gatherer);
         ACCOUNT_CHECK(gatherer);
@@ -443,7 +442,7 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setteller( symbol_code sym_code, name teller) {
+    void pegtoken::setteller( symbol_code sym_code, name teller ) {
         is_auth_issuer(sym_code);
         is_auth_role(sym_code, teller);
         ACCOUNT_CHECK(teller);
@@ -601,7 +600,7 @@ namespace eosio {
         }
     }
 
-    void pegtoken::assignaddr(symbol_code sym_code, name to, string address) {
+    void pegtoken::assignaddr( symbol_code sym_code, name to, string address ) {
         is_auth_teller(sym_code);
         is_auth_role_exc_gatherer(sym_code, to);
         
@@ -653,7 +652,7 @@ namespace eosio {
         info_tb.modify(info_iter, same_payer, [&](auto &p) { p.supply -= quantity; });
     }
 
-    void pegtoken::retreat(name to, asset quantity) {
+    void pegtoken::retreat( name to, asset quantity ) {
         auto sym_code = quantity.symbol.code();
         eosio_assert(is_locked(sym_code), "The token is locked");
         eosio_assert(quantity.amount > 0, "The quantity to ruin is less or equal to 0");
@@ -747,7 +746,7 @@ namespace eosio {
         infos_tb.modify(iter, same_payer, [&](auto &p) { p.active = false; });
     }
 
-    void pegtoken::unlockall(symbol_code sym_code, name brakeman) {
+    void pegtoken::unlockall( symbol_code sym_code, name brakeman ) {
        is_auth_brakeman(sym_code);
        require_auth(brakeman);
        auto sym_raw = sym_code.raw();
