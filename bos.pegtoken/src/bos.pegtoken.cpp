@@ -1,5 +1,4 @@
 #include <bos.pegtoken/bos.pegtoken.hpp>
-#include <eosio.token/eosio.token.hpp>
 #include <eosiolib/transaction.hpp>
 #include <eosiolib/action.hpp>
 #include "def.cpp"
@@ -10,11 +9,10 @@ namespace eosio {
 // actions
 ////////////////////////
 
-    void pegtoken::create( symbol sym, name issuer, name address_style, uint64_t peg ) {
-        eosio_assert(peg == peg_type::PRE_RELEASE || peg == peg_type::STRICT_ANCHOR, "peg can only be 1 or 2");
+    void pegtoken::create( symbol sym, name issuer, name address_style ) {
         require_auth(get_self());
         ACCOUNT_CHECK(issuer);
-        eosio_assert(sym.is_valid(), "invalid symbol");
+        eosio_assert(sym.is_valid(), "invalid symbol.");
         eosio_assert(address_style == "bitcoin"_n || address_style == "ethereum"_n || 
                      address_style == "tether"_n || address_style == "other"_n,
                      "address_style must be one of bitcoin, ethereum, tether or other");
@@ -30,17 +28,11 @@ namespace eosio {
         auto info_table = infos(get_self(), sym_raw);
         eosio_assert(info_table.find(sym_raw) == info_table.end(), "token with symbol already exists (info)");
 
-        info_table.emplace(get_self(), [&] (auto &p) {
+        info_table.emplace(get_self(), [&](auto &p) {
             p.supply = eosio::asset(0, sym);
             p.issuer = issuer;
             p.address_style = address_style;
-            p.active = true; 
-        });
-
-        auto summary_table = summaries(get_self(), sym_raw);
-        eosio_assert(summary_table.find(sym_raw) == summary_table.end(), "token with symbol already exists (summary)");
-        summary_table.emplace(get_self(), [&](auto &p) {
-            /* do nothing */
+            p.active = true;
         });
 
         // Init limits.
@@ -63,11 +55,10 @@ namespace eosio {
             p.service_fee_rate = SERVICE_FEE_RATE;
             p.min_service_fee = eosio::asset(MIN_SERVICE_FEE, sym);
             p.miner_fee = eosio::asset(MINER_FEE, sym);
-        }); 
+        });
     }
 
-    void pegtoken::setissuer( symbol_code sym_code, name issuer )
-    {
+    void pegtoken::setissuer( symbol_code sym_code, name issuer ) {
         require_auth(get_self());
         ACCOUNT_CHECK(issuer);
 
@@ -188,8 +179,8 @@ namespace eosio {
         }
     }
 
-    void pegtoken::precast(symbol_code sym_code, string to_address, name to_account, 
-        string remote_trx_id, asset quantity, uint64_t index, string memo) {
+    void pegtoken::precast( symbol_code sym_code, string to_address, name to_account, 
+        string remote_trx_id, asset quantity, uint64_t index, string memo ) {
         is_auth_teller(sym_code);
         is_auth_role(sym_code, to_account);
         eosio_assert(is_sym_equal_asset(sym_code, quantity), "sym_code is not same as quantity's symbol_code.");
@@ -215,7 +206,7 @@ namespace eosio {
             p.to_account = to_account;
             p.to_address = to_address;
             p.quantity = quantity;
-            p.state = 0;
+            p.state = cast_state::CAST_INIT;
             p.need_check = true;
             p.enable = false;
             p.auditor = NIL_ACCOUNT;
@@ -325,51 +316,10 @@ namespace eosio {
             p.update_time = time_point_sec(now());
         });
     }
-
-    void pegtoken::cast(symbol_code sym_code, string to_address, name to_account, string remote_trx_id, asset quantity,  uint64_t index, string memo){
-        is_auth_role(sym_code,to_account);
-        eosio_assert(is_locked(sym_code),"The token has been locked");
-        eosio_assert(!getincheck(sym_code), "This action require in_check to be false");
-        ACCOUNT_CHECK(to_account);
-        STRING_LEN_CHECK(memo, 256);
-        eosio_assert(quantity.amount > 0, "non-positive quantity");
-        
-        auto sym_raw = quantity.symbol.code().raw();
-        auto info_table = infos(get_self(),sym_raw);
-        auto iter_info = info_table.find(sym_raw);
-        eosio_assert(iter_info != info_table.end(), "token not exist");
-        require_auth(iter_info->issuer);
-
-        auto addr_table = addrs(get_self(), sym_raw);
-        auto iter_addr = addr_table.find(to_account.value);
-        eosio_assert(iter_addr != addr_table.end() && iter_addr->address == to_address, "invalid to_address");
-
-        auto cast_table = casts(get_self(), sym_raw);
-        auto index_str = remote_trx_id + std::to_string(index);
-        auto iter_cast = cast_table.find(hash64(index_str));
-        eosio_assert(iter_cast != cast_table.end()
-        && iter_cast -> to_account == to_account
-        && iter_cast -> to_address == to_address
-        && iter_cast -> remote_trx_id == remote_trx_id
-        && iter_cast -> index == index
-        && iter_cast -> quantity == quantity
-         , "invalid cast");
-
-        cast_table.modify(iter_cast,same_payer,[&](auto &p){
-            p.trx_id = get_trx_id();
-            p.msg = memo;
-            p.update_time = time_point_sec(now());
-        });
-
-        add_balance(to_account, quantity, get_self());
-        info_table.modify(iter_info,same_payer,[&](auto &p){
-            p.supply += quantity;
-            eosio_assert(p.supply.amount >0, "supply overflow");
-        });
-    }
     
     void pegtoken::melt( name from_account, string to_address, asset quantity, uint64_t index, string memo ) {
         symbol_code sym_code = quantity.symbol.code();
+        require_auth(from_account);
         ACCOUNT_CHECK(from_account);
         is_auth_role_exc_gatherer(sym_code, from_account);
         eosio_assert(is_locked(sym_code), "The token is locked");
@@ -380,7 +330,6 @@ namespace eosio {
         eosio_assert(info_iter != info_tb.end(), "token not exist");
         eosio_assert(getbalance(sym_code, from_account) > quantity, "the remaining balance of from_account should be more than quantity");
         verify_address(info_iter->address_style, to_address);
-        
         eosio::asset userfee, minlimit;
         double ratelimit;
         if(is_vip(sym_code, from_account)) {
@@ -392,36 +341,27 @@ namespace eosio {
         } else {
             withdraw_check(sym_code, quantity, from_account);
             auto fees_tb = fees(get_self(), sym_code.raw());
-            auto fee_val = fees_tb.get(from_account.value, "This account is not in fees table");
+            auto fee_val = fees_tb.get(sym_code.raw(), "This account is not in fees table");
             ratelimit = fee_val.service_fee_rate;
             minlimit = fee_val.min_service_fee;
-        }   
-	asset ratefee = asset(ratelimit*quantity.amount, quantity.symbol);
-        userfee = ratefee > minlimit ? ratefee: minlimit;
-       
+          
         action(
-            permission_level{get_self(), "active"_n},
+            permission_level{from_account, "active"_n},
             get_self(),
             "pay"_n,
             std::make_tuple(userfee, from_account)
         ).send();
 
         action(
-            permission_level{get_self(), "active"_n},
+            permission_level{from_account, "active"_n},
             get_self(),
             "ruin"_n,
             std::make_tuple(quantity - userfee, from_account)
         ).send();
-        
-        // 当前时间，对比上次提币时间需要大于最小间隔数
-        // 距离上个自然日零点到申请提币时，累计金额和次数分别需要小于相关设定：total_limit和frequency_limit
 
-        // 以内联action的方式调用ruin, 减少from_account里面的余额
-        // 减小infos表中supply的值，数值为总额减去费用。
-
-        // 在melts添加一条记录，need_check置为false，enable字段置为false。
-        auto melt_tb = melts(get_self(),  sym_code.raw());
-        melt_tb.emplace(same_payer, [&](auto& mt){
+        auto now_time = time_point_sec(now());
+        auto melt_tb = melts(get_self(), sym_code.raw());
+        melt_tb.emplace(get_self(), [&](auto& mt) {
             mt.id = melt_tb.available_primary_key();
             mt.trx_id = get_trx_id();
             mt.from = from_account;
@@ -431,27 +371,28 @@ namespace eosio {
             mt.fee = userfee;
             mt.need_check = false;
             mt.enable = false;
+            mt.state = melt_state::WITHDRAW_INIT;
             mt.msg = memo;
-            mt.create_time = time_point_sec(now());
+            mt.create_time = now_time;
+            mt.update_time = now_time;
         });
-        
+
         auto statistics_tb = statistics(get_self(), sym_code.raw());
-        auto statistic_iter = statistics_tb.find(sym_code.raw());
+        auto statistic_iter = statistics_tb.find(from_account.value);
         eosio_assert(statistic_iter != statistics_tb.end(), "cannot find statistic in statistics able");
         statistics_tb.modify(statistic_iter, same_payer, [&](auto &sts) {
-            if(time_point_sec(now()) - statistic_iter->last_time > DAY_IN_MICROSECOND) {
+            if(now_time - statistic_iter->last_time > DAY_IN_MICROSECOND) {
                 sts.frequency = 1;
                 sts.total = quantity;
-                sts.update_time = time_point_sec(now());
             } else {
                 sts.frequency = statistic_iter->frequency + 1;
                 sts.total += quantity;
-                sts.update_time = time_point_sec(now());
             }
+            sts.update_time = now_time;
+            sts.last_time = now_time;
         });
     }
 
-    // check 5 roles: deployer, teller, gatherer, manager, brakeman, issuer (check in different version)
     void pegtoken::setauditor( symbol_code sym_code, string actn, name auditor ) {
         is_auth_issuer(sym_code);
         if (actn == "add") {
@@ -476,7 +417,7 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setgatherer( symbol_code sym_code, name gatherer) {
+    void pegtoken::setgatherer( symbol_code sym_code, name gatherer ) {
         is_auth_issuer(sym_code);
         is_auth_role(sym_code, gatherer);
         ACCOUNT_CHECK(gatherer);
@@ -498,7 +439,7 @@ namespace eosio {
         }
     }
 
-    void pegtoken::setteller( symbol_code sym_code, name teller) {
+    void pegtoken::setteller( symbol_code sym_code, name teller ) {
         is_auth_issuer(sym_code);
         is_auth_role(sym_code, teller);
         ACCOUNT_CHECK(teller);
@@ -656,7 +597,7 @@ namespace eosio {
         }
     }
 
-    void pegtoken::assignaddr(symbol_code sym_code, name to, string address) {
+    void pegtoken::assignaddr( symbol_code sym_code, name to, string address ) {
         is_auth_teller(sym_code);
         is_auth_role_exc_gatherer(sym_code, to);
         
@@ -685,36 +626,35 @@ namespace eosio {
         });
     }
 
-     void pegtoken::pay( asset quantity , name user){
+    void pegtoken::pay( asset quantity, name user ) {
+        require_auth(user);
         auto sym_code = quantity.symbol.code();
-        eosio_assert(is_locked(sym_code),"The token has been locked");
+        eosio_assert(is_locked(sym_code), "The token has been locked");
         
         eosio_assert(quantity.amount > 0, "quantity should be more than zero for pay");
         name gatherer = get_gatherer(sym_code);
         sub_balance(user, quantity);
-        add_balance(gatherer, quantity, same_payer);
-     }
+        add_balance(gatherer, quantity, get_self());
+    }
 
-     void pegtoken::ruin( asset quantity, name user ) {
+    void pegtoken::ruin( asset quantity, name user ) {
         require_auth(user);
         auto sym_code = quantity.symbol.code();
-        eosio_assert(is_locked(sym_code),"The token has been locked");
-        eosio_assert(quantity.amount > 0, "quantity should be more than zero for ruin");       
-        eosio_assert(quantity>asset{0,quantity.symbol}, "The quantity to ruin is less or equal to 0");
         eosio_assert(is_locked(sym_code), "The token has been locked");
         eosio_assert(quantity.amount > 0, "The quantity to ruin is less or equal to 0");
         sub_balance(user, quantity);
         auto info_tb = infos(get_self(), sym_code.raw());
-        auto info_iter2 = info_tb.get(sym_code.raw(), "sym_code do not exist in infos table");
-        info_tb.modify(info_iter2, same_payer, [&](auto &p) { p.supply -= quantity; });
+        auto info_iter = info_tb.begin();
+        eosio_assert(info_iter != info_tb.end(), "sym_code do not exist in infos table");
+        info_tb.modify(info_iter, same_payer, [&](auto &p) { p.supply -= quantity; });
     }
 
-    void pegtoken::retreat(name to, asset quantity) {
+    void pegtoken::retreat( name to, asset quantity ) {
         auto sym_code = quantity.symbol.code();
         eosio_assert(is_locked(sym_code), "The token is locked");
         eosio_assert(quantity.amount > 0, "The quantity to ruin is less or equal to 0");
         is_auth_teller(sym_code);
-        add_balance(to, quantity, same_payer);
+        add_balance(to, quantity, get_self());
     }
 
     void pegtoken::confirmback( symbol_code sym_code, transaction_id_type trx_id,
@@ -723,55 +663,69 @@ namespace eosio {
         eosio_assert(is_locked(sym_code), "The token is locked");
 
         auto melt_tb = melts(get_self(), sym_code.raw());
+        bool found = false;
         for (auto melt_iter = melt_tb.begin(); melt_iter != melt_tb.end(); ++melt_iter) {
             // Find the trx hash
             // The following check conditions are for the melt to be reviewed and approved or the melt need not be reviewed.
-            if( std::memcmp(trx_id.hash, melt_iter->trx_id.hash, 32) == 0 && melt_iter->index == index
-                && ((melt_iter->enable == true && melt_iter->need_check == true) || melt_iter->need_check == false) && melt_iter->state == 0) {
+            if( std::memcmp(trx_id.hash, melt_iter->trx_id.hash, 32) == 0
+                && melt_iter->index == index
+                && ((melt_iter->enable == true && melt_iter->need_check == true) || melt_iter->need_check == false)
+                && melt_iter->state == melt_state::WITHDRAW_INIT) {
                 melt_tb.modify(melt_iter, same_payer, [&](auto &mit) {
                     mit.remote_index = remote_index;
                     mit.remote_trx_id = remote_trx_id;
                     mit.state = melt_state::WITHDRAW_SUCCESS;
                     mit.msg = memo;
+                    mit.update_time = time_point_sec(now());
                 });
+                found = true;
+                break;
             }
         }
+        eosio_assert(found, "Can not find the transaction.");
     }
 
     void pegtoken::denyback( symbol_code sym_code, transaction_id_type trx_id,
-       uint64_t index, string memo ) {
-       eosio_assert(is_locked(sym_code), "The token is locked");
-       is_auth_teller(sym_code);
-       is_locked(sym_code);
-       
+        uint64_t index, string memo ) {
+        eosio_assert(is_locked(sym_code), "The token is locked");
+        is_auth_teller(sym_code);
+        
         auto melt_tb = melts(get_self(), sym_code.raw());
         name melt_to;
         asset melt_total;
         asset melt_amount;
+        bool found = false;
         for (auto melt_iter = melt_tb.begin(); melt_iter != melt_tb.end(); ++melt_iter) {
             // Find the trx hash
-            if( std::memcmp(trx_id.hash, melt_iter->trx_id.hash, 32) == 0 && melt_iter->index == index
-                && ((melt_iter->enable == true && melt_iter->need_check == true) || melt_iter->need_check == false) && melt_iter->state == 0) {
+            if( std::memcmp(trx_id.hash, melt_iter->trx_id.hash, 32) == 0
+                && melt_iter->index == index
+                && ((melt_iter->enable == true && melt_iter->need_check == true) || melt_iter->need_check == false)
+                && melt_iter->state == melt_state::WITHDRAW_INIT) {
                 melt_to = melt_iter->from;
                 melt_total = melt_iter->total;
                 melt_amount = melt_iter->amount;
                 melt_tb.modify(melt_iter, same_payer, [&](auto &mit) {
-                    mit.state = 5;
+                    mit.state = melt_state::WITHDRAW_ROLLBACL;
                     mit.msg = memo;
+                    mit.update_time = time_point_sec(now());
                 });
+
+                auto info_tb = infos(get_self(), sym_code.raw());
+                auto info_iter = info_tb.begin();
+                eosio_assert(info_iter != info_tb.end(), "sym_code do not exist in infos table");
+                info_tb.modify(info_iter, same_payer, [&](auto &p) { p.supply += melt_amount ; });
+
+                action(
+                    permission_level{get_teller(sym_code), "active"_n},
+                    get_self(),
+                    "retreat"_n,
+                    std::make_tuple(melt_to, melt_amount)
+                ).send();
+                found = true;
                 break;
             }
         }
-        auto info_tb = infos(get_self(), sym_code.raw());
-        auto info_iter = info_tb.get(sym_code.raw(), "sym_code do not exist in infos table");
-        info_tb.modify(info_iter, same_payer, [&](auto &p) { p.supply += melt_amount ; });
-
-        action(
-            permission_level{get_self(), "active"_n},
-            get_self(),
-            "retreat"_n,
-            std::make_tuple(melt_to, melt_amount)
-        ).send();
+        eosio_assert(found, "Can not find the transaction.");
     }
 
     void pegtoken::lockall( symbol_code sym_code, name brakeman ) {
@@ -789,7 +743,7 @@ namespace eosio {
         infos_tb.modify(iter, same_payer, [&](auto &p) { p.active = false; });
     }
 
-    void pegtoken::unlockall(symbol_code sym_code, name brakeman) {
+    void pegtoken::unlockall( symbol_code sym_code, name brakeman ) {
        is_auth_brakeman(sym_code);
        require_auth(brakeman);
        auto sym_raw = sym_code.raw();
@@ -805,18 +759,14 @@ namespace eosio {
     }
 } // namespace eosio
 
-// FIXME: setauditor is removed
-EOSIO_DISPATCH( eosio::pegtoken, (create)(setissuer)
-        (setlimit)
-        (setviplimit)
-        (setfee)
-        (setvipfee)
-        (setcheck)
-        (cast)(precast)(agreecast)(refusecast)
+EOSIO_DISPATCH( eosio::pegtoken, 
+        (create)
         (melt)
+        (precast)(agreecast)(refusecast)
         (applyaddr)(resetaddress)(assignaddr)
         (pay)(ruin)(retreat)
         (confirmback)(denyback)
         (lockall)(unlockall)
-        (setauditor)(setgatherer)(setteller)(setmanager)(setbrakeman)(setvip)
+        (setlimit)(setvip)(setviplimit)(setfee)(setvipfee)(setcheck)
+        (setissuer)(setauditor)(setgatherer)(setteller)(setmanager)(setbrakeman)
         );
