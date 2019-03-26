@@ -6,11 +6,8 @@
 
 #include <eosiolib/asset.hpp>
 #include <eosiolib/eosio.hpp>
-#include <eosiolib/system.h>
-#include <eosiolib/time.hpp>
-#include <string>
 
-using eosio::microseconds;
+#include <string>
 
 namespace eosiosystem {
    class system_contract;
@@ -82,22 +79,20 @@ namespace eosio {
          };
 
          ///bos begin
-         struct [[eosio::table]] blacklist
+         struct [[eosio::table]] account_blacklist
          {
             name account;
             uint64_t primary_key() const { return account.value; }
          };
 
-         typedef eosio::multi_index<"blacklist"_n, blacklist> tokenblacklist;
+         typedef eosio::multi_index<"blacklist"_n, account_blacklist> blacklist;
+         static const uint8_t blacklist_limit_size = 20 ;
          ///bos end
          typedef eosio::multi_index< "accounts"_n, account > accounts;
          typedef eosio::multi_index< "stat"_n, currency_stats > stats;
 
          void sub_balance( name owner, asset value );
          void add_balance( name owner, asset value, name ram_payer );
-         bool is_on_blacklist(name account); ///bos
-
-      
    };
 
 } /// namespace eosio
