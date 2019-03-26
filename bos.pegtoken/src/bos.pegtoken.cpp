@@ -317,7 +317,7 @@ namespace eosio {
         });
     }
     
-    void pegtoken::melt( name from_account, string to_address, asset quantity, uint64_t index, string memo ) {
+    void pegtoken::melt( name from_account, string to_address, asset quantity, string memo ) {
         symbol_code sym_code = quantity.symbol.code();
         require_auth(from_account);
         ACCOUNT_CHECK(from_account);
