@@ -195,7 +195,7 @@ void token::rmblacklist(const std::vector<name>& accounts)
 {
    require_auth("eosio"_n);
 
-   eosio_assert( blacklist_limit_size>=accounts.size(), "accounts' size must be less than 20." );
+   eosio_assert( blacklist_limit_size>=accounts.size(), "accounts' size must be less than 100." );
    bool is_executed = false;
    for (auto acc : accounts){
       blacklist blacklisttable(_self, _self.value);
