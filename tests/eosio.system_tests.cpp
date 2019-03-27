@@ -3518,7 +3518,7 @@ try
 FC_LOG_AND_RETHROW()
 ///bos namelist end
 /// bos garanteed minimum resource
-BOOST_FIXTURE_TEST_CASE(setguaminres_test, eosio_system_tester)
+BOOST_FIXTURE_TEST_CASE(setguaminres, eosio_system_tester)
 try
 {
    //install multisig contract
