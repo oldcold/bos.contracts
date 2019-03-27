@@ -98,18 +98,18 @@ void token::transfer( name    from,
    stats statstable(_self, sym.raw());
    const auto &st = statstable.get(sym.raw());
 
-    require_recipient( from );
-    require_recipient( to );
+   require_recipient(from);
+   require_recipient(to);
 
-    eosio_assert( quantity.is_valid(), "invalid quantity" );
-    eosio_assert( quantity.amount > 0, "must transfer positive quantity" );
-    eosio_assert( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
-    eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
+   eosio_assert(quantity.is_valid(), "invalid quantity");
+   eosio_assert(quantity.amount > 0, "must transfer positive quantity");
+   eosio_assert(quantity.symbol == st.supply.symbol, "symbol precision mismatch");
+   eosio_assert(memo.size() <= 256, "memo has more than 256 bytes");
 
-    auto payer = has_auth( to ) ? to : from;
+   auto payer = has_auth(to) ? to : from;
 
-    sub_balance( from, quantity );
-    add_balance( to, quantity, payer );
+   sub_balance(from, quantity);
+   add_balance(to, quantity, payer);
 }
 
 void token::sub_balance( name owner, asset value ) {
@@ -195,7 +195,7 @@ void token::rmblacklist(const std::vector<name>& accounts)
 {
    require_auth("eosio"_n);
 
-   eosio_assert( blacklist_limit_size>=accounts.size(), "accounts' size must be less than 20." );
+   eosio_assert( blacklist_limit_size>=accounts.size(), "accounts' size must be less than 100." );
    bool is_executed = false;
    for (auto acc : accounts){
       blacklist blacklisttable(_self, _self.value);
