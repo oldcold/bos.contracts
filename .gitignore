@@ -37,9 +37,17 @@
 build/*
 .DS_Store
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> feature/pegtoken-v3-test
 .idea
 cmake-build-debug
 
 .vscode
+<<<<<<< HEAD
+
+=======
 .eosproj
 *.tmp
+>>>>>>> feature/pegtoken-v3-test
