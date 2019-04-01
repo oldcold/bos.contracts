@@ -782,6 +782,7 @@ namespace eosio {
 } // namespace eosio
 
 EOSIO_DISPATCH( eosio::pegtoken, 
+		(specialcret)
         (create)
         (melt)
         (precast)(agreecast)(refusecast)

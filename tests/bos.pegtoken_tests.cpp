@@ -28,7 +28,7 @@ public:
       set_code( N(btc.bos), contracts::pegtoken_wasm() );
       set_abi( N(btc.bos), contracts::pegtoken_abi().data() );
 
-      produce_blocks(2);
+      produce_blocks();
 
       const auto& accnt = control->db().get<account_object,by_name>( N(btc.bos) );
       abi_def abi;
@@ -51,7 +51,7 @@ public:
       auto symb = eosio::chain::symbol::from_string(symbolname);
       auto symbol_code = symb.to_symbol_code().value;
                                             // 
-      vector<char> data = get_row_by_account( N(btc.bos), N(btc.bos), N(symbols), symbol_code );
+      vector<char> data = get_row_by_account( N(btc.bos), symbol_code, N(symbols), symbol_code );
       return data.empty() ? fc::variant() : abi_ser.binary_to_variant( "symbol_ts", data, abi_serializer_max_time );
    }
 
