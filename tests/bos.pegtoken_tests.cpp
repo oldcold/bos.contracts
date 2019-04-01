@@ -28,7 +28,7 @@ public:
       set_code( N(btc.bos), contracts::pegtoken_wasm() );
       set_abi( N(btc.bos), contracts::pegtoken_abi().data() );
 
-      produce_blocks();
+      produce_blocks(2);
 
       const auto& accnt = control->db().get<account_object,by_name>( N(btc.bos) );
       abi_def abi;
@@ -127,15 +127,16 @@ BOOST_FIXTURE_TEST_CASE( pp_tests, bos_pegtoken_tester ) try {
 } FC_LOG_AND_RETHROW()
 
 BOOST_FIXTURE_TEST_CASE( create_tests, bos_pegtoken_tester ) try {
-   auto token = create( eosio::chain::symbol::from_string("8,BTC"), N("btc.bos"), "bitcoin");
+   auto token = create( symbol(SY(8,BTC)), N(btc.bos), "bitcoin");
    auto syms = get_symbols("8,BTC");
    REQUIRE_MATCHING_OBJECT( syms, mvo()
-      // ("sym", symbol(SY(8,BTC)))
-      ("sym", eosio::chain::symbol::from_string("8,BTC"))
+      ("sym", symbol(SY(8,BTC)))
+      // ("sym", eosio::chain::symbol::from_string("8,BTC"))
    );
    produce_blocks(1);
 
 } FC_LOG_AND_RETHROW()
+
 
 // BOOST_FIXTURE_TEST_CASE( create_wrong_style, bos_pegtoken_tester ) try {
 //    auto token = create( symbol(SY(8, BTC)), "btc.bos", "fdsf");
