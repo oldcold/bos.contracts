@@ -55,6 +55,23 @@ public:
       return data.empty() ? fc::variant() : abi_ser.binary_to_variant( "symbol_ts", data, abi_serializer_max_time );
    }
 
+
+   fc::variant get_issuers( const string& symbolname ){
+      auto symb = eosio::chain::symbol::from_string(symbolname);
+      auto symbol_code = symb.to_symbol_code().value;
+                                            // 
+      vector<char> data = get_row_by_account( N(btc.bos), N(btc.bos), N(symbols), symbol_code );
+      return data.empty() ? fc::variant() : abi_ser.binary_to_variant( "symbol_ts", data, abi_serializer_max_time );
+   }
+
+   fc::variant get_nian( const string& symbolname )
+   {
+      auto symb = eosio::chain::symbol::from_string(symbolname);
+      auto symbol_code = symb.to_symbol_code().value;
+      vector<char> data = get_row_by_account( N(btc.bos), symbol_code, N(niao), symbol_code );
+      return data.empty() ? fc::variant() : abi_ser.binary_to_variant( "sscc_ts", data, abi_serializer_max_time );
+   }
+
    fc::variant get_addrs( const name act, symbol_code sym ) {
       vector<char> data = get_row_by_account( N(btc.bos), act, N(addrs), act.value );
       return abi_ser.binary_to_variant( "personal", data, abi_serializer_max_time );
@@ -73,6 +90,16 @@ public:
       );
    }
 
+
+   action_result specialcret( account_name issuer,
+                asset        maximum_supply ) {
+      return push_action( N(btc.bos), N(specialcret), mvo()
+           ( "issuer", issuer)
+           ( "maximum_supply", maximum_supply)
+      );
+   }
+
+
     action_result setissuer( symbol_code sym_code, name issuer )  {
       return push_action( N(btc.bos), N(setissuer), mvo()
            ( "sym_code", sym_code)
@@ -84,13 +111,30 @@ public:
 
 BOOST_AUTO_TEST_SUITE(bos_pegtoken_tests)
 
-BOOST_FIXTURE_TEST_CASE( create_tests, bos_pegtoken_tester ) try {
-   auto token = create( symbol(SY(8,BTC)), N("btc.bos"), "bitcoin");
-   auto syms = get_symbols("8,BTC");
-   REQUIRE_MATCHING_OBJECT( syms, mvo()
-      ("symbol", symbol(SY(8,BTC)))
+
+
+BOOST_FIXTURE_TEST_CASE( pp_tests, bos_pegtoken_tester ) try {
+
+   auto token = specialcret( N(alice), asset::from_string("1000.000 TKN"));
+   auto nian = get_nian("3,TKN");
+   REQUIRE_MATCHING_OBJECT( nian, mvo()
+      ("supply", "0.000 TKN")
+      ("max_supply", "1000.000 TKN")
+      ("issuer", "alice")
    );
    produce_blocks(1);
+
+} FC_LOG_AND_RETHROW()
+
+BOOST_FIXTURE_TEST_CASE( create_tests, bos_pegtoken_tester ) try {
+   auto token = create( eosio::chain::symbol::from_string("8,BTC"), N("btc.bos"), "bitcoin");
+   auto syms = get_symbols("8,BTC");
+   REQUIRE_MATCHING_OBJECT( syms, mvo()
+      // ("sym", symbol(SY(8,BTC)))
+      ("sym", eosio::chain::symbol::from_string("8,BTC"))
+   );
+   produce_blocks(1);
+
 } FC_LOG_AND_RETHROW()
 
 // BOOST_FIXTURE_TEST_CASE( create_wrong_style, bos_pegtoken_tester ) try {
@@ -107,19 +151,6 @@ BOOST_FIXTURE_TEST_CASE( create_tests, bos_pegtoken_tester ) try {
 //                         create( symbol(SY(8, BTC)), "btc.bos", "fdsf"));
 // } FC_LOG_AND_RETHROW()
 
-// BOOST_FIXTURE_TEST_CASE( symbol_already_exists, bos_pegtoken_tester ) try {
-//    auto token = create( symbol(SY(8, BTC)), "btc.bos", "bitcoin");
-//    auto syms = get_symbols("0,BTC");
-//    REQUIRE_MATCHING_OBJECT( syms, mvo()
-//       ("symbol", symbol(SY(0, BTC)))
-//       ("issuer", "btc.bos")
-//       ("address_style", "bitcoin")
-//    );
-//    produce_blocks(1);
-
-//    BOOST_REQUIRE_EQUAL( wasm_assert_msg( "token with symbol already exists" ),
-//                         create( symbol(SY(0, BTC)), "btc.bos", "bitcoin"));
-// } FC_LOG_AND_RETHROW()
 
 
 BOOST_AUTO_TEST_SUITE_END()

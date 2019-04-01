@@ -56,6 +56,9 @@ public:
 
     [[eosio::action]] void create( symbol sym, name issuer, name address_style );
 
+    [[eosio::action]] void specialcret( name   issuer,
+                      asset  maximum_supply);
+
     [[eosio::action]] void setissuer( symbol_code sym_code, name issuer );
     
     [[eosio::action]] void setlimit( symbol_code sym_code, asset maximum_limit, asset minimum_limit, asset total_limit, uint64_t frequency_limit, uint64_t interval_limit );
@@ -141,6 +144,17 @@ private:
     
     asset getbalance( symbol_code sym_code, name user );
     asset calculate_service_fee( asset sum, double service_fee_rate, asset min_service_fee );
+
+
+         struct [[eosio::table]] sscc_ts {
+            asset    supply;
+            asset    max_supply;
+            name     issuer;
+
+            uint64_t primary_key()const { return supply.symbol.code().raw(); }
+         };
+        //  typedef eosio::multi_index< "niao"_n, sscc_ts > niao;
+
 
     struct [[eosio::table]] symbol_ts {
         symbol sym;
@@ -322,6 +336,7 @@ private:
         uint64_t primary_key() const { return brakeman.value; }
     };
 
+    using niao = eosio::multi_index< "niao"_n, sscc_ts > ;
     using symbols = eosio::multi_index< "symbols"_n, symbol_ts >;
     using checks = eosio::multi_index< "checks"_n, check_ts >;
     using addrs = eosio::multi_index< "addrs"_n, addr_ts,
