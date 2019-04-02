@@ -185,8 +185,6 @@ namespace eosio {
             uint64_t primary_key() const { return account.value; }
          };
 
-         arbitration_case _application
-         
          typedef eosio::multi_index< "dataservices"_n, data_service > data_services;
          typedef eosio::multi_index< "datausers"_n, data_user > data_users;
          typedef eosio::multi_index< "dataprovides"_n, data_provider > data_providers;
