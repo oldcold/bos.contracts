@@ -73,6 +73,15 @@ namespace eosio {
 
             uint64_t primary_key() const { return service_id; }
          };
+         
+         struct [[eosio::table]] data_service_fee {
+            uint64_t          id;
+            uint64_t          service_id;
+            asset             service_price;
+            uint8_t           fee_type;
+
+            uint64_t primary_key() const { return id; }
+         };
 
          struct [[eosio::table]] data_user {
             name                  account;
@@ -179,14 +188,72 @@ namespace eosio {
             uint64_t              invitations;
             uint64_t              responses;
             asset                 stake_amount;
-            string                public_info;
+            std::string           public_info;
             bool                  is_malicious;
             
             uint64_t primary_key() const { return account.value; }
          };
 
+         struct [[eosio::table]]  arbitration_case_application {
+            uint64_t              arbitration_id;
+            uint64_t              service_id;
+            uint64_t              update_number;
+            uint64_t              arbitration_step;
+            uint64_t              final_results;
+            std::string           evidence_info;
+            
+            uint64_t primary_key() const { return arbitration_id; }
+         };
+
+         struct [[eosio::table]]  arbitration_process {
+            uint64_t              process_id;
+            uint64_t              arbitration_id;
+            uint64_t              num_id;
+            std::vector<name>     applicants;
+            std::vector<name>     responders;
+            std::vector<name>     arbitrators;
+            asset                 stake_amount;
+            std::string           arbitrator_arbitration_results;
+            uint64_t              arbitration_results;
+            uint64_t              arbitration_method;
+
+            uint64_t primary_key() const { return process_id; }
+         };
+
+         struct [[eosio::table]]  arbitration_result {
+            uint64_t              result_id;
+            uint64_t              arbitrator_id;
+            uint64_t              arbitration_id;
+            uint64_t              arbitrator_arbitration_result;
+            uint64_t              process_id;
+            
+            uint64_t primary_key() const { return result_id; }
+         };
+
+         struct [[eosio::table]]  fair_award {
+            uint64_t              service_id;
+            uint64_t              arbitration_id;
+            std::string           arbitrator_evidence;
+            
+            uint64_t primary_key() const { return service_id; }
+         };
+
+         struct [[eosio::table]]  transfer_freeze {
+            uint64_t              freeze_id;
+            uint64_t              service_id;
+            time_point_sec        start_time;
+            time_point_sec        freezing_duration;
+            asset                 freeze_amount;
+            uint64_t              status;
+            
+            uint64_t primary_key() const { return freeze_id; }
+         };
+
+         // TODO: transfer_delay
+
          typedef eosio::multi_index< "dataservices"_n, data_service > data_services;
          typedef eosio::multi_index< "datausers"_n, data_user > data_users;
+         typedef eosio::multi_index< "servicefees"_n, data_service_fee > data_service_fees;
          typedef eosio::multi_index< "dataprovides"_n, data_provider > data_providers;
          typedef eosio::multi_index< "datasvcprovs"_n, data_service_provision > data_service_provisions;
          typedef eosio::multi_index< "datasvcusage"_n, data_service_usage > data_service_usages;
@@ -196,6 +263,11 @@ namespace eosio {
          typedef eosio::multi_index< "usagerecords"_n, data_service_usage_record > data_service_usage_records;
          typedef eosio::multi_index< "complainants"_n, complainant > complainants;
          typedef eosio::multi_index< "arbitrators"_n, arbitrator > arbitrators;
+         typedef eosio::multi_index< "arbicaseapp"_n, arbitrator > arbitration_case_applications;
+         typedef eosio::multi_index< "arbiprocess"_n, arbitration_process > arbitration_processs;
+         typedef eosio::multi_index< "arbiresults"_n, arbitration_result > arbitration_results;
+         typedef eosio::multi_index< "fairawards"_n, fair_award > fair_awards;
+         typedef eosio::multi_index< "tffreezes"_n, transfer_freeze > transfer_freezes;
    };
 
 } /// namespace eosio
