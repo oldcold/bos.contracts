@@ -13,10 +13,10 @@ find_package(eosio.cdt)
 ### Check the version of eosio.cdt
 set(VERSION_MATCH_ERROR_MSG "")
 EOSIO_CHECK_VERSION(VERSION_OUTPUT "${EOSIO_CDT_VERSION}"
-                                   "${EOSIO_CDT_VERSION_MIN}"
-                                   "${EOSIO_CDT_VERSION_SOFT_MAX}"
-                                   "${EOSIO_CDT_VERSION_HARD_MAX}"
-                                   VERSION_MATCH_ERROR_MSG)
+        "${EOSIO_CDT_VERSION_MIN}"
+        "${EOSIO_CDT_VERSION_SOFT_MAX}"
+        "${EOSIO_CDT_VERSION_HARD_MAX}"
+        VERSION_MATCH_ERROR_MSG)
 if(VERSION_OUTPUT STREQUAL "MATCH")
    message(STATUS "Using eosio.cdt version ${EOSIO_CDT_VERSION}")
 elseif(VERSION_OUTPUT STREQUAL "WARN")
@@ -48,4 +48,4 @@ elseif (UNIX)
 endif()
 set(SECP256K1_ROOT "/usr/local")
 
-include(UnitTestsExternalProject.txt)
+#include(UnitTestsExternalProject.txt)

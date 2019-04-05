@@ -6,6 +6,7 @@
 #include "delegate_bandwidth.cpp"
 #include "voting.cpp"
 #include "exchange_state.cpp"
+#include "upgrade.cpp"
 #include <map>
 
 namespace eosiosystem {
@@ -19,13 +20,16 @@ namespace eosiosystem {
     _global2(_self, _self.value),
     _global3(_self, _self.value),
     _guarantee(_self, _self.value),
-    _rammarket(_self, _self.value)
+    _rammarket(_self, _self.value),
+    _upgrade(_self, _self.value)
    {
 
       //print( "construct system\n" );
       _gstate  = _global.exists() ? _global.get() : get_default_parameters();
       _gstate2 = _global2.exists() ? _global2.get() : eosio_global_state2{};
       _gstate3 = _global3.exists() ? _global3.get() : eosio_global_state3{};
+
+      _ustate = _upgrade.exists() ? _upgrade.get() : upgrade_state{};
    }
 
    eosio_global_state system_contract::get_default_parameters() {
@@ -53,6 +57,8 @@ namespace eosiosystem {
       _global.set( _gstate, _self );
       _global2.set( _gstate2, _self );
       _global3.set( _gstate3, _self );
+
+      _upgrade.set( _ustate, _self );
    }
 
    void system_contract::setram( uint64_t max_ram_size ) {
@@ -558,4 +564,6 @@ EOSIO_DISPATCH( eosiosystem::system_contract,
      (regproducer)(unregprod)(voteproducer)(regproxy)
      // producer_pay.cpp
      (onblock)(claimrewards)
+     //upgrade.cpp
+     (setupgrade)
 )

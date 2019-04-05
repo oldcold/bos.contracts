@@ -120,6 +120,13 @@ namespace eosiosystem {
       EOSLIB_SERIALIZE( eosio_global_state3, (last_vpay_state_update)(total_vpay_share_change_rate) )
    };
 
+   struct [[eosio::table("upgrade"), eosio::contract("eosio.system")]] upgrade_state : eosio::upgrade_parameters {
+      uint16_t  current_version = 0;
+
+      EOSLIB_SERIALIZE_DERIVED( upgrade_state, eosio::upgrade_parameters, (current_version) )
+   };
+
+
    struct [[eosio::table, eosio::contract("eosio.system")]] producer_info {
       name                  owner;
       double                total_votes = 0;
@@ -211,6 +218,8 @@ namespace eosiosystem {
    typedef eosio::singleton< "global3"_n, eosio_global_state3 > global_state3_singleton;
    typedef eosio::singleton< "guaranminres"_n, eosio_guaranteed_min_res > guaranteed_min_res_singleton;      // *bos*
 
+   typedef eosio::singleton< "upgrade"_n, upgrade_state > upgrade_singleton;
+
    //   static constexpr uint32_t     max_inflation_rate = 5;  // 5% annual inflation
    static constexpr uint32_t     seconds_per_day = 24 * 3600;
 
@@ -227,6 +236,8 @@ namespace eosiosystem {
          eosio_global_state2     _gstate2;
          eosio_global_state3     _gstate3;
          rammarket               _rammarket;
+         upgrade_singleton       _upgrade;
+         upgrade_state           _ustate;
 
       public:
          static constexpr eosio::name active_permission{"active"_n};
@@ -375,6 +386,10 @@ namespace eosiosystem {
 
          [[eosio::action]]
          void bidrefund( name bidder, name newname );
+
+         //functions defined in upgrade.cpp
+         [[eosio::action]]
+         void setupgrade( const eosio::upgrade_parameters& params);
 
       private:
          // Implementation details:
