@@ -120,10 +120,12 @@ namespace eosiosystem {
       EOSLIB_SERIALIZE( eosio_global_state3, (last_vpay_state_update)(total_vpay_share_change_rate) )
    };
 
-   struct [[eosio::table("upgrade"), eosio::contract("eosio.system")]] upgrade_state : eosio::upgrade_parameters {
-      uint16_t  current_version = 0;
+   struct [[eosio::table("upgrade"), eosio::contract("eosio.system")]] upgrade_state  {
+      std::string  active_proposal = "none";
+      uint32_t     target_block_num;
+      uint16_t     status;
 
-      EOSLIB_SERIALIZE_DERIVED( upgrade_state, eosio::upgrade_parameters, (current_version) )
+      EOSLIB_SERIALIZE( upgrade_state, (active_proposal)(target_block_num)(status) )
    };
 
 
@@ -387,9 +389,14 @@ namespace eosiosystem {
          [[eosio::action]]
          void bidrefund( name bidder, name newname );
 
+         struct upgrade_proposal {
+             std::string      proposal_name;
+             uint32_t    target_block_num;
+         };
+
          //functions defined in upgrade.cpp
          [[eosio::action]]
-         void setupgrade( const eosio::upgrade_parameters& params);
+         void setupgrade( const upgrade_proposal& up);
 
       private:
          // Implementation details:

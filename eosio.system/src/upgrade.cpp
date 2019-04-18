@@ -2,13 +2,15 @@
 
 namespace eosiosystem {
 
-    void system_contract::setupgrade( const eosio::upgrade_parameters& params) {
+    void system_contract::setupgrade( const upgrade_proposal& up) {
         require_auth( _self );
 
+        auto params = eosio::upgrade_parameters{};
+        params.target_block_num = up.target_block_num;
         (eosio::upgrade_parameters&)(_ustate) = params;
         set_upgrade_parameters( params );
 
-        _ustate.current_version += 1;
-        _ustate.target_block_num = params.target_block_num;
+        _ustate.active_proposal += up.proposal_name;
+        _ustate.target_block_num = up.target_block_num;
     }
 }
