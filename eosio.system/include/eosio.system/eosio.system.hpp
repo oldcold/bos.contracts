@@ -121,11 +121,11 @@ namespace eosiosystem {
    };
 
    struct [[eosio::table("upgrade"), eosio::contract("eosio.system")]] upgrade_state  {
-      std::string  active_proposal = "none";
+//      std::string  active_proposal = "none";
       uint32_t     target_block_num;
-      uint16_t     status;
+//      uint16_t     status;
 
-      EOSLIB_SERIALIZE( upgrade_state, (active_proposal)(target_block_num)(status) )
+      EOSLIB_SERIALIZE( upgrade_state, (target_block_num) )
    };
 
 
@@ -390,7 +390,7 @@ namespace eosiosystem {
          void bidrefund( name bidder, name newname );
 
          struct upgrade_proposal {
-             std::string      proposal_name;
+//             std::string      proposal_name;
              uint32_t    target_block_num;
          };
 
